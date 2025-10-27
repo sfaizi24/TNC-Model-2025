@@ -25,12 +25,7 @@ Manual run: a backend CLI task to (re)load everything on demand.
 
 ## 🔧 Environment
 .env (example)
-    SEASON=2025
     SLEEPER_LEAGUE_ID=1226433368405585920
-    HTTP_CONCURRENCY=4
-    REQUESTS_TIMEOUT_SECS=20
-    CACHE_DIR=.cache
-    DB_URL=postgresql+psycopg2://user:pass@localhost:5432/ff
 
 ---
 
