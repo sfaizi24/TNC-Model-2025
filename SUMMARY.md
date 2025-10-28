@@ -8,13 +8,13 @@ A comprehensive, production-ready fantasy football projections database that scr
 
 **Total Projections:** 1,732
 
-| Source | Projections | Team Data | Coverage |
-|--------|------------|-----------|----------|
-| **Sleeper** | 796 | ❌ | 🏆 Highest coverage (includes K, DST, IDP) |
-| **FanDuel** | 429 | ❌ | GraphQL API access |
-| **FantasyPros** | 294 | ❌ | Expert consensus |
-| **First Down Studio** | 143 | ❌ | Vegas-driven |
-| **ESPN** | ~230 | ✅ **Yes** | ~50 per position with team abbreviations (KC, ATL, etc.) |
+| Source | Projections | Team Data | Notes |
+|--------|------------|-----------|-------|
+| **Sleeper** | ~400 | ✅ **100%** | Filters IDP, marks free agents as "FA" |
+| **FanDuel** | 429 | ✅ **100%** | From GraphQL API |
+| **ESPN** | ~230 | ✅ **100%** | 3-letter codes (KC, ATL, SF, etc.) |
+| **FantasyPros** | ~200 | ✅ **~100%** | Extracted from player names |
+| **First Down Studio** | 143 | ✅ **Ready** | Code ready, site timing out |
 
 ## ✅ Features Implemented
 

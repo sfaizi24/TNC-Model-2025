@@ -7,10 +7,10 @@ A lightweight SQLite database and web scrapers for fantasy football projections 
 - **Light & Fast**: SQLite database for quick queries
 - **Multiple Sources**: Currently supports:
   - ✅ **First Down Studio** - Vegas-driven projections with manual PPR calculation  
-  - ✅ **FanDuel** - Direct PPR projections from their GraphQL API
-  - ✅ **Sleeper** - Undocumented REST API with ~800 projections per week
-  - ✅ **FantasyPros** - Expert consensus rankings with ~300 projections
-  - ✅ **ESPN** - Top ~40 player projections (limited by their public page)
+  - ✅ **FanDuel** - Direct PPR projections from their GraphQL API (100% team data)
+  - ✅ **Sleeper** - Undocumented REST API with ~400 projections (100% team data, "FA" for free agents)
+  - ✅ **FantasyPros** - Expert consensus rankings with ~300 projections (team data from player names)
+  - ✅ **ESPN** - ~230 player projections by position (100% team data)
 - **Flexible Schema**: Easily add more projection sources
 - **PPR Projections**: Configurable scoring format (PPR, Half PPR, Standard)
 - **Automated Scraping**: Selenium and Playwright-based scrapers for dynamic websites
@@ -184,7 +184,8 @@ The database file `projections.db` will be created in the project root directory
 - Uses undocumented REST API endpoint: `/v1/projections/nfl/regular/{season}/{week}`
 - Based on the [sleeper-go](https://pkg.go.dev/github.com/lum8rjack/sleeper-go#section-readme) library documentation
 - Provides `pts_ppr` directly - no calculation needed!
-- Returns ~800 projections per week (includes K, DEF, IDP positions)
+- Returns ~400 projections per week (filters out IDP positions)
+- **Team data**: Extracted from player metadata, "FA" for free agents
 - **Note**: Requires using `/regular/` in the endpoint path (not documented in the Go library)
 
 ### FantasyPros

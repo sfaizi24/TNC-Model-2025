@@ -162,9 +162,19 @@ class SleeperScraper:
                 full_name = player_info.get('full_name', '')
                 position = player_info.get('position', '')
                 team = player_info.get('team', '')
+                status = player_info.get('status', '')
+                active = player_info.get('active', False)
                 
                 if not full_name or not position:
                     continue
+                
+                # Skip IDP positions (not used in standard fantasy)
+                if position in ['CB', 'DB', 'DE', 'DT', 'LB', 'S', 'SS', 'FS']:
+                    continue
+                
+                # Set team to "FA" for free agents (active players without team)
+                if not team and active and status == 'Active':
+                    team = 'FA'
                 
                 # Sleeper provides pts_ppr directly! Use that if available
                 projected_points = proj_stats.get('pts_ppr')
