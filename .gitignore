@@ -49,3 +49,6 @@ chromedriver.log
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
+# Temporary scraper files
+_temp_*.py
+

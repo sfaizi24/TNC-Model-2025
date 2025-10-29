@@ -9,7 +9,11 @@ from collections import defaultdict
 
 # Fix encoding issues on Windows
 if os.name == 'nt':
-    sys.stdout.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # In Jupyter or other environments where reconfigure is not available
+        pass
 
 
 def compare_projections(week: str = "Week 8", position: str = None):

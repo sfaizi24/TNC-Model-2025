@@ -12,8 +12,12 @@ from typing import List, Dict
 
 # Fix encoding issues on Windows
 if os.name == 'nt':
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # In Jupyter or other environments where reconfigure is not available
+        pass
 
 
 class FantasyProsScraper:
@@ -56,8 +60,11 @@ class FantasyProsScraper:
         if not full_name:
             return "", ""
         
-        # Clean injury designations and team info
+        # Clean injury designations and team info in parentheses
         full_name = re.sub(r'\s*\([^)]*\)\s*', '', full_name).strip()
+        
+        # Remove injury designations stuck to end of names (Q, IR, O, etc.)
+        full_name = re.sub(r'(Q|O|D|IR|PUP|SSPD|COV|IA)$', '', full_name).strip()
         
         # DST names are team names
         if position == 'DST':
@@ -89,6 +96,7 @@ class FantasyProsScraper:
         time.sleep(3)
         
         projections = []
+        teams_found = 0
         
         try:
             # Wait for table to load
@@ -100,7 +108,18 @@ class FantasyProsScraper:
             rows = table.find_elements(By.TAG_NAME, "tr")
             print(f"  Found {len(rows)} rows")
             
-            for row in rows[1:]:  # Skip header
+            # Check header to find team column
+            header_row = rows[0] if rows else None
+            team_col_idx = None
+            if header_row:
+                header_cells = header_row.find_elements(By.TAG_NAME, "th")
+                for idx, cell in enumerate(header_cells):
+                    if 'TEAM' in cell.text.upper() or cell.text.strip().upper() == 'OPP':
+                        team_col_idx = idx
+                        print(f"  Found team column at index {idx}")
+                        break
+            
+            for row_idx, row in enumerate(rows[1:], 1):  # Skip header
                 try:
                     cells = row.find_elements(By.TAG_NAME, "td")
                     if len(cells) < 3:
@@ -109,18 +128,28 @@ class FantasyProsScraper:
                     # FantasyPros structure:
                     # Cell 0: Rank
                     # Cell 2: Player Name (with team)
-                    # Cell 8: PROJ. FPTS
+                    # Cell 3: Sometimes team column
+                    # Cell 8 or later: PROJ. FPTS
                     
                     rank_text = cells[0].text.strip()
                     if not rank_text or not rank_text[0].isdigit():
                         continue
                     
                     # Extract player name from cell 2
-                    player_name = cells[2].text.strip() if len(cells) > 2 else ""
-                    if not player_name:
+                    player_name_raw = cells[2].text.strip() if len(cells) > 2 else ""
+                    if not player_name_raw:
                         continue
                     
-                    # Extract team from player name (format: "Name (TEAM)" or "Name TEAM")
+                    # Clean injury designations and status tags stuck to names
+                    # Examples: "Breece HallQ", "Carson WentzIR", "Alvin KamaraO"
+                    player_name = player_name_raw
+                    player_name = re.sub(r'(Q|O|D|IR|PUP|SSPD|COV)$', '', player_name).strip()
+                    
+                    # Debug: Print only if raw name differs from cleaned (injury designation removed)
+                    if player_name_raw != player_name:
+                        print(f"\n  DEBUG: Cleaned '{player_name_raw}' → '{player_name}'")
+                    
+                    # Strategy 1: Extract team from player name (format: "Name (TEAM)")
                     team = None
                     team_match = re.search(r'\(([A-Z]{2,3})\)', player_name)
                     if team_match:
@@ -128,14 +157,53 @@ class FantasyProsScraper:
                         # Remove team from player name
                         player_name = re.sub(r'\s*\([A-Z]{2,3}\)', '', player_name).strip()
                     
-                    # Extract projected points from cell 8
+                    # Strategy 2: Check for dedicated team column
+                    if not team and team_col_idx is not None and len(cells) > team_col_idx:
+                        team_text = cells[team_col_idx].text.strip()
+                        # Extract just the team code (might be "KC" or "KC vs DEN" format)
+                        team_match = re.search(r'\b([A-Z]{2,3})\b', team_text)
+                        if team_match:
+                            team = team_match.group(1)
+                    
+                    # Strategy 3: Check cell 3 for team (common layout)
+                    if not team and len(cells) > 3:
+                        cell3_text = cells[3].text.strip()
+                        # Look for 2-3 uppercase letters
+                        if re.match(r'^[A-Z]{2,3}$', cell3_text):
+                            team = cell3_text
+                        # Or matchup format like "KC vs DEN" or "@KC"
+                        elif re.search(r'\b([A-Z]{2,3})\b', cell3_text):
+                            team_match = re.search(r'\b([A-Z]{2,3})\b', cell3_text)
+                            if team_match:
+                                team = team_match.group(1)
+                    
+                    # Strategy 4: Look in the player cell for more formats
+                    if not team:
+                        # Try to find team anywhere in player cell (e.g., "Name - TEAM")
+                        full_cell_text = cells[2].text
+                        team_patterns = [
+                            r'\s+-\s+([A-Z]{2,3})\b',  # "Name - KC"
+                            r'\s+([A-Z]{2,3})\s+\w{2}$',  # "Name KC RB"
+                            r'^([A-Z]{2,3})\s+-',  # "KC - Name"
+                        ]
+                        for pattern in team_patterns:
+                            match = re.search(pattern, full_cell_text)
+                            if match:
+                                team = match.group(1)
+                                break
+                    
+                    if team:
+                        teams_found += 1
+                    
+                    # Extract projected points from cell 8 or search for it
                     projected_points = None
-                    if len(cells) > 8:
-                        proj_text = cells[8].text.strip()
+                    for i in range(8, len(cells)):
+                        proj_text = cells[i].text.strip()
                         try:
                             projected_points = float(proj_text)
+                            break
                         except ValueError:
-                            pass
+                            continue
                     
                     # If no projected points found, estimate from rank
                     if projected_points is None:
@@ -159,7 +227,8 @@ class FantasyProsScraper:
                         projections.append(projection)
                         
                         if projected_points >= 10:  # Only print notable projections
-                            print(f"  {first_name} {last_name} ({position}): {projected_points:.1f} pts")
+                            team_str = f" ({team})" if team else ""
+                            print(f"  {first_name} {last_name}{team_str}: {projected_points:.1f} pts")
                 
                 except Exception as e:
                     continue
@@ -167,7 +236,9 @@ class FantasyProsScraper:
         except Exception as e:
             print(f"  ✗ Error scraping {position}: {e}")
         
+        team_percentage = (teams_found / len(projections) * 100) if projections else 0
         print(f"  ✓ Scraped {len(projections)} {position} projections")
+        print(f"  ✓ Team data found: {teams_found}/{len(projections)} ({team_percentage:.1f}%)")
         return projections
     
     def _estimate_points_from_rank(self, rank: int, position: str) -> float:

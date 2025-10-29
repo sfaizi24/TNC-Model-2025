@@ -13,8 +13,12 @@ import logging
 
 # Fix encoding issues on Windows
 if os.name == 'nt':
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # In Jupyter or other environments where reconfigure is not available
+        pass
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -151,14 +155,40 @@ class ESPNScraper:
                     if not player_cell_text:
                         continue
                     
-                    # Parse player info - format: "PlayerName\nTeam\nPosition"
+                    # Parse player info
+                    # Format: "PlayerName\nTeam\nPosition" (3 lines)
+                    # OR:     "PlayerName\nInjuryStatus\nTeam\nPosition" (4 lines with injury)
                     player_lines = player_cell_text.split('\n')
                     player_name = player_lines[0].strip() if len(player_lines) > 0 else ""
-                    team_abbr = player_lines[1].strip().upper() if len(player_lines) > 1 else None
-                    position = player_lines[2].strip() if len(player_lines) > 2 else position_filter
                     
                     if not player_name:
                         continue
+                    
+                    # Determine format based on number of lines
+                    team_abbr = None
+                    position = position_filter
+                    
+                    if len(player_lines) == 4:
+                        # Format with injury: Name\nInjury\nTeam\nPosition
+                        injury_status = player_lines[1].strip()
+                        team_abbr = player_lines[2].strip().upper()
+                        position = player_lines[3].strip()
+                    elif len(player_lines) == 3:
+                        # Normal format: Name\nTeam\nPosition
+                        potential_team = player_lines[1].strip().upper()
+                        
+                        # Check if this is actually an injury designation
+                        if potential_team in ['Q', 'O', 'IR', 'D', 'SSPD', 'PUP', 'COV']:
+                            # It's an injury status, no team available
+                            team_abbr = None
+                        else:
+                            team_abbr = potential_team
+                        
+                        position = player_lines[2].strip()
+                    elif len(player_lines) == 2:
+                        # Just Name\nPosition (no team)
+                        position = player_lines[1].strip()
+                        team_abbr = None
                     
                     # Get projected points from table 2 (FPTS table), same row index
                     fpts_row = fpts_rows[idx]

@@ -9,7 +9,7 @@ A lightweight SQLite database and web scrapers for fantasy football projections 
   - ✅ **First Down Studio** - Vegas-driven projections with manual PPR calculation  
   - ✅ **FanDuel** - Direct PPR projections from their GraphQL API (100% team data)
   - ✅ **Sleeper** - Undocumented REST API with ~400 projections (100% team data, "FA" for free agents)
-  - ✅ **FantasyPros** - Expert consensus rankings with ~300 projections (team data from player names)
+  - ✅ **FantasyPros** - Expert consensus rankings with ~300 projections (75-98% team coverage via multi-strategy extraction)
   - ✅ **ESPN** - ~230 player projections by position (100% team data)
 - **Flexible Schema**: Easily add more projection sources
 - **PPR Projections**: Configurable scoring format (PPR, Half PPR, Standard)
@@ -42,6 +42,10 @@ pip install -r requirements.txt
    ```bash
    playwright install chromium
    ```
+
+3. For Jupyter notebooks (if using `master_control.ipynb`):
+   - The FanDuel scraper runs via subprocess to avoid Playwright/asyncio conflicts
+   - Other scrapers (Selenium-based) run directly in the notebook
 
 ## Usage
 
@@ -194,6 +198,8 @@ The database file `projections.db` will be created in the project root directory
 - Covers all positions: QB, RB, WR, TE, K, DST
 - Provides projected fantasy points directly
 - Returns ~300 projections (top-ranked players at each position)
+- **Team extraction**: Uses 4-strategy approach (parentheses, dedicated column, cell position, pattern matching)
+- **Coverage**: 75-98% team data depending on position (WR: 98%, QB: 90%, RB: 75%)
 
 ### ESPN
 - Scrapes from [ESPN's Sortable Projections view](https://fantasy.espn.com/football/players/projections)
@@ -210,15 +216,31 @@ The database file `projections.db` will be created in the project root directory
 - Duplicate entries are automatically updated with new values
 - All projections flow into the same unified database schema
 
-## Data Validation
+## Data Validation & Management
 
-Use the Jupyter notebook to validate and explore your scraped data:
+### Master Control Panel
+
+Use the master control notebook for complete database management:
+
+```bash
+jupyter notebook master_control.ipynb
+```
+
+The notebook includes:
+- 🗑️ **Database management** - Clear entire database, specific sources, or weeks
+- 📊 **Run scrapers** - Execute each scraper individually with status updates
+- 📈 **Data quality checks** - View team coverage, record counts, and metrics
+- 🔍 **Quick reference** - All commands in one place
+
+### Data Validation
+
+Explore and validate your scraped data:
 
 ```bash
 jupyter notebook data_validation.ipynb
 ```
 
-The notebook includes:
+The validation notebook includes:
 - Database overview and schema validation
 - Source and position breakdowns
 - Data quality checks (missing values, duplicates, formatting)
@@ -247,13 +269,106 @@ python compare_sources.py --week "Week 8" --differences --top 20
 
 This tool helps you identify consensus vs. contrarian plays by comparing projections across multiple sources.
 
+## Sleeper League Data System
+
+In addition to projections, this project now includes a comprehensive **Sleeper League Data System** for analyzing your actual fantasy league!
+
+### Features
+
+- 📊 **League Data**: Teams, rosters, matchups, standings
+- 👥 **User Management**: Track all league members and their teams
+- 🏈 **NFL Player Database**: Complete player info, injuries, depth charts
+- 📈 **Player Stats**: Historical performance data (passing, rushing, receiving)
+- 📅 **Schedules & Bye Weeks**: NFL team schedules and bye week tracking
+- 💹 **Transactions**: Trade and waiver wire history
+- 🎮 **Interactive Control**: Jupyter notebook for easy data management
+
+### Quick Start
+
+```python
+from scraper_sleeper_league import SleeperLeagueScraper
+from database_league import LeagueDB
+
+# Find your leagues
+with SleeperLeagueScraper() as scraper:
+    user = scraper.get_user("your_username")
+    leagues = scraper.get_user_leagues(user['user_id'], "2024")
+    
+    # Load league data
+    scraper.save_league_data(
+        league_id=leagues[0]['league_id'],
+        weeks=list(range(1, 10)),
+        include_transactions=True
+    )
+    
+    # Load NFL data
+    scraper.save_nfl_players()
+    scraper.save_player_stats("2024", 1, 9)
+    scraper.save_nfl_schedule("2024")
+
+# Query your data
+with LeagueDB() as db:
+    # Get standings
+    rosters = db.get_rosters(league_id)
+    
+    # Get matchups
+    matchups = db.get_matchups(league_id, week=9)
+    
+    # Check player stats
+    stats = db.get_player_stats(player_id="player_id", season="2024")
+    
+    # Check bye weeks
+    bye_weeks = db.get_bye_weeks("2024")
+```
+
+### Control Notebook
+
+Use `league_control.ipynb` for an interactive interface:
+
+```bash
+jupyter notebook league_control.ipynb
+```
+
+The notebook includes:
+- 🔍 League discovery by username
+- 📊 Database status and metrics
+- 🏆 League standings viewer
+- 🎮 Matchup results by week
+- 🏥 Injury reports
+- 📈 Player performance lookup
+- 📅 Bye week checker
+- 🗑️ Database management tools
+
+### Documentation
+
+See **[LEAGUE_DATA_GUIDE.md](LEAGUE_DATA_GUIDE.md)** for complete documentation including:
+- Database schema details
+- Python API examples
+- Advanced queries
+- Tips and best practices
+
+### Database Tables
+
+- `leagues` - League information and settings
+- `users` - League owners/members
+- `rosters` - Teams and their players
+- `matchups` - Weekly game results
+- `nfl_players` - Complete NFL player database (~8000+ players)
+- `player_stats` - Weekly player performance
+- `nfl_schedules` - Team schedules and bye weeks
+- `transactions` - Trades, adds, drops
+
 ## Future Enhancements
 
-- [ ] Add more projection sources (ESPN, FantasyPros, Sleeper, etc.)
+- [ ] Add more projection sources
 - [ ] Add API endpoint for web app integration
 - [ ] Add scheduling for automatic daily updates
 - [ ] Export functionality (CSV, JSON)
 - [ ] Historical projection tracking
 - [ ] Calculate QB PPR points from component stats as well
 - [ ] Add confidence scoring based on projection agreement
+- [x] **Sleeper league data integration**
+- [ ] Advanced analytics dashboard
+- [ ] Trade analyzer
+- [ ] Playoff probability calculator
 

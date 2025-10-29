@@ -13,8 +13,12 @@ from typing import List, Dict
 
 # Fix encoding issues on Windows
 if os.name == 'nt':
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # In Jupyter or other environments where reconfigure is not available
+        pass
 
 class FirstDownStudioScraper:
     """Scraper for First Down Studio fantasy projections."""
