@@ -3811,7 +3811,7 @@ player_id,full_name,first_name,last_name,position,team,number,age,height,weight,
 8150,Kyren Williams,Kyren,Williams,RB,LAR,23.0,25.0,69,207,Notre Dame,3.0,2000-08-26,,,,St. John Vianney (MO),Active,1,,,,,,RB,1.0,24.0,['RB'],"{'channel_id': '1113708701824348160', 'rookie_year': '2022'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 11584,Bucky Irving,Bucky,Irving,RB,TB,7.0,23.0,70,195,Oregon,1.0,2002-08-19,,,,Hillcrest (IL),Active,1,Out,Foot,Dislocated,,,RB,1.0,23.0,['RB'],"{'channel_id': '1113708732941889536', 'injury_override_regular_2025_6': 'Out', 'injury_override_regular_2025_7': 'Out', 'rookie_year': '2024'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 11635,Ladd McConkey,Ladd,McConkey,WR,LAC,15.0,23.0,72,185,Georgia,1.0,2001-11-11,,,,North Murray (GA),Active,1,,,,,,SWR,1.0,23.0,['WR'],"{'channel_id': '1113708690252263424', 'rookie_year': '2024'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-12530,Travis Hunter,Travis,Hunter,WR,JAX,12.0,22.0,73,185,Colorado,0.0,2003-05-18,,,,Collins Hill (GA),Active,1,,,,,,SWR,2.0,23.0,"['DB', 'WR']","{'channel_id': '1221352995866812416', 'rookie_year': '2025', 'source_id': '51976030-ad40-11ec-85f7-a1aefd14d6ea'}",2025-10-29 03:04:12,2025-10-29 03:56:16
+12530,Travis Hunter,Travis,Hunter,WR,JAX,12.0,22.0,73,185,Colorado,0.0,2003-05-18,,,,Collins Hill (GA),Active,1,,,,,,SWR,2.0,23.0,"['DB', 'WR']","{'channel_id': '1221352995866812416', 'rookie_year': '2025', 'source_id': '51976030-ad40-11ec-85f7-a1aefd14d6ea'}",2025-10-29 03:04:12,2025-11-04 05:13:21
 5859,A.J. Brown,A.J.,Brown,WR,PHI,11.0,28.0,73,226,Ole Miss,6.0,1997-06-30,,,,Starkville (MS),Active,1,Out,Hamstring,,,,LWR,1.0,19.0,['WR'],"{'channel_id': '1113708717729148928', 'injury_override_regular_2024_3': 'Out', 'rookie_year': '2019'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 8112,Drake London,Drake,London,WR,ATL,5.0,24.0,76,215,USC,3.0,2001-07-24,,,,Moorpark (CA),Active,1,Out,Hip,,,,LWR,1.0,17.0,['WR'],"{'channel_id': '1113708859333046272', 'rookie_year': '2022'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 11631,Brian Thomas,Brian,Thomas,WR,JAX,7.0,23.0,74,209,LSU,1.0,2002-10-08,,,,Walker (LA),Active,1,Questionable,Shoulder,,,,LWR,1.0,16.0,['WR'],"{'channel_id': '1113708888835780608', 'rookie_year': '2024'}",2025-10-29 03:04:12,2025-10-29 03:56:16
@@ -3837,29 +3837,29 @@ player_id,full_name,first_name,last_name,position,team,number,age,height,weight,
 9509,Bijan Robinson,Bijan,Robinson,RB,ATL,7.0,23.0,71,215,Texas,2.0,2002-01-30,,,,Salpointe (AZ),Active,1,,,,,,RB,1.0,2.0,['RB'],"{'channel_id': '1113708865150545921', 'rookie_year': '2023'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 4866,Saquon Barkley,Saquon,Barkley,RB,PHI,26.0,28.0,72,233,Penn State,7.0,1997-02-09,,,,Whitehall (PA),Active,1,Questionable,Groin,,,,RB,1.0,2.0,['RB'],"{'channel_id': '1113708717460713472', 'rookie_year': '2018'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7564,Ja'Marr Chase,Ja'Marr,Chase,WR,CIN,1.0,25.0,72,205,LSU,4.0,2000-03-01,,,,Archbishop Rummel (LA),Active,1,,,,,,LWR,1.0,1.0,['WR'],"{'channel_id': '1113708809265639424', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-ARI,ARI Defense,ARI,Defense,DEF,ARI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-ATL,ATL Defense,ATL,Defense,DEF,ATL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+ARI,ARI Defense,ARI,Defense,DST,ARI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+ATL,ATL Defense,ATL,Defense,DST,ATL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7512,Aaron Smith,Aaron,Smith,RB,,44.0,,"0'0""",,,5.0,,,,,,Inactive,0,,,,,,,,,['RB'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
 7744,Antonio Nunn,Antonio,Nunn,WR,,0.0,25.0,71,200,Buffalo,1.0,1996-09-14,,,,Jefferson (FL),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853415280902144'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7864,Artayvious Lynn,Artayvious,Lynn,TE,,0.0,25.0,78,258,TCU,1.0,1996-03-13,,,,Parkway (LA),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853425422729216'},2025-10-29 03:04:12,2025-10-29 03:56:16
-BAL,BAL Defense,BAL,Defense,DEF,BAL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-BUF,BUF Defense,BUF,Defense,DEF,BUF,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+BAL,BAL Defense,BAL,Defense,DST,BAL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+BUF,BUF Defense,BUF,Defense,DST,BUF,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 8021,Branden Mack,Branden,Mack,WR,,86.0,23.0,77,220,Temple,1.0,1998-08-23,,,,Cheltenham (PA),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853452178194432'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7584,Brennan Eagles,Brennan,Eagles,WR,,0.0,,76,229,Texas,1.0,,,,,Alief Taylor (TX),Active,1,,,,,,,,,['WR'],"{'channel_id': '1116853408561627136', 'source_id': '2939a989-10e7-46b3-afbb-8afefa9571ca'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 11612,Bru McCoy,Bru,McCoy,WR,,,,75,230,Tennessee,0.0,,,,,,Active,1,,,,,,,,,['WR'],{'source_id': '08cc7af3-2572-4a83-8d5f-33984d34ef84'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7734,Bruno Labelle,Bruno,Labelle,TE,,0.0,24.0,76,248,Cincinnati,1.0,1997-06-03,,,,College Montmorency (CAN),Active,1,Questionable,Undisclosed,,,,,,,['TE'],"{'channel_id': '1116853413439602688', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-CAR,CAR Defense,CAR,Defense,DEF,CAR,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-CHI,CHI Defense,CHI,Defense,DEF,CHI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-CIN,CIN Defense,CIN,Defense,DEF,CIN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-CLE,CLE Defense,CLE,Defense,DEF,CLE,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+CAR,CAR Defense,CAR,Defense,DST,CAR,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+CHI,CHI Defense,CHI,Defense,DST,CHI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+CIN,CIN Defense,CIN,Defense,DST,CIN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+CLE,CLE Defense,CLE,Defense,DST,CLE,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7624,Carson Williams,Carson,Williams,TE,,86.0,,77,240,Western Kentucky,1.0,,,,,Owen County (KY),Inactive,1,,,,,,,,,['TE'],"{'channel_id': '1116853411573137408', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7735,Cary Angeline,Cary,Angeline,TE,,0.0,24.0,78,250,North Carolina State,1.0,1997-09-07,,,,Downington East (PA),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853413645123584'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7509,Chris Owusu,Chris,Owusu,WR,,17.0,30.0,"6'2""",200,Stanford,8.0,1990-01-06,,,,Oaks Christian (CA),Inactive,0,,,,,,,,,['WR'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
 7983,Collin Hill,Collin,Hill,QB,,0.0,24.0,76,222,South Carolina,1.0,1997-10-09,,,,Dorman (SC),Inactive,1,,,,,,,,,['QB'],"{'channel_id': '1116853446264225792', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 8092,Corey Taylor,Corey,Taylor,RB,,0.0,24.0,70,215,Tulsa,1.0,1997-07-04,,,,Holland Hall (OK),Active,1,,,,,,,,,['RB'],{'channel_id': '1116853465591578624'},2025-10-29 03:04:12,2025-10-29 03:56:16
-DAL,DAL Defense,DAL,Defense,DEF,DAL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-DEN,DEN Defense,DEN,Defense,DEF,DEN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-DET,DET Defense,DET,Defense,DEF,DET,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+DAL,DAL Defense,DAL,Defense,DST,DAL,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+DEN,DEN Defense,DEN,Defense,DST,DEN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+DET,DET Defense,DET,Defense,DST,DET,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 8090,Daniel Crawford,Daniel,Crawford,TE,,80.0,24.0,74,251,Northern Illinois,1.0,1997-12-15,,,,Dakota (MI),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853465197314048'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7623,Darece Roberson,Darece,Roberson,WR,,0.0,23.0,70,170,Wright State,1.0,1998-07-29,,,,Mona Shores (MI),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853411359227904'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7614,Darius Clark,Darius,Clark,RB,,0.0,25.0,74,210,Newberry,1.0,1996-07-06,,,,St. John's (SC),Active,1,Questionable,Knee,,,,,,,['RB'],{'channel_id': '1116853409631174656'},2025-10-29 03:04:12,2025-10-29 03:56:16
@@ -3870,35 +3870,35 @@ DET,DET Defense,DET,Defense,DEF,DET,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-2
 7517,Duplicate Player,Duplicate,Player,WR,,12.0,22.0,"5'9""",175,Southern Mississippi,0.0,1998-07-12,,,,St. Aloysius (MS),Inactive,0,,,,,,,,,['WR'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
 7935,Eli Stove,Eli,Stove,WR,,0.0,,72,191,Auburn,1.0,,,,,Niceville,Inactive,1,,,,,,,,,['WR'],"{'channel_id': '1116853438664146944', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 12454,Eli Stowers,Eli,Stowers,TE,,,,76,235,Vanderbilt,0.0,,,,,,Active,0,,,,,,,,,['TE'],"{'override_active': 'false', 'source_id': '0426e0ff-e19f-4cfb-a25c-649718f06a4d'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-GB,GB Defense,GB,Defense,DEF,GB,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+GB,GB Defense,GB,Defense,DST,GB,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 8095,Graham Adomitis,Graham,Adomitis,TE,,0.0,25.0,76,255,Princeton,1.0,1996-08-15,,,,Pittsburgh Central Catholic (PA),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853465990037504'},2025-10-29 03:04:12,2025-10-29 03:56:16
-HOU,HOU Defense,HOU,Defense,DEF,HOU,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-IND,IND Defense,IND,Defense,DEF,IND,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-JAX,JAX Defense,JAX,Defense,DEF,JAX,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+HOU,HOU Defense,HOU,Defense,DST,HOU,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+IND,IND Defense,IND,Defense,DST,IND,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+JAX,JAX Defense,JAX,Defense,DST,JAX,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7555,Jamie Newman,Jamie,Newman,QB,,10.0,24.0,76,230,Georgia,1.0,1997-12-01,,,,Graham (NC),Inactive,1,,,,,,,,,['QB'],"{'channel_id': '1116853405550116864', 'rookie_year': '2021', 'source_id': 'e4b8ce2f-b39f-478d-9a2f-01800d408f84'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7874,Jeremiah Haydel,Jeremiah,Haydel,WR,,0.0,22.0,72,170,Texas State,1.0,1999-03-25,,,,Alief Taylor (TX),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853427259834368'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7582,Jhamon Ausbon,Jhamon,Ausbon,WR,,48.0,22.0,74,218,Texas A&M,1.0,1999-09-03,,,,IMG Academy (FL),Active,1,,,,,,,,,['WR'],"{'channel_id': '1116853408347717632', 'source_id': '6a489e87-f9cd-4e7c-8d6d-ef71a7089309'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 8039,Jibri Blount,Jibri,Blount,TE,,0.0,25.0,79,230,North Carolina Central,1.0,1996-10-21,,,,St. Vincent-St. Mary (OH),Active,1,,,,,,,,,['TE'],"{'channel_id': '1116853455726575616', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7613,Jonathan Adams,Jonathan,Adams,WR,,82.0,23.0,74,210,Arkansas State,1.0,1999-01-21,,,,Jonesboro (AR),Active,1,,,,,,,,,['WR'],"{'channel_id': '1116853409408876544', 'rookie_year': '2021', 'source_id': 'cc882806-6feb-44f7-b4dd-db02ef34322b'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-KC,KC Defense,KC,Defense,DEF,KC,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+KC,KC Defense,KC,Defense,DST,KC,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7616,Kai Locksley,Kai,Locksley,WR,,0.0,25.0,75,202,Texas-El Paso,1.0,1996-11-17,,,,Gilman (MD),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853410088353792'},2025-10-29 03:04:12,2025-10-29 03:56:16
 8088,Kalif Jackson,Kalif,Jackson,TE,MIA,60.0,,77,255,Grambling State,1.0,,,,,Fletcher (FL),Active,1,,,,,,,,,['TE'],"{'channel_id': '1116853464794660864', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7580,Khalil McClain,Khalil,McClain,WR,,0.0,22.0,76,222,Troy,1.0,1999-03-19,,,,Creekside (GA),Active,1,,,,,,,,,['WR'],"{'channel_id': '1116853407924092928', 'source_id': 'a1e247c7-c272-42ce-a375-61e4864d58d6'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-LAC,LAC Defense,LAC,Defense,DEF,LAC,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-LAR,LAR Defense,LAR,Defense,DEF,LAR,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-LV,LV Defense,LV,Defense,DEF,LV,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+LAC,LAC Defense,LAC,Defense,DST,LAC,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+LAR,LAR Defense,LAR,Defense,DST,LAR,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+LV,LV Defense,LV,Defense,DST,LV,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 8026,Landon Rice,Landon,Rice,TE,,0.0,24.0,77,250,Jacksonville State,1.0,1997-05-06,,,,Calhoun (GA),Inactive,1,,,,,,,,,['TE'],"{'channel_id': '1116853453042221056', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-MIA,MIA Defense,MIA,Defense,DEF,MIA,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-MIN,MIN Defense,MIN,Defense,DEF,MIN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+MIA,MIA Defense,MIA,Defense,DST,MIA,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+MIN,MIN Defense,MIN,Defense,DST,MIN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7545,Marlon Williams,Marlon,Williams,WR,,0.0,,72,215,UCF,1.0,,,,,McGill-Toolen,Inactive,1,,,,,,,,,['WR'],"{'channel_id': '1116853404073721856', 'rookie_year': '2021', 'source_id': '174bdc1d-26b1-49a8-b765-98598be2cc39'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 8074,Matt Seybert,Matt,Seybert,TE,,41.0,24.0,76,252,Michigan State,1.0,1997-05-02,,,,St. Francis (MI),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853462399713280'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7618,Micah Simon,Micah,Simon,WR,CAR,81.0,,73,195,Brigham Young,1.0,,,,,Bishop Dunne (TX),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853410520367104'},2025-10-29 03:04:12,2025-10-29 03:56:16
-NE,NE Defense,NE,Defense,DEF,NE,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-NO,NO Defense,NO,Defense,DEF,NO,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-NYG,NYG Defense,NYG,Defense,DEF,NYG,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-NYJ,NYJ Defense,NYJ,Defense,DEF,NYJ,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-PHI,PHI Defense,PHI,Defense,DEF,PHI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-PIT,PIT Defense,PIT,Defense,DEF,PIT,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+NE,NE Defense,NE,Defense,DST,NE,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+NO,NO Defense,NO,Defense,DST,NO,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+NYG,NYG Defense,NYG,Defense,DST,NYG,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+NYJ,NYJ Defense,NYJ,Defense,DST,NYJ,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+PHI,PHI Defense,PHI,Defense,DST,PHI,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+PIT,PIT Defense,PIT,Defense,DST,PIT,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 8432,Player Invalid,Player,Invalid,TE,,,,,,,0.0,,,,,,Inactive,0,,,,,,,,,['TE'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
 12459,Player Invalid,Player,Invalid,RB,,,,,,,0.0,,,,,,Inactive,0,,,,,,,,,['RB'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
 11572,Player Invalid,Player,Invalid,RB,,,,,,,0.0,,,,,,Inactive,0,,,,,,,,,['RB'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
@@ -3955,15 +3955,15 @@ PIT,PIT Defense,PIT,Defense,DEF,PIT,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-2
 7532,Rakeem Boyd,Rakeem,Boyd,RB,,35.0,,72,206,Arkansas,1.0,,,,,Stratford (TX),Inactive,1,,,,,,,,,['RB'],"{'channel_id': '1116853403188723712', 'rookie_year': '2021', 'source_id': '06938b5f-fc27-4871-89ae-6eda4ea34554'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7988,Riley Lees,Riley,Lees,WR,,12.0,,72,200,Northwestern,1.0,,,,,Libertyville (IL),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853447300218880'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7897,Roland Rivers,Roland,Rivers,QB,,0.0,,75,230,Slippery Rock,1.0,,,,,Martin Luther King (GA),Inactive,1,,,,,,,,,['QB'],"{'channel_id': '1116853431177314304', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-SEA,SEA Defense,SEA,Defense,DEF,SEA,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-SF,SF Defense,SF,Defense,DEF,SF,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+SEA,SEA Defense,SEA,Defense,DST,SEA,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+SF,SF Defense,SF,Defense,DST,SF,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7848,Scooter Harrington,Scooter,Harrington,TE,,0.0,24.0,77,250,Stanford,1.0,1997-09-23,,,,Greenwich (CT),Active,1,,,,,,,,,['TE'],{'channel_id': '1116853422654488576'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7515,Sergio Castillo,Sergio,Castillo,K,,6.0,31.0,71,195,West Texas A&amp;M,8.0,1990-11-01,,,,La Joya (TX),Active,1,,,,,,,,,['K'],{'channel_id': '1116853401179652096'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7960,T.J. Simmons,T.J.,Simmons,WR,,83.0,,74,198,West Virginia,1.0,,,,,Clay-Chalkville (AL),Active,1,,,,,,,,,['WR'],{'channel_id': '1116853442422243328'},2025-10-29 03:04:12,2025-10-29 03:56:16
-TB,TB Defense,TB,Defense,DEF,TB,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
-TEN,TEN Defense,TEN,Defense,DEF,TEN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+TB,TB Defense,TB,Defense,DST,TB,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
+TEN,TEN Defense,TEN,Defense,DST,TEN,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
 7604,Tamorrion Terry,Tamorrion,Terry,WR,,83.0,26.0,75,207,Florida State,0.0,1998-03-21,,,,Turner County (GA),Inactive,0,,,,,,,,,['WR'],"{'override_active': 'false', 'rookie_year': '', 'source_id': 'a24cf311-bc27-468c-9025-4d4ff6faa148'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7518,Taylor Russolino,Taylor,Russolino,K,,0.0,32.0,71,160,Millsaps,2.0,1989-05-23,,,,Archbishop Rummel (LA),Active,1,,,,,,,,,['K'],{'channel_id': '1116853401611665408'},2025-10-29 03:04:12,2025-10-29 03:56:16
 7978,Tre Walker,Tre,Walker,WR,,0.0,,71,180,San Jose State,1.0,,,,,Narbonne (CA),Inactive,1,,,,,,,,,['WR'],"{'channel_id': '1116853445437947904', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
 7949,Trevon Grimes,Trevon,Grimes,WR,,47.0,,76,218,Florida,1.0,,,,,St. Thomas Aquinas (FL),Inactive,1,Questionable,Undisclosed,,,,,,,['WR'],"{'channel_id': '1116853440174096384', 'rookie_year': '2021'}",2025-10-29 03:04:12,2025-10-29 03:56:16
-WAS,WAS Defense,WAS,Defense,DEF,WAS,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-10-29 03:56:16
+WAS,WAS Defense,WAS,Defense,DST,WAS,,,,,,,,,,,,,1,,,,,,,,,['DEF'],None,2025-10-29 03:04:12,2025-11-04 05:13:21
