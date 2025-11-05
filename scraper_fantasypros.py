@@ -80,13 +80,14 @@ class FantasyProsScraper:
             last_name = " ".join(name_parts[1:])
             return first_name, last_name
     
-    def _scrape_position(self, position: str, url: str) -> List[Dict]:
+    def _scrape_position(self, position: str, url: str, week: str) -> List[Dict]:
         """
         Scrape rankings for a specific position.
         
         Args:
             position: Position abbreviation (QB, RB, WR, TE, K, DST)
             url: URL to scrape
+            week: Week identifier (e.g., "Week 9")
         
         Returns:
             List of player projections
@@ -216,7 +217,7 @@ class FantasyProsScraper:
                     if first_name or last_name:
                         projection = {
                             'source': self.source,
-                            'week': 'Week 8',  # FantasyPros shows current week
+                            'week': week,
                             'first_name': first_name,
                             'last_name': last_name,
                             'position': position,
@@ -275,12 +276,12 @@ class FantasyProsScraper:
         # Set minimum at 1.0 point
         return max(1.0, estimated)
     
-    def scrape_week_projections(self, week: str = "Week 8") -> List[Dict]:
+    def scrape_week_projections(self, week: str = "Week 10") -> List[Dict]:
         """
         Scrape projections for all positions.
         
         Args:
-            week: Week string (e.g., "Week 8") - FantasyPros always shows current week
+            week: Week string (e.g., "Week 10") - FantasyPros always shows current week
         
         Returns:
             List of projection dictionaries
@@ -290,14 +291,14 @@ class FantasyProsScraper:
         all_projections = []
         
         for position, url in self.position_urls.items():
-            position_projs = self._scrape_position(position, url)
+            position_projs = self._scrape_position(position, url, week)
             all_projections.extend(position_projs)
             time.sleep(2)  # Be respectful with rate limiting
         
         print(f"\n✓ Total players scraped: {len(all_projections)}")
         return all_projections
     
-    def scrape_and_save(self, week: str = "Week 8"):
+    def scrape_and_save(self, week: str = "Week 10"):
         """Scrape projections and save to database."""
         projections = self.scrape_week_projections(week)
         
@@ -325,5 +326,5 @@ class FantasyProsScraper:
 if __name__ == "__main__":
     # Example usage
     with FantasyProsScraper(headless=False) as scraper:
-        scraper.scrape_and_save(week="Week 8")
+        scraper.scrape_and_save(week="Week 10")
 
