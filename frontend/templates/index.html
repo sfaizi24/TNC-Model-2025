@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Football Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            font-size: 2em;
+            color: #764ba2;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .image-caption {
+            padding: 15px;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+            background: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+            color: #999;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .section-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏈 Fantasy Football Analytics Dashboard</h1>
+        <p class="subtitle">Monte Carlo Simulations & Betting Odds Analysis</p>
+        
+        <!-- Monte Carlo Simulations Section -->
+        <div class="section">
+            <h2 class="section-title">📊 Monte Carlo Simulation Results</h2>
+            <div class="image-grid">
+                <div class="image-card">
+                    <img src="../static/images/simulation_distributions_week_10.png" alt="Team Distributions">
+                    <div class="image-caption">Team Score Distributions</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison">
+                    <div class="image-caption">Box Plot Comparison</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/simulation_violin_week_10.png" alt="Violin Plot">
+                    <div class="image-caption">Violin Plot with Percentiles</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/win_probability_heatmap_week_10.png" alt="Win Probability">
+                    <div class="image-caption">Win Probability Heatmap</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/percentile_ranges_week_10.png" alt="Percentile Ranges">
+                    <div class="image-caption">Percentile Ranges</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/cdf_plot_week_10.png" alt="CDF Plot">
+                    <div class="image-caption">Cumulative Distribution Functions</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Betting Odds Section -->
+        <div class="section">
+            <h2 class="section-title">🎰 Betting Odds Analysis</h2>
+            <div class="image-grid">
+                <div class="image-card">
+                    <img src="../static/images/betting_odds_high_low_week_10.png" alt="High/Low Scorer Odds">
+                    <div class="image-caption">Highest & Lowest Scorer Odds</div>
+                </div>
+                <div class="image-card">
+                    <img src="../static/images/betting_odds_moneyline_week_10.png" alt="Moneyline Odds">
+                    <div class="image-caption">Matchup Moneyline Odds</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated from Monte Carlo simulations (N=50,000) based on player projections</p>
+            <p>Data aggregated from multiple sources: Sleeper, ESPN, FantasyPros, FanDuel, FirstDown</p>
+        </div>
+    </div>
+</body>
+</html>
+

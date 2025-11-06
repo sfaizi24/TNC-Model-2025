@@ -1,6 +1,6 @@
-# Fantasy Football Projections Database
+# Fantasy Football Analytics Platform
 
-A lightweight SQLite database and web scrapers for fantasy football projections from multiple sources.
+A comprehensive fantasy football analytics platform with web scrapers, Monte Carlo simulations, betting odds analysis, and an interactive dashboard.
 
 ## Features
 
@@ -29,6 +29,36 @@ The database includes:
 - `created_at`: Timestamp when record was created
 - `updated_at`: Timestamp when record was last updated
 
+## Project Structure
+
+```
+├── backend/
+│   ├── notebooks/              # Jupyter notebooks for data processing
+│   │   ├── 01_league_control.ipynb
+│   │   ├── 02_projections_control.ipynb
+│   │   ├── 03_post_scraping_processing.ipynb
+│   │   ├── 04_match_projections_to_sleeper.ipynb
+│   │   ├── 05_compute_player_week_stats.ipynb
+│   │   ├── 06_team_lineup_optimizer.ipynb
+│   │   └── 07_monte_carlo_simulations.ipynb
+│   ├── scrapers/               # Web scraper modules
+│   │   ├── scraper_*.py        # Individual scrapers
+│   │   ├── database.py         # Projections database
+│   │   └── database_league.py  # League database
+│   └── data/
+│       ├── csv/                # CSV exports
+│       ├── images/             # Generated visualizations
+│       └── databases/          # SQLite databases
+├── frontend/
+│   ├── templates/
+│   │   └── index.html          # Dashboard web interface
+│   └── static/
+│       └── images/             # Web-accessible images
+├── requirements.txt
+├── .env                        # Configuration (Sleeper credentials)
+└── README.md
+```
+
 ## Installation
 
 1. Install dependencies:
@@ -43,9 +73,18 @@ pip install -r requirements.txt
    playwright install chromium
    ```
 
-3. For Jupyter notebooks (if using `master_control.ipynb`):
+3. Configure environment variables:
+   - Copy `.env.example` to `.env` (if provided) or create a new `.env` file
+   - Add your Sleeper username and league ID:
+   ```
+   SLEEPER_USERNAME=your_username
+   LEAGUE_ID=your_league_id
+   ```
+
+4. For Jupyter notebooks:
    - The FanDuel scraper runs via subprocess to avoid Playwright/asyncio conflicts
    - Other scrapers (Selenium-based) run directly in the notebook
+   - All notebooks are in `backend/notebooks/` and should be run in order
 
 ## Usage
 
@@ -358,10 +397,48 @@ See **[LEAGUE_DATA_GUIDE.md](LEAGUE_DATA_GUIDE.md)** for complete documentation 
 - `nfl_schedules` - Team schedules and bye weeks
 - `transactions` - Trades, adds, drops
 
+## Workflow
+
+The platform follows a sequential workflow:
+
+1. **League Control** (`01_league_control.ipynb`) - Fetch Sleeper league data
+2. **Projections Control** (`02_projections_control.ipynb`) - Run scrapers for player projections
+3. **Post-Scraping Processing** (`03_post_scraping_processing.ipynb`) - Clean and standardize data
+4. **Match to Sleeper** (`04_match_projections_to_sleeper.ipynb`) - Link projections to Sleeper player IDs
+5. **Player Stats** (`05_compute_player_week_stats.ipynb`) - Calculate mean/variance for each player
+6. **Lineup Optimizer** (`06_team_lineup_optimizer.ipynb`) - Generate optimal lineups for each team
+7. **Monte Carlo** (`07_monte_carlo_simulations.ipynb`) - Run 50,000 simulations and generate betting odds
+
+## Web Dashboard
+
+A simple web dashboard displays all generated visualizations:
+
+```bash
+# Open in browser
+open frontend/templates/index.html
+```
+
+Or serve with a simple HTTP server:
+```bash
+cd frontend
+python -m http.server 8000
+# Visit http://localhost:8000/templates/index.html
+```
+
+The dashboard shows:
+- Monte Carlo simulation results (distributions, box plots, violin plots)
+- Win probability heatmaps
+- Percentile ranges
+- Cumulative distribution functions
+- Betting odds analysis (highest/lowest scorer, moneylines)
+
 ## Future Enhancements
 
 - [ ] Add more projection sources
-- [ ] Add API endpoint for web app integration
+- [x] **Web dashboard for visualizations**
+- [x] **Monte Carlo simulations**
+- [x] **Betting odds calculator**
+- [ ] Add API endpoint for dynamic data
 - [ ] Add scheduling for automatic daily updates
 - [ ] Export functionality (CSV, JSON)
 - [ ] Historical projection tracking

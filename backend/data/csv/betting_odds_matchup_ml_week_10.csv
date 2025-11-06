@@ -1,0 +1,7 @@
+matchup,team1_id,team1_name,team1_win_prob,team1_ml,team2_id,team2_name,team2_win_prob,team2_ml,ties
+Team 2 vs Team 5,2,Team 2,0.43112,+132,5,Team 5,0.56888,-132,0
+Team 3 vs Team 4,3,Team 3,0.64638,-183,4,Team 4,0.35362,+183,0
+Team 6 vs Team 8,6,Team 6,0.69656,-230,8,Team 8,0.30344,+230,0
+Team 1 vs Team 12,1,Team 1,0.53248,-114,12,Team 12,0.46752,+114,0
+Team 9 vs Team 11,9,Team 9,0.4215,+137,11,Team 11,0.5785,-137,0
+Team 7 vs Team 10,7,Team 7,0.4719,+112,10,Team 10,0.5281,-112,0
