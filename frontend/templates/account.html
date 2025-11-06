@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Account - Fantasy Football Analytics{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 32px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
+    
+    .account-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .account-card {
+        background: var(--fanduel-gray);
+        border-radius: 12px;
+        padding: 25px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .account-card h3 {
+        color: var(--fanduel-blue);
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .info-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .btn-edit {
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-edit:hover {
+        background: #0D7FE8;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-premium {
+        background: rgba(20, 147, 255, 0.2);
+        color: var(--fanduel-blue);
+    }
+    
+    .badge-active {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--success-green);
+    }
+    
+    @media (min-width: 768px) {
+        .page-title {
+            font-size: 42px;
+        }
+        
+        .account-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">👤 Account Settings</h1>
+    <p class="page-subtitle">Manage your profile and preferences</p>
+</div>
+
+<div class="account-grid">
+    <div class="account-card">
+        <h3>Profile Information</h3>
+        <div class="info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">John Doe</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">john.doe@example.com</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">@johndoe123</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Member Since</span>
+            <span class="info-value">January 2024</span>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn-edit">Edit Profile</button>
+        </div>
+    </div>
+    
+    <div class="account-card">
+        <h3>Subscription</h3>
+        <div class="info-row">
+            <span class="info-label">Plan</span>
+            <span class="info-value">
+                Premium <span class="badge badge-premium">PRO</span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value">
+                <span class="badge badge-active">Active</span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Renewal Date</span>
+            <span class="info-value">December 1, 2025</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Monthly Cost</span>
+            <span class="info-value">$19.99</span>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn-edit">Manage Subscription</button>
+        </div>
+    </div>
+    
+    <div class="account-card">
+        <h3>Security</h3>
+        <div class="info-row">
+            <span class="info-label">Password</span>
+            <span class="info-value">••••••••</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Two-Factor Auth</span>
+            <span class="info-value">
+                <span class="badge badge-active">Enabled</span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Last Login</span>
+            <span class="info-value">Today at 2:45 PM</span>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn-edit">Security Settings</button>
+        </div>
+    </div>
+    
+    <div class="account-card">
+        <h3>Preferences</h3>
+        <div class="info-row">
+            <span class="info-label">League</span>
+            <span class="info-value">NFL 2025 Season</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Notifications</span>
+            <span class="info-value">
+                <span class="badge badge-active">On</span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Data Sources</span>
+            <span class="info-value">All (5)</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Auto-Refresh</span>
+            <span class="info-value">Every Hour</span>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn-edit">Edit Preferences</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

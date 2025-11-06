@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Betting - Fantasy Football Analytics{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 32px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
+    
+    .betting-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid var(--fanduel-light-gray);
+        overflow-x: auto;
+    }
+    
+    .betting-tab {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .betting-tab.active {
+        color: var(--fanduel-blue);
+        border-bottom-color: var(--fanduel-blue);
+    }
+    
+    .betting-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .betting-card {
+        background: var(--fanduel-gray);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--fanduel-light-gray);
+        transition: all 0.3s ease;
+    }
+    
+    .betting-card:hover {
+        border-color: var(--fanduel-blue);
+    }
+    
+    .matchup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .team-info {
+        flex: 1;
+    }
+    
+    .team-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 16px;
+    }
+    
+    .team-record {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 3px;
+    }
+    
+    .vs-divider {
+        padding: 0 15px;
+        color: var(--text-secondary);
+        font-weight: bold;
+    }
+    
+    .odds-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .odds-item {
+        text-align: center;
+        padding: 12px;
+        background: var(--fanduel-dark);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .odds-item:hover {
+        background: var(--fanduel-light-gray);
+    }
+    
+    .odds-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+    }
+    
+    .odds-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--fanduel-blue);
+    }
+    
+    .positive {
+        color: var(--success-green);
+    }
+    
+    .btn-place-bet {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-place-bet:hover {
+        background: #0D7FE8;
+    }
+    
+    .prop-bets {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .prop-bet {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: var(--fanduel-dark);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .prop-bet:hover {
+        background: var(--fanduel-light-gray);
+    }
+    
+    .prop-description {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .prop-odds {
+        color: var(--fanduel-blue);
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    @media (min-width: 768px) {
+        .page-title {
+            font-size: 42px;
+        }
+        
+        .betting-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .prop-bets {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">🎰 Betting Lines</h1>
+    <p class="page-subtitle">Live odds and predictions based on Monte Carlo simulations</p>
+</div>
+
+<div class="betting-tabs">
+    <button class="betting-tab active">Matchups</button>
+    <button class="betting-tab">Player Props</button>
+    <button class="betting-tab">Team Totals</button>
+    <button class="betting-tab">Live Bets</button>
+</div>
+
+<div class="betting-grid">
+    <div class="betting-card">
+        <div class="matchup-header">
+            <div class="team-info">
+                <div class="team-name">Team 6: Team 6(Uljibraan)</div>
+                <div class="team-record">8-2 • 1st Place</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="team-info" style="text-align: right;">
+                <div class="team-name">Team 3: Team 3(amir812)</div>
+                <div class="team-record">6-4 • 4th Place</div>
+            </div>
+        </div>
+        <div class="odds-container">
+            <div class="odds-item">
+                <div class="odds-label">Moneyline</div>
+                <div class="odds-value">-145</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Spread</div>
+                <div class="odds-value">-3.5</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Total</div>
+                <div class="odds-value">O 245.5</div>
+            </div>
+        </div>
+        <button class="btn-place-bet">Place Bet</button>
+    </div>
+    
+    <div class="betting-card">
+        <div class="matchup-header">
+            <div class="team-info">
+                <div class="team-name">Team 10: Team 10(monkeyman86669686)</div>
+                <div class="team-record">7-3 • 2nd Place</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="team-info" style="text-align: right;">
+                <div class="team-name">Team 5: Team 5(nTBK41)</div>
+                <div class="team-record">5-5 • 6th Place</div>
+            </div>
+        </div>
+        <div class="odds-container">
+            <div class="odds-item">
+                <div class="odds-label">Moneyline</div>
+                <div class="odds-value">-175</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Spread</div>
+                <div class="odds-value">-5.0</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Total</div>
+                <div class="odds-value">O 238.0</div>
+            </div>
+        </div>
+        <button class="btn-place-bet">Place Bet</button>
+    </div>
+    
+    <div class="betting-card">
+        <div class="matchup-header">
+            <div class="team-info">
+                <div class="team-name">Team 11: Team 11(Amneedy)</div>
+                <div class="team-record">6-4 • 3rd Place</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="team-info" style="text-align: right;">
+                <div class="team-name">Team 7: Team 7(mehdi4risa)</div>
+                <div class="team-record">4-6 • 7th Place</div>
+            </div>
+        </div>
+        <div class="odds-container">
+            <div class="odds-item">
+                <div class="odds-label">Moneyline</div>
+                <div class="odds-value">-120</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Spread</div>
+                <div class="odds-value">-2.5</div>
+            </div>
+            <div class="odds-item">
+                <div class="odds-label">Total</div>
+                <div class="odds-value">O 242.0</div>
+            </div>
+        </div>
+        <button class="btn-place-bet">Place Bet</button>
+    </div>
+    
+    <div class="betting-card">
+        <h3 style="color: var(--fanduel-blue); margin-bottom: 15px;">Featured Player Props</h3>
+        <div class="prop-bets">
+            <div class="prop-bet">
+                <span class="prop-description">Highest Scorer</span>
+                <span class="prop-odds positive">+185</span>
+            </div>
+            <div class="prop-bet">
+                <span class="prop-description">Lowest Scorer</span>
+                <span class="prop-odds">-220</span>
+            </div>
+            <div class="prop-bet">
+                <span class="prop-description">Top QB Performance</span>
+                <span class="prop-odds positive">+150</span>
+            </div>
+            <div class="prop-bet">
+                <span class="prop-description">Top RB Performance</span>
+                <span class="prop-odds positive">+125</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: var(--fanduel-gray); border-radius: 12px; border: 1px solid var(--fanduel-light-gray);">
+    <h3 style="color: var(--fanduel-blue); margin-bottom: 15px;">📈 Odds Based on Analytics</h3>
+    <p style="color: var(--text-secondary); line-height: 1.6;">
+        All betting lines are calculated using Monte Carlo simulations with 50,000 iterations based on 
+        player projections from 5 premium data sources. Our analytics provide edge insights that help 
+        you make informed betting decisions.
+    </p>
+</div>
+{% endblock %}

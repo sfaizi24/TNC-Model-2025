@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, redirect, url_for
 import os
 
 app = Flask(__name__, 
@@ -7,8 +7,28 @@ app = Flask(__name__,
 
 @app.route('/')
 def index():
-    """Render the main dashboard."""
-    return render_template('index.html')
+    """Redirect to login page."""
+    return redirect(url_for('login'))
+
+@app.route('/login')
+def login():
+    """Render the login page."""
+    return render_template('login.html')
+
+@app.route('/analytics')
+def analytics():
+    """Render the analytics dashboard."""
+    return render_template('analytics.html')
+
+@app.route('/account')
+def account():
+    """Render the account page."""
+    return render_template('account.html')
+
+@app.route('/betting')
+def betting():
+    """Render the betting page."""
+    return render_template('betting.html')
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):

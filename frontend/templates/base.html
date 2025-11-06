@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fantasy Football Analytics{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --fanduel-blue: #1493FF;
+            --fanduel-dark: #0D1117;
+            --fanduel-darker: #010409;
+            --fanduel-gray: #161B22;
+            --fanduel-light-gray: #30363D;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8B949E;
+            --success-green: #3FB950;
+            --warning-yellow: #D29922;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: var(--fanduel-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--fanduel-darker);
+            border-bottom: 1px solid var(--fanduel-light-gray);
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--fanduel-blue);
+            text-decoration: none;
+        }
+        
+        .desktop-nav {
+            display: none;
+            gap: 5px;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--fanduel-gray);
+        }
+        
+        .nav-link.active {
+            color: var(--fanduel-blue);
+            background: rgba(20, 147, 255, 0.1);
+        }
+        
+        .mobile-menu-btn {
+            display: block;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: var(--fanduel-darker);
+            border-bottom: 1px solid var(--fanduel-light-gray);
+            padding: 20px;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .mobile-nav.active {
+            display: flex;
+        }
+        
+        .mobile-nav .nav-link {
+            padding: 12px 16px;
+            display: block;
+        }
+        
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .desktop-nav {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <a href="/login" class="logo">⚡ FantasyAnalytics</a>
+            
+            <nav class="desktop-nav">
+                <a href="/login" class="nav-link {% if request.path == '/login' %}active{% endif %}">Login</a>
+                <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+                <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
+                <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
+            </nav>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </header>
+    
+    <nav class="mobile-nav" id="mobileNav">
+        <a href="/login" class="nav-link {% if request.path == '/login' %}active{% endif %}">Login</a>
+        <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+        <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
+        <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
+    </nav>
+    
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script>
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            mobileNav.classList.toggle('active');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const mobileNav = document.getElementById('mobileNav');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (!mobileNav.contains(event.target) && !menuBtn.contains(event.target)) {
+                mobileNav.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
