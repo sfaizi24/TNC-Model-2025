@@ -17,4 +17,6 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     # Bind to 0.0.0.0:5000 for Replit environment
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use environment variable for debug mode (only enable in development)
+    debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
