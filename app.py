@@ -194,6 +194,36 @@ def get_highest_scorer():
         traceback.print_exc()
         return jsonify([])
 
+@app.route('/api/lowest_scorer')
+@require_login
+def get_lowest_scorer():
+    try:
+        conn = sqlite3.connect(ODDS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT owner, probability, odds
+            FROM betting_odds_lowest_scorer
+            WHERE week = 10
+            ORDER BY probability DESC
+        """)
+        
+        teams = []
+        for row in cursor.fetchall():
+            teams.append({
+                'owner': row['owner'],
+                'win_prob': round(row['probability'] * 100, 1),
+                'odds': row['odds']
+            })
+        
+        conn.close()
+        return jsonify(teams)
+    except Exception as e:
+        print(f"Error getting lowest scorer: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/lineup/<owner>')
 @require_login
 def get_lineup(owner):
@@ -297,6 +327,65 @@ def place_bet():
             bet = Bet(
                 user_id=current_user.id,
                 bet_type='highest_scorer',
+                description=description,
+                week=week,
+                amount=amount,
+                odds=odds,
+                potential_win=potential_win,
+                status='pending',
+                created_at=datetime.now()
+            )
+            
+            db.session.add(bet)
+            
+            weekly_stat.bets_placed += 1
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            
+            db.session.commit()
+            
+            return jsonify({'success': True, 'new_balance': current_user.account_balance})
+        
+        # Handle lowest scorer bets
+        if bet_type == 'lowest_scorer':
+            owner = data.get('owner')
+            odds = data.get('odds')
+            
+            if not owner or not odds:
+                return jsonify({'success': False, 'error': 'Missing required data'})
+            
+            # Calculate potential win
+            odds_num = int(odds.replace('+', ''))
+            if odds.startswith('+'):
+                potential_win = amount * (odds_num / 100)
+            else:
+                potential_win = amount * (100 / abs(odds_num))
+            
+            week = 10
+            weekly_stat = db.session.query(WeeklyStats).filter_by(
+                user_id=current_user.id,
+                week=week
+            ).first()
+            
+            if not weekly_stat:
+                weekly_stat = WeeklyStats(
+                    user_id=current_user.id,
+                    week=week,
+                    starting_balance=current_user.account_balance,
+                    ending_balance=current_user.account_balance,
+                    pnl=0.0,
+                    bets_placed=0,
+                    bets_won=0
+                )
+                db.session.add(weekly_stat)
+            
+            current_user.account_balance -= amount
+            
+            description = f"{owner}: Lowest Scorer {odds}"
+            
+            bet = Bet(
+                user_id=current_user.id,
+                bet_type='lowest_scorer',
                 description=description,
                 week=week,
                 amount=amount,
