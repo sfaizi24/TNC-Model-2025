@@ -53,28 +53,27 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
-  - **Replit Auth Integration**:
-    - Migrated from custom username/password authentication to Replit Auth (OpenID Connect)
-    - Authentication now supports Google, GitHub, X, Apple, and email/password login methods
-    - User database migrated from SQLite to PostgreSQL for production reliability
+  - **Simple Email/Password Authentication System**:
+    - Implemented custom email/password authentication (no OAuth providers)
+    - User database using PostgreSQL for production reliability
     - Database Models:
-      - `User`: Replit user profile with balance tracking (starts at $1,000)
-      - `OAuth`: OAuth token storage for Replit Auth sessions
+      - `User`: Email, password_hash, balance tracking (starts at $1,000), username (optional)
       - `Bet`: User betting history with week tracking
       - `WeeklyStats`: Weekly performance metrics (PnL, bets placed, bets won)
-    - Tech Stack Updates:
-      - Added Flask-SQLAlchemy for PostgreSQL ORM
-      - Added Flask-Login for session management
-      - Added Flask-Dance for OAuth2/OpenID Connect
-      - Added PyJWT for token decoding
-    - Auth Endpoints:
-      - `/auth`: Initiates Replit Auth login flow
-      - `/auth/logout`: Logs out and redirects to Replit logout
-      - All protected routes use `@require_login` decorator
+    - Tech Stack:
+      - Flask-SQLAlchemy for PostgreSQL ORM
+      - Flask-Login for session management
+      - werkzeug.security for password hashing (generate_password_hash, check_password_hash)
+    - Auth Routes:
+      - `/login`: GET displays login/register forms, POST handles login
+      - `/register`: POST handles new user registration
+      - `/logout`: Ends user session and redirects to home
+      - All protected routes use `@login_required` decorator
     - User Experience:
-      - Single sign-on with Replit account
+      - Login/Register tabs on landing page for easy access
       - Automatic $1,000 balance for new users
-      - Profile info from Replit (name, email, profile picture)
+      - Navigation shows/hides account page based on authentication status
+      - Clean, modern forms matching FanDuel design system
   
   - **Analytics Page Integration with Real Data**:
     - Added team dropdown populated from `backend/data/databases/league.db` (12 teams)
