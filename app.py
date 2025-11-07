@@ -171,8 +171,7 @@ def place_bet():
     from datetime import datetime
     
     data = request.get_json()
-    matchup_idx = data.get('matchup_idx')
-    team = data.get('team')
+    bet_type = data.get('bet_type', 'moneyline')
     amount = float(data.get('amount', 0))
     
     if amount <= 0:
@@ -182,6 +181,76 @@ def place_bet():
         return jsonify({'success': False, 'error': 'Insufficient balance'})
     
     try:
+        # Handle team over/under bets
+        if bet_type == 'team_ou':
+            team_idx = data.get('team_idx')
+            choice = data.get('choice')  # 'over' or 'under'
+            
+            conn = sqlite3.connect(ODDS_DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM betting_odds_team_ou WHERE week = 10 ORDER BY owner")
+            teams = cursor.fetchall()
+            conn.close()
+            
+            if team_idx >= len(teams):
+                return jsonify({'success': False, 'error': 'Invalid team'})
+            
+            team_data = teams[team_idx]
+            owner = team_data['owner']
+            line = team_data['line']
+            
+            # Even money bet - win equals bet amount
+            potential_win = amount
+            
+            week = 10
+            weekly_stat = db.session.query(WeeklyStats).filter_by(
+                user_id=current_user.id,
+                week=week
+            ).first()
+            
+            if not weekly_stat:
+                weekly_stat = WeeklyStats(
+                    user_id=current_user.id,
+                    week=week,
+                    starting_balance=current_user.account_balance,
+                    ending_balance=current_user.account_balance,
+                    pnl=0.0,
+                    bets_placed=0,
+                    bets_won=0
+                )
+                db.session.add(weekly_stat)
+            
+            current_user.account_balance -= amount
+            
+            description = f"{owner} O/U {line:.1f}: {choice.capitalize()}"
+            
+            bet = Bet(
+                user_id=current_user.id,
+                bet_type='team_ou',
+                description=description,
+                week=week,
+                amount=amount,
+                odds='EVEN',
+                potential_win=potential_win,
+                status='pending',
+                created_at=datetime.now()
+            )
+            
+            db.session.add(bet)
+            
+            weekly_stat.bets_placed += 1
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            
+            db.session.commit()
+            
+            return jsonify({'success': True, 'new_balance': current_user.account_balance})
+        
+        # Handle moneyline bets (original logic)
+        matchup_idx = data.get('matchup_idx')
+        team = data.get('team')
+        
         # Get team owner mapping
         league_conn = sqlite3.connect(LEAGUE_DB_PATH)
         league_conn.row_factory = sqlite3.Row

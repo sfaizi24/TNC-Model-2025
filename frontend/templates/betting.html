@@ -103,6 +103,14 @@
         display: none;
     }
     
+    .team-line {
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    
     .teams-container {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
@@ -670,16 +678,26 @@ async function loadActiveBets() {
         
         // Render compact bets at top
         compactContainer.innerHTML = activeBetsData.map(bet => {
-            const parts = bet.description.split(':');
-            if (parts.length < 2) {
-                return '';
+            let betInfo = '';
+            
+            if (bet.description.includes('O/U')) {
+                // Team performance bet - format: "Owner O/U 113.3: Over"
+                betInfo = `${bet.description.replace(':', '')} $${bet.amount.toFixed(0)}`;
+            } else {
+                // Moneyline bet - format: "Owner1 vs Owner2: Team Odds"
+                const parts = bet.description.split(':');
+                if (parts.length < 2) {
+                    return '';
+                }
+                const teamAndOdds = parts[1].trim();
+                const lastSpaceIdx = teamAndOdds.lastIndexOf(' ');
+                const teamName = lastSpaceIdx > 0 ? teamAndOdds.substring(0, lastSpaceIdx) : teamAndOdds;
+                betInfo = `${teamName} Moneyline $${bet.amount.toFixed(0)}`;
             }
-            const teamAndOdds = parts[1].trim();
-            const lastSpaceIdx = teamAndOdds.lastIndexOf(' ');
-            const teamName = lastSpaceIdx > 0 ? teamAndOdds.substring(0, lastSpaceIdx) : teamAndOdds;
+            
             return `
                 <div class="compact-bet-item">
-                    <div class="compact-bet-info">${teamName} Moneyline $${bet.amount.toFixed(0)}</div>
+                    <div class="compact-bet-info">${betInfo}</div>
                     <button class="compact-bet-remove" onclick="removeBet(${bet.id})">Remove</button>
                 </div>
             `;
@@ -736,9 +754,9 @@ function renderTeamPerformance() {
     grid.innerHTML = allTeams.map((t, idx) => {
         return `
             <div class="matchup-card">
+                <div class="team-line">${t.owner} to score ${t.line.toFixed(1)} points</div>
                 <div class="teams-container">
                     <div class="team-section">
-                        <div class="team-name">${t.owner} to score ${t.line.toFixed(1)} points</div>
                         <div class="win-prob">${(t.under_prob * 100).toFixed(1)}% win</div>
                         <button class="odds-button" 
                                 onclick="selectTeamOdds(${idx}, 'under')" 
@@ -748,7 +766,6 @@ function renderTeamPerformance() {
                     </div>
                     <div class="vs-text">OR</div>
                     <div class="team-section">
-                        <div class="team-name">&nbsp;</div>
                         <div class="win-prob">${(t.over_prob * 100).toFixed(1)}% win</div>
                         <button class="odds-button" 
                                 onclick="selectTeamOdds(${idx}, 'over')" 
@@ -832,7 +849,45 @@ async function placeTeamBet(teamIdx) {
         return;
     }
     
-    alert('Team performance betting coming soon! This will be connected once the backend supports it.');
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'team_ou',
+                team_idx: teamIdx,
+                choice: selected.choice,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            document.getElementById(`team-amount-${teamIdx}`).value = '';
+            document.getElementById(`team-potential-${teamIdx}`).textContent = '';
+            document.getElementById(`team-btn-${teamIdx}`).disabled = true;
+            document.getElementById(`team-btn-${teamIdx}`).textContent = 'Place Bet';
+            
+            const btn1 = document.getElementById(`team-odds-${teamIdx}-over`);
+            const btn2 = document.getElementById(`team-odds-${teamIdx}-under`);
+            btn1.classList.remove('selected');
+            btn2.classList.remove('selected');
+            
+            delete selectedTeamBets[teamIdx];
+            
+            loadActiveBets();
+            alert('Bet placed successfully!');
+        } else {
+            alert(result.error || 'Failed to place bet');
+        }
+    } catch (error) {
+        console.error('Error placing team bet:', error);
+        alert('Failed to place bet');
+    }
 }
 
 // Initialize - load bets first, then matchups and team performance
