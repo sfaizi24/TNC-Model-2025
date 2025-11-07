@@ -53,27 +53,31 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
-  - **Simple Email/Password Authentication System**:
-    - Implemented custom email/password authentication (no OAuth providers)
-    - User database using PostgreSQL for production reliability
+  - **Replit Auth Integration**:
+    - Migrated to Replit Auth (OpenID Connect OAuth)
+    - Authentication supports multiple login methods via Replit:
+      - Google, GitHub, X (Twitter), Apple sign-in
+      - Email/password authentication
+    - User database using PostgreSQL
     - Database Models:
-      - `User`: Email, password_hash, balance tracking (starts at $1,000), username (optional)
+      - `User`: Replit user ID (String), profile info, balance tracking (starts at $1,000)
+      - `OAuth`: OAuth token storage for Replit Auth sessions
       - `Bet`: User betting history with week tracking
       - `WeeklyStats`: Weekly performance metrics (PnL, bets placed, bets won)
     - Tech Stack:
       - Flask-SQLAlchemy for PostgreSQL ORM
       - Flask-Login for session management
-      - werkzeug.security for password hashing (generate_password_hash, check_password_hash)
+      - Flask-Dance for OAuth2/OpenID Connect
+      - PyJWT for token decoding
     - Auth Routes:
-      - `/login`: GET displays login/register forms, POST handles login
-      - `/register`: POST handles new user registration
-      - `/logout`: Ends user session and redirects to home
-      - All protected routes use `@login_required` decorator
+      - `/auth/login`: Initiates Replit Auth login flow
+      - `/auth/logout`: Logs out and redirects to Replit logout
+      - All protected routes use `@require_login` decorator
     - User Experience:
-      - Login/Register tabs on landing page for easy access
+      - Single sign-on with Replit account
       - Automatic $1,000 balance for new users
-      - Navigation shows/hides account page based on authentication status
-      - Clean, modern forms matching FanDuel design system
+      - Landing page with login button and feature highlights
+      - Navigation shows/hides based on authentication status
   
   - **Analytics Page Integration with Real Data**:
     - Added team dropdown populated from `backend/data/databases/league.db` (12 teams)

@@ -28,3 +28,9 @@ Flask-Login
 Flask-SQLAlchemy
 psycopg2-binary
 PyJWT
+flask-dance
+flask-login
+oauthlib
+pyjwt
+sqlalchemy
+werkzeug

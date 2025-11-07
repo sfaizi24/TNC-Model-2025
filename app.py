@@ -2,16 +2,11 @@ from flask import Flask, render_template, send_from_directory, redirect, url_for
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 import sys
 import sqlite3
 import json
 
 logging.basicConfig(level=logging.DEBUG)
-
-class Base(DeclarativeBase):
-    pass
 
 app = Flask(__name__, 
             template_folder='frontend/templates',
@@ -26,26 +21,28 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
 }
 
-db = SQLAlchemy(app, model_class=Base)
-
 LEAGUE_DB_PATH = 'backend/data/databases/league.db'
 PROJECTIONS_DB_PATH = 'backend/data/databases/projections.db'
 
+# Initialize database
+from database import db
+db.init_app(app)
+
+# Create tables
 with app.app_context():
-    import models
+    import models  # noqa: F401
     db.create_all()
     logging.info("Database tables created")
 
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+# Import Replit Auth
+from replit_auth import login_manager, make_replit_blueprint, require_login
+from flask_login import current_user
 
-login_manager = LoginManager()
+# Initialize login manager
 login_manager.init_app(app)
-login_manager.login_view = 'login'
 
-@login_manager.user_loader
-def load_user(user_id):
-    from models import User
-    return db.session.get(User, int(user_id))
+# Register Replit Auth blueprint
+app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
 
 @app.before_request
 def make_session_permanent():
@@ -57,64 +54,13 @@ def index():
         return redirect(url_for('betting'))
     return render_template('login.html')
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('betting'))
-    
-    if request.method == 'POST':
-        from models import User
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        user = db.session.query(User).filter_by(email=email).first()
-        
-        if user and user.check_password(password):
-            login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('betting'))
-        else:
-            flash('Invalid email or password', 'error')
-    
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('betting'))
-    
-    if request.method == 'POST':
-        from models import User
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        if db.session.query(User).filter_by(email=email).first():
-            flash('Email already registered', 'error')
-            return render_template('login.html')
-        
-        user = User(email=email)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        
-        login_user(user)
-        return redirect(url_for('betting'))
-    
-    return render_template('login.html')
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
-
 @app.route('/analytics')
-@login_required
+@require_login
 def analytics():
     return render_template('analytics.html', user=current_user)
 
 @app.route('/account')
-@login_required
+@require_login
 def account():
     from models import Bet, WeeklyStats
     bets = db.session.query(Bet).filter_by(user_id=current_user.id).order_by(Bet.created_at.desc()).limit(20).all()
@@ -122,12 +68,12 @@ def account():
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
-@login_required
+@require_login
 def betting():
     return render_template('betting.html', user=current_user)
 
 @app.route('/api/place_bet', methods=['POST'])
-@login_required
+@require_login
 def place_bet():
     from models import Bet, WeeklyStats
     from datetime import datetime
@@ -185,7 +131,7 @@ def serve_static(filename):
     return send_from_directory('frontend/static', filename)
 
 @app.route('/api/teams')
-@login_required
+@require_login
 def get_teams():
     try:
         conn = sqlite3.connect(LEAGUE_DB_PATH)
@@ -214,7 +160,7 @@ def get_teams():
         return jsonify({'teams': []})
 
 @app.route('/api/team_players')
-@login_required
+@require_login
 def get_team_players():
     team_owner = request.args.get('team')
     if not team_owner:

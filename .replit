@@ -1,6 +1,7 @@
 modules = ["web", "python-3.11", "postgresql-16"]
 [agent]
 expertMode = true
+integrations = ["python_log_in_with_replit:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -33,6 +34,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 42603
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"

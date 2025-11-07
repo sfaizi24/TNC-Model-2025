@@ -1,255 +1,158 @@
 {% extends "base.html" %}
 
-{% block title %}Login - TNCasino{% endblock %}
+{% block title %}Welcome - TNCasino{% endblock %}
 
 {% block content %}
 <style>
-    .login-container {
-        max-width: 450px;
-        margin: 60px auto;
-        background: var(--fanduel-gray);
-        border-radius: 12px;
-        padding: 40px;
-        border: 1px solid var(--fanduel-light-gray);
-    }
-    
-    .login-header {
+    .landing-container {
+        max-width: 500px;
+        margin: 80px auto;
         text-align: center;
-        margin-bottom: 30px;
+        padding: 0 20px;
     }
     
-    .login-header h1 {
+    .landing-header h1 {
         color: var(--fanduel-blue);
-        font-size: 28px;
-        margin-bottom: 10px;
-    }
-    
-    .login-header p {
-        color: var(--text-secondary);
-        font-size: 14px;
-        line-height: 1.6;
-        margin-top: 15px;
-    }
-    
-    .btn-primary {
-        width: 100%;
-        padding: 16px;
-        background: var(--fanduel-blue);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-primary:hover {
-        background: #0D7FE8;
-        transform: translateY(-1px);
-    }
-    
-    .form-group {
+        font-size: 48px;
         margin-bottom: 20px;
+        font-weight: 800;
     }
     
-    .form-group label {
-        display: block;
-        color: var(--text-primary);
-        font-size: 14px;
-        font-weight: 600;
+    .landing-header p {
+        color: var(--text-secondary);
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+    
+    .prize-banner {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .prize-banner h2 {
+        color: white;
+        font-size: 32px;
+        font-weight: 800;
         margin-bottom: 8px;
     }
     
-    .form-group input {
-        width: 100%;
-        padding: 14px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
-        border-radius: 6px;
-        color: var(--text-primary);
+    .prize-banner p {
+        color: rgba(255, 255, 255, 0.95);
         font-size: 16px;
-        box-sizing: border-box;
+        margin: 5px 0;
     }
     
-    .form-group input:focus {
-        outline: none;
-        border-color: var(--fanduel-blue);
-    }
-    
-    .tabs {
-        display: flex;
-        margin-bottom: 25px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
-    }
-    
-    .tab {
-        flex: 1;
-        padding: 12px;
-        text-align: center;
-        cursor: pointer;
-        color: var(--text-secondary);
+    .login-btn {
+        display: inline-block;
+        width: 100%;
+        padding: 18px 40px;
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
         font-weight: 600;
+        cursor: pointer;
         transition: all 0.3s ease;
-        border-bottom: 3px solid transparent;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(20, 147, 255, 0.3);
     }
     
-    .tab.active {
-        color: var(--fanduel-blue);
-        border-bottom-color: var(--fanduel-blue);
-    }
-    
-    .tab:hover {
-        color: var(--text-primary);
-    }
-    
-    .form-container {
-        display: none;
-    }
-    
-    .form-container.active {
-        display: block;
-    }
-    
-    .error-message {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgb(239, 68, 68);
-        color: rgb(239, 68, 68);
-        padding: 12px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-        font-size: 14px;
+    .login-btn:hover {
+        background: #0D7FE8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(20, 147, 255, 0.4);
     }
     
     .features {
-        margin-top: 30px;
-        padding-top: 30px;
-        border-top: 1px solid var(--fanduel-light-gray);
+        margin-top: 50px;
+        text-align: left;
     }
     
-    .features h3 {
+    .feature {
+        display: flex;
+        align-items: start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: var(--fanduel-gray);
+        border-radius: 8px;
+    }
+    
+    .feature-icon {
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+    
+    .feature-text h3 {
         color: var(--text-primary);
-        font-size: 18px;
-        margin-bottom: 15px;
-        text-align: center;
-    }
-    
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .feature-list li {
-        padding: 12px 0;
-        color: var(--text-secondary);
-        font-size: 14px;
-        line-height: 1.6;
-    }
-    
-    .feature-list li strong {
-        color: var(--fanduel-blue);
-    }
-    
-    .prize-box {
-        background: var(--fanduel-dark);
-        border: 2px solid var(--success-green);
-        border-radius: 12px;
-        padding: 25px;
-        margin: 25px 0;
-        text-align: center;
-    }
-    
-    .prize-amount {
-        font-size: 42px;
-        font-weight: bold;
-        color: var(--success-green);
+        font-size: 16px;
+        font-weight: 600;
         margin-bottom: 5px;
     }
     
-    .prize-label {
+    .feature-text p {
         color: var(--text-secondary);
         font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    @media (max-width: 768px) {
+        .landing-header h1 {
+            font-size: 36px;
+        }
+        
+        .prize-banner h2 {
+            font-size: 24px;
+        }
     }
 </style>
 
-<div class="login-container">
-    <div class="login-header">
-        <h1>Welcome to TNCasino</h1>
-        <div class="prize-box">
-            <div class="prize-amount">$1,000</div>
-            <div class="prize-label">IN FREE BETS!</div>
-        </div>
-        <p>Sign in or create an account to start betting</p>
+<div class="landing-container">
+    <div class="landing-header">
+        <h1>⚡ Welcome to TNCasino</h1>
+        <p>Your fantasy football betting platform with real-time analytics and competitive prizes</p>
     </div>
     
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="error-message">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('login')">Login</div>
-        <div class="tab" onclick="showTab('register')">Register</div>
+    <div class="prize-banner">
+        <h2>$1,000</h2>
+        <p>IN FREE BETS!</p>
+        <p style="margin-top: 15px; font-size: 14px;">Weekly Prize: $20 for P&L Leader</p>
+        <p style="font-size: 14px;">Season Prize: $100 for Overall P&L Leader</p>
     </div>
     
-    <div id="login-form" class="form-container active">
-        <form method="POST" action="{{ url_for('login') }}">
-            <div class="form-group">
-                <label for="login-email">Email</label>
-                <input type="email" id="login-email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" name="password" required>
-            </div>
-            <button type="submit" class="btn-primary">Sign In</button>
-        </form>
-    </div>
-    
-    <div id="register-form" class="form-container">
-        <form method="POST" action="{{ url_for('register') }}">
-            <div class="form-group">
-                <label for="register-email">Email</label>
-                <input type="email" id="register-email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="register-password">Password</label>
-                <input type="password" id="register-password" name="password" required minlength="6">
-            </div>
-            <button type="submit" class="btn-primary">Create Account</button>
-        </form>
-    </div>
+    <a href="{{ url_for('replit_auth.login') }}" class="login-btn">
+        Sign In to Get Started
+    </a>
     
     <div class="features">
-        <h3>What You Get:</h3>
-        <ul class="feature-list">
-            <li><strong>$1,000</strong> in free bets to start</li>
-            <li><strong>Weekly Prize:</strong> $20 for the PnL leader each week</li>
-            <li><strong>Season Prize:</strong> $100 for the overall PnL leader</li>
-            <li><strong>Real-Time:</strong> Live matchup odds and analytics</li>
-        </ul>
+        <div class="feature">
+            <div class="feature-icon">📊</div>
+            <div class="feature-text">
+                <h3>Advanced Analytics</h3>
+                <p>Monte Carlo simulations and real-time player projections from multiple sources</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">💰</div>
+            <div class="feature-text">
+                <h3>Weekly Betting</h3>
+                <p>Place bets on fantasy matchups with live odds and instant results</p>
+            </div>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-text">
+                <h3>Compete for Prizes</h3>
+                <p>Track your performance and compete for weekly and season-long cash prizes</p>
+            </div>
+        </div>
     </div>
 </div>
-
-<script>
-function showTab(tab) {
-    const tabs = document.querySelectorAll('.tab');
-    const forms = document.querySelectorAll('.form-container');
-    
-    tabs.forEach(t => t.classList.remove('active'));
-    forms.forEach(f => f.classList.remove('active'));
-    
-    if (tab === 'login') {
-        tabs[0].classList.add('active');
-        document.getElementById('login-form').classList.add('active');
-    } else {
-        tabs[1].classList.add('active');
-        document.getElementById('register-form').classList.add('active');
-    }
-}
-</script>
 {% endblock %}
