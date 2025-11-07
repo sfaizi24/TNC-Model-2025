@@ -5,27 +5,10 @@
 {% block content %}
 <style>
     .page-header {
-        margin-bottom: 30px;
+        margin-bottom: 15px;
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-    
-    .header-left {
-        flex: 1;
-    }
-    
-    .page-title {
-        font-size: 32px;
-        color: var(--text-primary);
-        margin-bottom: 10px;
-    }
-    
-    .page-subtitle {
-        color: var(--text-secondary);
-        font-size: 16px;
     }
     
     .balance-display {
@@ -85,50 +68,50 @@
     .matchups-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 12px;
         margin-bottom: 30px;
     }
     
     .matchup-card {
         background: var(--fanduel-gray);
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: 8px;
+        padding: 12px;
         border: 1px solid var(--fanduel-light-gray);
         position: relative;
     }
     
     .matchup-card.has-bet {
         border: 2px solid var(--success-green);
-        box-shadow: 0 0 15px rgba(40, 167, 69, 0.2);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.15);
     }
     
     .bet-placed-badge {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 8px;
+        right: 8px;
         background: var(--success-green);
         color: white;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-size: 10px;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
     }
     
     .matchup-title {
         text-align: center;
         color: var(--text-secondary);
-        font-size: 14px;
-        margin-bottom: 15px;
+        font-size: 11px;
+        margin-bottom: 10px;
     }
     
     .teams-container {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
-        gap: 15px;
+        gap: 10px;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
     
     .team-section {
@@ -138,25 +121,25 @@
     .team-name {
         font-weight: 600;
         color: var(--text-primary);
-        font-size: 18px;
-        margin-bottom: 10px;
+        font-size: 13px;
+        margin-bottom: 6px;
     }
     
     .win-prob {
         color: var(--text-secondary);
-        font-size: 13px;
-        margin-bottom: 12px;
+        font-size: 10px;
+        margin-bottom: 8px;
     }
     
     .odds-button {
         width: 100%;
-        padding: 12px;
+        padding: 8px;
         background: var(--fanduel-dark);
         border: 2px solid var(--fanduel-light-gray);
-        border-radius: 8px;
+        border-radius: 6px;
         color: var(--fanduel-blue);
         font-weight: bold;
-        font-size: 18px;
+        font-size: 14px;
         cursor: pointer;
         transition: all 0.3s ease;
     }
@@ -183,28 +166,28 @@
     .vs-text {
         color: var(--text-secondary);
         font-weight: bold;
-        font-size: 14px;
+        font-size: 11px;
     }
     
     .bet-controls {
         border-top: 1px solid var(--fanduel-light-gray);
-        padding-top: 15px;
+        padding-top: 10px;
     }
     
     .bet-input-group {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
     
     .bet-input-label {
         color: var(--text-secondary);
-        font-size: 13px;
-        margin-bottom: 8px;
+        font-size: 11px;
+        margin-bottom: 5px;
         display: block;
     }
     
     .bet-amount-input {
         width: 100%;
-        padding: 12px;
+        padding: 8px;
         background: var(--fanduel-dark);
         border: 1px solid var(--fanduel-light-gray);
         border-radius: 6px;
@@ -240,6 +223,43 @@
     .btn-place-bet:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+    
+    .active-bets-compact {
+        margin-bottom: 20px;
+    }
+    
+    .compact-bet-item {
+        background: var(--fanduel-gray);
+        border-radius: 6px;
+        padding: 8px 12px;
+        border: 1px solid var(--fanduel-light-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .compact-bet-info {
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .compact-bet-remove {
+        background: transparent;
+        border: 1px solid var(--text-secondary);
+        color: var(--text-secondary);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .compact-bet-remove:hover {
+        border-color: #dc3545;
+        color: #dc3545;
     }
     
     .active-bets-section {
@@ -372,14 +392,13 @@
 </style>
 
 <div class="page-header">
-    <div class="header-left">
-        <h1 class="page-title">🎰 Betting Lines</h1>
-        <p class="page-subtitle">Live odds based on Monte Carlo simulations</p>
-    </div>
     <div class="balance-display">
         <div class="balance-label">Available Balance</div>
         <div class="balance-amount" id="userBalance">${{ "%.2f"|format(user.account_balance) }}</div>
     </div>
+</div>
+
+<div class="active-bets-compact" id="activeBetsCompact">
 </div>
 
 <div class="betting-tabs">
@@ -393,13 +412,6 @@
 <div id="matchups-moneyline" class="betting-content active">
     <div class="matchups-grid" id="matchupsGrid">
         <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading matchups...</p>
-    </div>
-    
-    <div class="active-bets-section">
-        <h2 class="section-title">Your Active Bets</h2>
-        <div id="activeBetsList">
-            <div class="no-bets">No active bets yet. Place your first bet above!</div>
-        </div>
     </div>
 </div>
 
@@ -475,7 +487,7 @@ function renderMatchups() {
     });
     
     grid.innerHTML = allMatchups.map((m, idx) => {
-        const hasBet = betMap[m.original_matchup] || false;
+        const hasBet = betMap[m.matchup] || betMap[m.original_matchup] || false;
         return `
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
@@ -626,29 +638,30 @@ async function loadActiveBets() {
         const response = await fetch('/api/my_bets');
         activeBetsData = await response.json();
         
-        const container = document.getElementById('activeBetsList');
+        const compactContainer = document.getElementById('activeBetsCompact');
         
         if (activeBetsData.length === 0) {
-            container.innerHTML = '<div class="no-bets">No active bets yet. Place your first bet above!</div>';
-            renderMatchups(); // Re-render to remove bet indicators
+            compactContainer.innerHTML = '';
+            renderMatchups();
             return;
         }
         
-        container.innerHTML = activeBetsData.map(bet => `
-            <div class="bet-item">
-                <div class="bet-item-header">
-                    <div class="bet-description">${bet.description}</div>
-                    <div class="bet-amount-display">$${bet.amount.toFixed(2)}</div>
+        // Render compact bets at top
+        compactContainer.innerHTML = activeBetsData.map(bet => {
+            const parts = bet.description.split(':');
+            if (parts.length < 2) {
+                return '';
+            }
+            const teamAndOdds = parts[1].trim();
+            const lastSpaceIdx = teamAndOdds.lastIndexOf(' ');
+            const teamName = lastSpaceIdx > 0 ? teamAndOdds.substring(0, lastSpaceIdx) : teamAndOdds;
+            return `
+                <div class="compact-bet-item">
+                    <div class="compact-bet-info">${teamName} Moneyline $${bet.amount.toFixed(0)}</div>
+                    <button class="compact-bet-remove" onclick="removeBet(${bet.id})">Remove</button>
                 </div>
-                <div class="bet-details">
-                    Odds: ${bet.odds} | Potential Win: $${bet.potential_win.toFixed(2)} | 
-                    Status: <span style="color: var(--warning-yellow);">${bet.status}</span>
-                </div>
-                <div class="bet-actions">
-                    <button class="btn-remove-bet" onclick="removeBet(${bet.id})">Remove Bet</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         // Re-render matchups with bet indicators
         renderMatchups();

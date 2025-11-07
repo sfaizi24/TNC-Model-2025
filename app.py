@@ -151,6 +151,22 @@ def place_bet():
         return jsonify({'success': False, 'error': 'Insufficient balance'})
     
     try:
+        # Get team owner mapping
+        league_conn = sqlite3.connect(LEAGUE_DB_PATH)
+        league_conn.row_factory = sqlite3.Row
+        league_cursor = league_conn.cursor()
+        league_cursor.execute("""
+            SELECT r.roster_id, u.display_name, u.username
+            FROM rosters r
+            LEFT JOIN users u ON r.owner_id = u.user_id
+        """)
+        team_mapping = {}
+        for row in league_cursor.fetchall():
+            owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
+            team_mapping[row['roster_id']] = owner_name
+        league_conn.close()
+        
+        # Get matchups
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -163,11 +179,15 @@ def place_bet():
         
         matchup = matchups[matchup_idx]
         
+        team1_owner = team_mapping.get(matchup['team1_id'], f"Team {matchup['team1_id']}")
+        team2_owner = team_mapping.get(matchup['team2_id'], f"Team {matchup['team2_id']}")
+        matchup_display = f"{team1_owner} vs {team2_owner}"
+        
         if team == 'team1':
-            team_name = matchup['team1_name']
+            team_name = team1_owner
             odds = matchup['team1_ml']
         elif team == 'team2':
-            team_name = matchup['team2_name']
+            team_name = team2_owner
             odds = matchup['team2_ml']
         else:
             return jsonify({'success': False, 'error': 'Invalid team'})
@@ -198,7 +218,7 @@ def place_bet():
         
         current_user.account_balance -= amount
         
-        description = f"{matchup['matchup']}: {team_name} {odds}"
+        description = f"{matchup_display}: {team_name} {odds}"
         
         bet = Bet(
             user_id=current_user.id,
