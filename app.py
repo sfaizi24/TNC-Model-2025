@@ -257,6 +257,65 @@ def place_bet():
         return jsonify({'success': False, 'error': 'Insufficient balance'})
     
     try:
+        # Handle highest scorer bets
+        if bet_type == 'highest_scorer':
+            owner = data.get('owner')
+            odds = data.get('odds')
+            
+            if not owner or not odds:
+                return jsonify({'success': False, 'error': 'Missing required data'})
+            
+            # Calculate potential win
+            odds_num = int(odds.replace('+', ''))
+            if odds.startswith('+'):
+                potential_win = amount * (odds_num / 100)
+            else:
+                potential_win = amount * (100 / abs(odds_num))
+            
+            week = 10
+            weekly_stat = db.session.query(WeeklyStats).filter_by(
+                user_id=current_user.id,
+                week=week
+            ).first()
+            
+            if not weekly_stat:
+                weekly_stat = WeeklyStats(
+                    user_id=current_user.id,
+                    week=week,
+                    starting_balance=current_user.account_balance,
+                    ending_balance=current_user.account_balance,
+                    pnl=0.0,
+                    bets_placed=0,
+                    bets_won=0
+                )
+                db.session.add(weekly_stat)
+            
+            current_user.account_balance -= amount
+            
+            description = f"{owner}: Highest Scorer {odds}"
+            
+            bet = Bet(
+                user_id=current_user.id,
+                bet_type='highest_scorer',
+                description=description,
+                week=week,
+                amount=amount,
+                odds=odds,
+                potential_win=potential_win,
+                status='pending',
+                created_at=datetime.now()
+            )
+            
+            db.session.add(bet)
+            
+            weekly_stat.bets_placed += 1
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            
+            db.session.commit()
+            
+            return jsonify({'success': True, 'new_balance': current_user.account_balance})
+        
         # Handle team over/under bets
         if bet_type == 'team_ou':
             team_idx = data.get('team_idx')
