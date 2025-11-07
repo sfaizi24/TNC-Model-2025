@@ -4,6 +4,7 @@ from functools import wraps
 import sys
 sys.path.append('backend/scrapers')
 from database_users import UsersDB
+from database import ProjectionsDB
 
 app = Flask(__name__, 
             template_folder='frontend/templates',
@@ -11,6 +12,7 @@ app = Flask(__name__,
 app.secret_key = os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production')
 
 db = UsersDB()
+proj_db = ProjectionsDB()
 
 def login_required(f):
     """Decorator to require login."""
@@ -109,6 +111,32 @@ def place_bet():
 def serve_static(filename):
     """Serve static files (images)."""
     return send_from_directory('frontend/static', filename)
+
+@app.route('/api/teams')
+@login_required
+def get_teams():
+    """API endpoint to get list of teams."""
+    try:
+        teams = proj_db.get_all_team_owners(week="10")
+        return jsonify({'teams': teams})
+    except Exception as e:
+        print(f"Error getting teams: {e}")
+        return jsonify({'teams': []})
+
+@app.route('/api/team_players')
+@login_required
+def get_team_players():
+    """API endpoint to get players for a specific team."""
+    team = request.args.get('team')
+    if not team:
+        return jsonify({'error': 'Team parameter required'}), 400
+    
+    try:
+        players = proj_db.get_player_stats(week="10", team_owner=team)
+        return jsonify({'players': players})
+    except Exception as e:
+        print(f"Error getting team players: {e}")
+        return jsonify({'players': []})
 
 if __name__ == '__main__':
     # Bind to 0.0.0.0:5000 for Replit environment
