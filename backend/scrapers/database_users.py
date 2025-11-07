@@ -127,14 +127,65 @@ class UsersDB:
         """, (amount, amount, user_id))
         self.conn.commit()
     
+    def update_weekly_stats(self, user_id: int, week: int, starting_balance: float = None):
+        """Update or create weekly stats for a user."""
+        cursor = self.conn.cursor()
+        user = self.get_user(user_id)
+        if not user:
+            return
+        
+        cursor.execute("""
+            SELECT * FROM weekly_stats 
+            WHERE user_id = ? AND week = ?
+        """, (user_id, week))
+        existing = cursor.fetchone()
+        
+        cursor.execute("""
+            SELECT COUNT(*) as total, 
+                   SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as won
+            FROM bets 
+            WHERE user_id = ? AND week = ?
+        """, (user_id, week))
+        bet_stats = cursor.fetchone()
+        
+        ending_balance = user['account_balance']
+        
+        if existing:
+            pnl = ending_balance - existing['starting_balance']
+            bets_won = bet_stats['won'] if bet_stats['won'] else 0
+            
+            cursor.execute("""
+                UPDATE weekly_stats 
+                SET ending_balance = ?, pnl = ?, bets_placed = ?, bets_won = ?
+                WHERE user_id = ? AND week = ?
+            """, (ending_balance, pnl, bet_stats['total'], bets_won, user_id, week))
+        else:
+            if starting_balance is None:
+                starting_balance = user['account_balance']
+            pnl = ending_balance - starting_balance
+            bets_won = bet_stats['won'] if bet_stats['won'] else 0
+            
+            cursor.execute("""
+                INSERT INTO weekly_stats (user_id, week, starting_balance, ending_balance, pnl, bets_placed, bets_won)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (user_id, week, starting_balance, ending_balance, pnl, 
+                  bet_stats['total'], bets_won))
+        
+        self.conn.commit()
+    
     def place_bet(self, user_id: int, bet_type: str, description: str, 
                   amount: float, odds: str, potential_win: float, week: int = None) -> Optional[int]:
-        """Place a bet."""
+        """Place a bet and update weekly stats."""
         cursor = self.conn.cursor()
         
         user = self.get_user(user_id)
         if not user or user['account_balance'] < amount:
             return None
+        
+        if week is None:
+            week = 10
+        
+        starting_balance_before_bet = user['account_balance']
         
         cursor.execute("""
             INSERT INTO bets (user_id, bet_type, description, amount, odds, potential_win, week)
@@ -142,6 +193,7 @@ class UsersDB:
         """, (user_id, bet_type, description, amount, odds, potential_win, week))
         
         self.update_balance(user_id, -amount)
+        self.update_weekly_stats(user_id, week, starting_balance_before_bet)
         self.conn.commit()
         return cursor.lastrowid
     
@@ -157,7 +209,7 @@ class UsersDB:
         return [dict(row) for row in cursor.fetchall()]
     
     def settle_bet(self, bet_id: int, won: bool):
-        """Settle a bet."""
+        """Settle a bet and update weekly stats."""
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM bets WHERE id = ?", (bet_id,))
         bet = cursor.fetchone()
@@ -176,6 +228,7 @@ class UsersDB:
         if won:
             self.update_balance(bet['user_id'], bet['potential_win'])
         
+        self.update_weekly_stats(bet['user_id'], bet['week'])
         self.conn.commit()
     
     def get_weekly_stats(self, user_id: int, week: int) -> Optional[Dict]:
