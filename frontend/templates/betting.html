@@ -637,9 +637,8 @@
 </div>
 
 <div id="lowest-scorer" class="betting-content">
-    <div class="coming-soon">
-        <h3>Lowest Scorer Bets</h3>
-        <p>Coming soon...</p>
+    <div class="matchups-grid" id="lowestScorerGrid">
+        <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading lowest scorer bets...</p>
     </div>
 </div>
 
@@ -1203,6 +1202,10 @@ function renderTeamLineup(idx, lineup) {
 let allHighestScorer = [];
 let selectedHighestScorerTeam = null;
 
+// Store lowest scorer data globally
+let allLowestScorer = [];
+let selectedLowestScorerTeam = null;
+
 // Load highest scorer
 async function loadHighestScorer() {
     try {
@@ -1405,12 +1408,195 @@ function renderHighestScorerLineup(idx, lineup) {
     `;
 }
 
+// Load lowest scorer
+async function loadLowestScorer() {
+    try {
+        const response = await fetch('/api/lowest_scorer');
+        allLowestScorer = await response.json();
+        renderLowestScorer();
+    } catch (error) {
+        console.error('Error loading lowest scorer:', error);
+    }
+}
+
+// Render lowest scorer bets
+function renderLowestScorer() {
+    const grid = document.getElementById('lowestScorerGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Lowest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const betControls = `
+        <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
+            <input type="number" class="bet-amount-input" id="ls-global-amount" 
+                   placeholder="Bet Amount" min="0" step="0.01">
+            <button class="btn-place-bet" id="ls-global-btn" onclick="placeLowestScorerBet()" disabled>
+                Place Bet
+            </button>
+        </div>
+    `;
+    
+    const teams = allLowestScorer.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ls-card-${idx}" onclick="selectLowestScorerTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-win-prob">${t.win_prob}% Win</div>
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                </div>
+                <button class="show-teams-btn" onclick="toggleLowestScorerLineup(event, ${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="ls-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="ls-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = betControls + teams;
+    
+    // Update button state
+    document.getElementById('ls-global-amount').addEventListener('input', updateLowestScorerButton);
+}
+
+function updateLowestScorerButton() {
+    const amount = parseFloat(document.getElementById('ls-global-amount').value);
+    const btn = document.getElementById('ls-global-btn');
+    btn.disabled = !(selectedLowestScorerTeam !== null && amount > 0);
+}
+
+function selectLowestScorerTeam(idx) {
+    // Deselect previous team
+    if (selectedLowestScorerTeam !== null) {
+        const prevCard = document.getElementById(`ls-card-${selectedLowestScorerTeam}`);
+        if (prevCard) prevCard.classList.remove('selected');
+    }
+    
+    // Select new team
+    selectedLowestScorerTeam = idx;
+    const card = document.getElementById(`ls-card-${idx}`);
+    if (card) card.classList.add('selected');
+    
+    updateLowestScorerButton();
+}
+
+async function placeLowestScorerBet() {
+    if (selectedLowestScorerTeam === null) {
+        alert('Please select a team');
+        return;
+    }
+    
+    const amount = parseFloat(document.getElementById('ls-global-amount').value);
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid bet amount');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        alert('Insufficient balance');
+        return;
+    }
+    
+    const team = allLowestScorer[selectedLowestScorerTeam];
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'lowest_scorer',
+                owner: team.owner,
+                odds: team.odds,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            document.getElementById('ls-global-amount').value = '';
+            const card = document.getElementById(`ls-card-${selectedLowestScorerTeam}`);
+            if (card) card.classList.remove('selected');
+            selectedLowestScorerTeam = null;
+            document.getElementById('ls-global-btn').disabled = true;
+            
+            loadActiveBets();
+            alert('Bet placed successfully!');
+        } else {
+            alert(result.error || 'Failed to place bet');
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        alert('Failed to place bet');
+    }
+}
+
+async function toggleLowestScorerLineup(event, idx, owner) {
+    event.stopPropagation(); // Prevent card selection when clicking show team
+    
+    const container = document.getElementById(`ls-lineups-${idx}`);
+    const arrow = document.getElementById(`ls-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineup if not cached
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderLowestScorerLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderLowestScorerLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderLowestScorerLineup(idx, lineup) {
+    const container = document.getElementById(`ls-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
 // Initialize - load bets first, then matchups and team performance
 async function initialize() {
     await loadActiveBets();
     await loadMatchups();
     await loadTeamPerformance();
     await loadHighestScorer();
+    await loadLowestScorer();
 }
 
 initialize();
