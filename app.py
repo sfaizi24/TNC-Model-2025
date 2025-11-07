@@ -78,6 +78,25 @@ ODDS_DB_PATH = 'backend/data/databases/odds.db'
 @require_login
 def get_matchups():
     try:
+        # Get team ID to owner name mapping from league database
+        league_conn = sqlite3.connect(LEAGUE_DB_PATH)
+        league_conn.row_factory = sqlite3.Row
+        league_cursor = league_conn.cursor()
+        
+        league_cursor.execute("""
+            SELECT r.roster_id, u.display_name, u.username
+            FROM rosters r
+            LEFT JOIN users u ON r.owner_id = u.user_id
+        """)
+        
+        team_mapping = {}
+        for row in league_cursor.fetchall():
+            owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
+            team_mapping[row['roster_id']] = owner_name
+        
+        league_conn.close()
+        
+        # Get matchup odds
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -90,14 +109,17 @@ def get_matchups():
         
         matchups = []
         for row in cursor.fetchall():
+            team1_owner = team_mapping.get(row['team1_id'], f"Team {row['team1_id']}")
+            team2_owner = team_mapping.get(row['team2_id'], f"Team {row['team2_id']}")
+            
             matchups.append({
-                'matchup': row['matchup'],
+                'matchup': f"{team1_owner} vs {team2_owner}",
                 'team1_id': row['team1_id'],
-                'team1_name': row['team1_name'],
+                'team1_name': team1_owner,
                 'team1_win_prob': row['team1_win_prob'],
                 'team1_ml': row['team1_ml'],
                 'team2_id': row['team2_id'],
-                'team2_name': row['team2_name'],
+                'team2_name': team2_owner,
                 'team2_win_prob': row['team2_win_prob'],
                 'team2_ml': row['team2_ml']
             })

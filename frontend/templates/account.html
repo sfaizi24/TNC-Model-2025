@@ -289,7 +289,7 @@
             <tbody>
                 {% for bet in bets %}
                 <tr>
-                    <td>{{ bet.created_at[:10] }}</td>
+                    <td>{{ bet.created_at.strftime('%Y-%m-%d') }}</td>
                     <td>{{ bet.description }}</td>
                     <td>{{ bet.bet_type }}</td>
                     <td>${{ "%.2f"|format(bet.amount) }}</td>

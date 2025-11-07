@@ -94,6 +94,26 @@
         border-radius: 12px;
         padding: 20px;
         border: 1px solid var(--fanduel-light-gray);
+        position: relative;
+    }
+    
+    .matchup-card.has-bet {
+        border: 2px solid var(--success-green);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.2);
+    }
+    
+    .bet-placed-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--success-green);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .matchup-title {
@@ -402,15 +422,36 @@ document.querySelectorAll('.betting-tab').forEach(tab => {
     });
 });
 
+// Store matchups globally
+let allMatchups = [];
+let activeBetsData = [];
+
 // Load matchups
 async function loadMatchups() {
     try {
         const response = await fetch('/api/matchups');
-        const matchups = await response.json();
-        
-        const grid = document.getElementById('matchupsGrid');
-        grid.innerHTML = matchups.map((m, idx) => `
-            <div class="matchup-card">
+        allMatchups = await response.json();
+        renderMatchups();
+    } catch (error) {
+        console.error('Error loading matchups:', error);
+    }
+}
+
+// Render matchups with bet indicators
+function renderMatchups() {
+    const grid = document.getElementById('matchupsGrid');
+    
+    // Create a map of matchup descriptions to bet status
+    const betMap = {};
+    activeBetsData.forEach(bet => {
+        betMap[bet.description.split(':')[0]] = true;
+    });
+    
+    grid.innerHTML = allMatchups.map((m, idx) => {
+        const hasBet = betMap[m.matchup] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="matchup-title">${m.matchup}</div>
                 <div class="teams-container">
                     <div class="team-section">
@@ -447,10 +488,6 @@ async function loadMatchups() {
                 </div>
             </div>
         `).join('');
-        
-    } catch (error) {
-        console.error('Error loading matchups:', error);
-    }
 }
 
 // Select odds
@@ -559,16 +596,17 @@ async function placeBet(matchupIdx) {
 async function loadActiveBets() {
     try {
         const response = await fetch('/api/my_bets');
-        const bets = await response.json();
+        activeBetsData = await response.json();
         
         const container = document.getElementById('activeBetsList');
         
-        if (bets.length === 0) {
+        if (activeBetsData.length === 0) {
             container.innerHTML = '<div class="no-bets">No active bets yet. Place your first bet above!</div>';
+            renderMatchups(); // Re-render to remove bet indicators
             return;
         }
         
-        container.innerHTML = bets.map(bet => `
+        container.innerHTML = activeBetsData.map(bet => `
             <div class="bet-item">
                 <div class="bet-item-header">
                     <div class="bet-description">${bet.description}</div>
@@ -583,6 +621,9 @@ async function loadActiveBets() {
                 </div>
             </div>
         `).join('');
+        
+        // Re-render matchups with bet indicators
+        renderMatchups();
     } catch (error) {
         console.error('Error loading active bets:', error);
     }
@@ -610,8 +651,12 @@ async function removeBet(betId) {
     }
 }
 
-// Initialize
-loadMatchups();
-loadActiveBets();
+// Initialize - load bets first, then matchups
+async function initialize() {
+    await loadActiveBets();
+    await loadMatchups();
+}
+
+initialize();
 </script>
 {% endblock %}
