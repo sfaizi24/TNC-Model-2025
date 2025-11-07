@@ -1,28 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}Account - Fantasy Football Analytics{% endblock %}
+{% block title %}Account - TNCasino{% endblock %}
 
 {% block content %}
 <style>
     .page-header {
         margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
     }
     
     .page-title {
         font-size: 32px;
         color: var(--text-primary);
+        margin-bottom: 0;
+    }
+    
+    .logout-btn {
+        padding: 10px 24px;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .logout-btn:hover {
+        background: var(--fanduel-light-gray);
+    }
+    
+    .balance-card {
+        background: linear-gradient(135deg, var(--fanduel-blue), #0D7FE8);
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(20, 147, 255, 0.3);
+    }
+    
+    .balance-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .balance-amount {
+        font-size: 56px;
+        font-weight: bold;
+        color: white;
         margin-bottom: 10px;
     }
     
-    .page-subtitle {
-        color: var(--text-secondary);
-        font-size: 16px;
+    .balance-pnl {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+    
+    .positive {
+        color: var(--success-green);
+    }
+    
+    .negative {
+        color: #ff4444;
     }
     
     .account-grid {
         display: grid;
         grid-template-columns: 1fr;
         gap: 20px;
+        margin-bottom: 30px;
     }
     
     .account-card {
@@ -62,22 +116,41 @@
         font-weight: 600;
     }
     
-    .btn-edit {
-        background: var(--fanduel-blue);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
+    .bets-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 12px;
+        background: var(--fanduel-dark);
+        color: var(--text-secondary);
+        font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        text-transform: uppercase;
     }
     
-    .btn-edit:hover {
-        background: #0D7FE8;
+    td {
+        padding: 15px 12px;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+        color: var(--text-primary);
     }
     
-    .badge {
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    tr:hover td {
+        background: var(--fanduel-dark);
+    }
+    
+    .bet-status {
         display: inline-block;
         padding: 4px 12px;
         border-radius: 12px;
@@ -85,14 +158,50 @@
         font-weight: 600;
     }
     
-    .badge-premium {
-        background: rgba(20, 147, 255, 0.2);
-        color: var(--fanduel-blue);
+    .status-pending {
+        background: rgba(210, 153, 34, 0.2);
+        color: var(--warning-yellow);
     }
     
-    .badge-active {
+    .status-won {
         background: rgba(63, 185, 80, 0.2);
         color: var(--success-green);
+    }
+    
+    .status-lost {
+        background: rgba(255, 68, 68, 0.2);
+        color: #ff4444;
+    }
+    
+    .no-bets {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-secondary);
+    }
+    
+    .weekly-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .stat-card {
+        background: var(--fanduel-dark);
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .stat-card .week-label {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .stat-card .pnl-value {
+        font-size: 24px;
+        font-weight: bold;
     }
     
     @media (min-width: 768px) {
@@ -107,105 +216,108 @@
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">👤 Account Settings</h1>
-    <p class="page-subtitle">Manage your profile and preferences</p>
+    <h1 class="page-title">💼 My Account</h1>
+    <a href="/logout" class="logout-btn">Logout</a>
+</div>
+
+<div class="balance-card">
+    <div class="balance-label">Account Balance</div>
+    <div class="balance-amount">${{ "%.2f"|format(user.account_balance) }}</div>
+    <div class="balance-pnl {% if user.total_pnl >= 0 %}positive{% else %}negative{% endif %}">
+        Total P&L: {% if user.total_pnl >= 0 %}+{% endif %} ${{ "%.2f"|format(user.total_pnl) }}
+    </div>
 </div>
 
 <div class="account-grid">
     <div class="account-card">
         <h3>Profile Information</h3>
         <div class="info-row">
-            <span class="info-label">Full Name</span>
-            <span class="info-value">John Doe</span>
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ user.username }}</span>
         </div>
         <div class="info-row">
             <span class="info-label">Email</span>
-            <span class="info-value">john.doe@example.com</span>
+            <span class="info-value">{{ user.email }}</span>
         </div>
+        {% if user.full_name %}
         <div class="info-row">
-            <span class="info-label">Username</span>
-            <span class="info-value">@johndoe123</span>
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ user.full_name }}</span>
         </div>
+        {% endif %}
         <div class="info-row">
             <span class="info-label">Member Since</span>
-            <span class="info-value">January 2024</span>
-        </div>
-        <div style="margin-top: 20px;">
-            <button class="btn-edit">Edit Profile</button>
+            <span class="info-value">{{ user.created_at[:10] }}</span>
         </div>
     </div>
     
     <div class="account-card">
-        <h3>Subscription</h3>
-        <div class="info-row">
-            <span class="info-label">Plan</span>
-            <span class="info-value">
-                Premium <span class="badge badge-premium">PRO</span>
-            </span>
+        <h3>Weekly Performance</h3>
+        {% if weekly_stats %}
+        <div class="weekly-stats-grid">
+            {% for stat in weekly_stats[:4] %}
+            <div class="stat-card">
+                <div class="week-label">Week {{ stat.week }}</div>
+                <div class="pnl-value {% if stat.pnl >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if stat.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.pnl) }}
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="info-row">
-            <span class="info-label">Status</span>
-            <span class="info-value">
-                <span class="badge badge-active">Active</span>
-            </span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Renewal Date</span>
-            <span class="info-value">December 1, 2025</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Monthly Cost</span>
-            <span class="info-value">$19.99</span>
-        </div>
-        <div style="margin-top: 20px;">
-            <button class="btn-edit">Manage Subscription</button>
-        </div>
+        {% else %}
+        <p class="no-bets">No weekly stats yet. Start betting!</p>
+        {% endif %}
     </div>
-    
-    <div class="account-card">
-        <h3>Security</h3>
-        <div class="info-row">
-            <span class="info-label">Password</span>
-            <span class="info-value">••••••••</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Two-Factor Auth</span>
-            <span class="info-value">
-                <span class="badge badge-active">Enabled</span>
-            </span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Last Login</span>
-            <span class="info-value">Today at 2:45 PM</span>
-        </div>
-        <div style="margin-top: 20px;">
-            <button class="btn-edit">Security Settings</button>
-        </div>
+</div>
+
+<div class="account-card">
+    <h3>Betting History</h3>
+    {% if bets %}
+    <div class="bets-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Odds</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bet in bets %}
+                <tr>
+                    <td>{{ bet.created_at[:10] }}</td>
+                    <td>{{ bet.description }}</td>
+                    <td>{{ bet.bet_type }}</td>
+                    <td>${{ "%.2f"|format(bet.amount) }}</td>
+                    <td>{{ bet.odds }}</td>
+                    <td>
+                        <span class="bet-status status-{{ bet.status }}">
+                            {{ bet.status.capitalize() }}
+                        </span>
+                    </td>
+                    <td class="{% if bet.result > 0 %}positive{% elif bet.result < 0 %}negative{% endif %}">
+                        {% if bet.result != 0 %}
+                            {% if bet.result > 0 %}+{% endif %}${{ "%.2f"|format(bet.result) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <div class="account-card">
-        <h3>Preferences</h3>
-        <div class="info-row">
-            <span class="info-label">League</span>
-            <span class="info-value">NFL 2025 Season</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Notifications</span>
-            <span class="info-value">
-                <span class="badge badge-active">On</span>
-            </span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Data Sources</span>
-            <span class="info-value">All (5)</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Auto-Refresh</span>
-            <span class="info-value">Every Hour</span>
-        </div>
-        <div style="margin-top: 20px;">
-            <button class="btn-edit">Edit Preferences</button>
-        </div>
+    {% else %}
+    <div class="no-bets">
+        <p>No betting history yet.</p>
+        <p style="margin-top: 10px;">
+            <a href="/betting" style="color: var(--fanduel-blue);">Place your first bet →</a>
+        </p>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

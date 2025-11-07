@@ -57,6 +57,33 @@ class ProjectionsDB:
             ON projections(position)
         """)
         
+        # Player stats table for Monte Carlo simulations
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS player_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                week TEXT NOT NULL,
+                player_first_name TEXT NOT NULL,
+                player_last_name TEXT NOT NULL,
+                position TEXT NOT NULL,
+                team_owner TEXT,
+                mu REAL NOT NULL,
+                sigma REAL NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(week, player_first_name, player_last_name, team_owner)
+            )
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_player_stats_week 
+            ON player_stats(week)
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_player_stats_team 
+            ON player_stats(team_owner)
+        """)
+        
         self.conn.commit()
     
     def insert_projection(self, source: str, week: str, first_name: str, 
@@ -151,6 +178,59 @@ class ProjectionsDB:
             WHERE source_website = ? AND week = ?
         """, (source, week))
         self.conn.commit()
+    
+    def insert_player_stat(self, week: str, first_name: str, last_name: str, 
+                          position: str, mu: float, sigma: float, team_owner: str = None):
+        """Insert or update player stats (mean and variance)."""
+        cursor = self.conn.cursor()
+        
+        cursor.execute("""
+            INSERT INTO player_stats 
+            (week, player_first_name, player_last_name, position, team_owner, mu, sigma, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(week, player_first_name, player_last_name, team_owner)
+            DO UPDATE SET 
+                mu = excluded.mu,
+                sigma = excluded.sigma,
+                position = excluded.position,
+                updated_at = CURRENT_TIMESTAMP
+        """, (week, first_name, last_name, position, team_owner, mu, sigma))
+        
+        self.conn.commit()
+    
+    def get_player_stats(self, week: Optional[str] = None, 
+                        team_owner: Optional[str] = None) -> List[Dict]:
+        """Retrieve player stats with optional filters."""
+        cursor = self.conn.cursor()
+        
+        query = "SELECT * FROM player_stats WHERE 1=1"
+        params = []
+        
+        if week:
+            query += " AND week = ?"
+            params.append(week)
+        
+        if team_owner:
+            query += " AND team_owner = ?"
+            params.append(team_owner)
+        
+        query += " ORDER BY mu DESC"
+        
+        cursor.execute(query, params)
+        return [dict(row) for row in cursor.fetchall()]
+    
+    def get_all_team_owners(self, week: str) -> List[str]:
+        """Get list of all unique team owners for a given week."""
+        cursor = self.conn.cursor()
+        
+        cursor.execute("""
+            SELECT DISTINCT team_owner 
+            FROM player_stats 
+            WHERE week = ? AND team_owner IS NOT NULL
+            ORDER BY team_owner
+        """, (week,))
+        
+        return [row[0] for row in cursor.fetchall()]
     
     def close(self):
         """Close database connection."""

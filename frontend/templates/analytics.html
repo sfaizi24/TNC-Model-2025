@@ -116,6 +116,23 @@
     <p class="page-subtitle">Monte Carlo Simulations & Betting Odds Analysis - Week 10</p>
 </div>
 
+<div style="margin-bottom: 30px;">
+    <label for="team-select" style="display: block; font-size: 16px; color: var(--text-primary); margin-bottom: 10px; font-weight: 600;">Select Team:</label>
+    <select id="team-select" style="width: 100%; max-width: 400px; padding: 12px 15px; font-size: 16px; background: var(--fanduel-gray); color: var(--text-primary); border: 1px solid var(--fanduel-light-gray); border-radius: 8px; cursor: pointer;">
+        <option value="all">All Teams</option>
+        <!-- Teams will be loaded dynamically -->
+    </select>
+</div>
+
+<div id="team-distribution" class="section">
+    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" style="width: 100%; max-width: 1200px; border-radius: 12px; border: 1px solid var(--fanduel-light-gray);">
+</div>
+
+<div id="team-players" class="section" style="display: none;">
+    <h2 class="section-title">Team Roster & Projections</h2>
+    <div id="players-table-container"></div>
+</div>
+
 <div class="stats-bar">
     <div class="stat-item">
         <span class="stat-value">50,000</span>
@@ -183,4 +200,89 @@
     <p style="color: var(--text-secondary); margin-bottom: 10px;">Data aggregated from multiple sources: Sleeper, ESPN, FantasyPros, FanDuel, FirstDown</p>
     <p style="color: var(--text-secondary); font-size: 14px;">Generated from Monte Carlo simulations (N=50,000) based on player projections</p>
 </div>
+
+<script>
+// Load teams on page load
+async function loadTeams() {
+    try {
+        const response = await fetch('/api/teams');
+        const data = await response.json();
+        const select = document.getElementById('team-select');
+        
+        data.teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team;
+            option.textContent = `Team ${team}`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading teams:', error);
+    }
+}
+
+// Handle team selection
+document.getElementById('team-select').addEventListener('change', async function() {
+    const selectedTeam = this.value;
+    const distributionImage = document.getElementById('distribution-image');
+    const playersSection = document.getElementById('team-players');
+    const playersContainer = document.getElementById('players-table-container');
+    
+    if (selectedTeam === 'all') {
+        // Show overlay image for all teams
+        distributionImage.src = '/static/images/simulation_distributions_overlay_week_10.png';
+        playersSection.style.display = 'none';
+    } else {
+        // Show specific team distribution
+        distributionImage.src = `/static/images/dist_Team_${selectedTeam}_week_10.png`;
+        playersSection.style.display = 'block';
+        
+        // Load player stats for this team
+        try {
+            const response = await fetch(`/api/team_players?team=${selectedTeam}`);
+            const data = await response.json();
+            
+            if (data.players && data.players.length > 0) {
+                let html = `
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; background: var(--fanduel-gray); border-radius: 12px; overflow: hidden; border: 1px solid var(--fanduel-light-gray);">
+                            <thead>
+                                <tr style="background: var(--fanduel-darker); border-bottom: 2px solid var(--fanduel-blue);">
+                                    <th style="padding: 15px; text-align: left; color: var(--fanduel-blue); font-weight: 600;">Player</th>
+                                    <th style="padding: 15px; text-align: center; color: var(--fanduel-blue); font-weight: 600;">Position</th>
+                                    <th style="padding: 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600;">Projected Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.players.forEach((player, index) => {
+                    html += `
+                        <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${index % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
+                            <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
+                            <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
+                            <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                playersContainer.innerHTML = html;
+            } else {
+                playersContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 30px;">No player data available for this team.</p>';
+            }
+        } catch (error) {
+            console.error('Error loading players:', error);
+            playersContainer.innerHTML = '<p style="color: var(--text-danger); text-align: center; padding: 30px;">Error loading player data.</p>';
+        }
+    }
+});
+
+// Load teams on page load
+loadTeams();
+</script>
 {% endblock %}

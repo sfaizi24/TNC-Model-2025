@@ -52,6 +52,33 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 - `LEAGUE_ID`: Your Sleeper league ID (optional, for league features)
 
 ## Recent Changes
+- **November 7, 2025**:
+  - **TNCasino Transformation**: Rebranded as fantasy football betting platform
+  - **User Authentication System**:
+    - Email/username + password authentication with secure password hashing (werkzeug.security)
+    - Session-based login with Flask sessions
+    - Signup with $1,000 starting balance
+    - Welcome popup announcing prizes and free bets
+    - Login required decorators protect all authenticated routes
+  - **Betting Features**:
+    - Users start with $1,000 in free bets
+    - Weekly prize: $20 for PnL leader
+    - Season prize: $100 for overall PnL leader
+    - Betting page as default front page with live matchup odds
+    - Real-time account balance updates
+  - **Account Management**:
+    - Profile information display (username, email, join date)
+    - Complete betting history with status tracking (pending/won/lost)
+    - **Accurate Weekly P&L Tracking**:
+      - Captures starting balance before first bet of week
+      - Correctly calculates P&L as: ending_balance - starting_balance
+      - Auto-updates on bet placement and settlement
+      - Tracks bets placed and bets won per week
+  - **Database**: SQLite `users.db` with three tables:
+    - `users`: Account credentials and balance
+    - `bets`: Complete betting history with results
+    - `weekly_stats`: Week-by-week performance tracking
+
 - **November 6, 2025**: 
   - Migrated project to Replit environment
   - Created Flask web server (`app.py`) to serve the dashboard
