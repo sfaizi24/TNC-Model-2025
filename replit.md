@@ -53,6 +53,26 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Highest Scorer Betting Tab - Fully Implemented**:
+    - New betting type: Pick team to be highest scorer of the week
+    - API endpoint: GET /api/highest_scorer (fetches from betting_odds_highest_scorer table)
+    - All 12 teams displayed with American odds format (+637, +654, etc.)
+    - Win probabilities from Monte Carlo simulations
+    - Full betting flow: select team, enter amount, place bet
+    - Backend: POST /api/place_bet with bet_type='highest_scorer'
+    - Bet description format: "Owner: Highest Scorer +XXX"
+    - Active bets display shows highest scorer bets in compact format
+    - "Show Team" dropdown displays 9-player lineups
+    - Potential win calculation based on American odds
+  
+  - **Fixed Lineup API - Correct Slot Filtering**:
+    - Updated /api/lineup/<owner> to filter exactly 9 starter slots
+    - Slot names: QB, RB1, RB2, WR1, WR2, TE, FLEX, K, DEF (not DST)
+    - Added WHERE clause: slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
+    - Fixed slot ordering with CASE statement
+    - Prevents excess players (bench/IR) from appearing in dropdown
+    - Verified database uses 'DEF' for defensive slot
+  
   - **Show Teams Lineup Dropdown**:
     - Added collapsible dropdown under Place Bet button on both betting tabs
     - Matchups tab displays both teams' lineups side-by-side
