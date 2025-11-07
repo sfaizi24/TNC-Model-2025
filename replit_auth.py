@@ -16,13 +16,13 @@ from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from sqlalchemy.exc import NoResultFound
 from werkzeug.local import LocalProxy
 
-from app import app, db
 from models import OAuth, User
 
-login_manager = LoginManager(app)
+login_manager = LoginManager()
 
 @login_manager.user_loader
 def load_user(user_id):
+    from app import db
     return db.session.get(User, user_id)
 
 class UserSessionStorage(BaseStorage):
@@ -121,18 +121,20 @@ def make_replit_blueprint():
     return replit_bp
 
 def save_user(user_claims):
+    from app import db
     user = db.session.get(User, user_claims['sub'])
     if user is None:
         user = User()
         user.id = user_claims['sub']
-        user.balance = 1000.0
+        user.account_balance = 1000.0
+        user.total_pnl = 0.0
     
     user.email = user_claims.get('email')
     user.first_name = user_claims.get('first_name')
     user.last_name = user_claims.get('last_name')
     user.profile_image_url = user_claims.get('profile_image_url')
     
-    db.session.merge(user)
+    db.session.add(user)
     db.session.commit()
     return user
 

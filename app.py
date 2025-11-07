@@ -1,125 +1,134 @@
 from flask import Flask, render_template, send_from_directory, redirect, url_for, request, session, flash, jsonify
 import os
-from functools import wraps
+from werkzeug.middleware.proxy_fix import ProxyFix
+import logging
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 import sys
 import sqlite3
 import json
-sys.path.append('backend/scrapers')
-from database_users import UsersDB
+
+logging.basicConfig(level=logging.DEBUG)
+
+class Base(DeclarativeBase):
+    pass
 
 app = Flask(__name__, 
             template_folder='frontend/templates',
             static_folder='frontend/static')
-app.secret_key = os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production')
+app.secret_key = os.environ.get("SESSION_SECRET", os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production'))
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-db = UsersDB()
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    'pool_pre_ping': True,
+    "pool_recycle": 300,
+}
 
-# Database paths
+db = SQLAlchemy(app, model_class=Base)
+
 LEAGUE_DB_PATH = 'backend/data/databases/league.db'
 PROJECTIONS_DB_PATH = 'backend/data/databases/projections.db'
 
-def login_required(f):
-    """Decorator to require login."""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+with app.app_context():
+    import models
+    db.create_all()
+    logging.info("Database tables created")
+
+from flask_login import current_user
+from replit_auth import make_replit_blueprint, require_login
+
+app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 @app.route('/')
 def index():
-    """Redirect to betting page."""
-    if 'user_id' in session:
+    if current_user.is_authenticated:
         return redirect(url_for('betting'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Handle login."""
-    if request.method == 'POST':
-        data = request.get_json()
-        user = db.authenticate_user(data['username'], data['password'])
-        if user:
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            return jsonify({'success': True})
-        return jsonify({'success': False, 'message': 'Invalid credentials'})
     return render_template('login.html')
 
-@app.route('/signup', methods=['POST'])
-def signup():
-    """Handle user signup."""
-    data = request.get_json()
-    user_id = db.create_user(
-        username=data['username'],
-        email=data['email'],
-        password=data['password'],
-        full_name=data.get('full_name', '')
-    )
-    if user_id:
-        session['user_id'] = user_id
-        session['username'] = data['username']
-        return jsonify({'success': True})
-    return jsonify({'success': False, 'message': 'Username or email already exists'})
-
-@app.route('/logout')
-def logout():
-    """Logout user."""
-    session.clear()
-    return redirect(url_for('login'))
-
 @app.route('/analytics')
-@login_required
+@require_login
 def analytics():
-    """Render the analytics dashboard."""
-    user = db.get_user(session['user_id'])
-    return render_template('analytics.html', user=user)
+    return render_template('analytics.html', user=current_user)
 
 @app.route('/account')
-@login_required
+@require_login
 def account():
-    """Render the account page."""
-    user = db.get_user(session['user_id'])
-    bets = db.get_user_bets(session['user_id'], limit=20)
-    weekly_stats = db.get_all_weekly_stats(session['user_id'])
-    return render_template('account.html', user=user, bets=bets, weekly_stats=weekly_stats)
+    from models import Bet, WeeklyStats
+    bets = db.session.query(Bet).filter_by(user_id=current_user.id).order_by(Bet.timestamp.desc()).limit(20).all()
+    weekly_stats = db.session.query(WeeklyStats).filter_by(user_id=current_user.id).all()
+    return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
-@login_required
+@require_login
 def betting():
-    """Render the betting page."""
-    user = db.get_user(session['user_id'])
-    return render_template('betting.html', user=user)
+    return render_template('betting.html', user=current_user)
 
 @app.route('/api/place_bet', methods=['POST'])
-@login_required
+@require_login
 def place_bet():
-    """API endpoint to place a bet."""
+    from models import Bet, WeeklyStats
+    from datetime import datetime
+    
     data = request.get_json()
-    bet_id = db.place_bet(
-        user_id=session['user_id'],
-        bet_type=data['bet_type'],
-        description=data['description'],
-        amount=float(data['amount']),
+    amount = float(data['amount'])
+    
+    if current_user.balance < amount:
+        return jsonify({'success': False, 'message': 'Insufficient balance'})
+    
+    week = data.get('week', 10)
+    
+    weekly_stat = db.session.query(WeeklyStats).filter_by(
+        user_id=current_user.id, week=week
+    ).first()
+    
+    if not weekly_stat:
+        weekly_stat = WeeklyStats(
+            user_id=current_user.id,
+            week=week,
+            starting_balance=current_user.balance,
+            ending_balance=current_user.balance,
+            pnl=0.0,
+            bets_placed=0,
+            bets_won=0
+        )
+        db.session.add(weekly_stat)
+    
+    current_user.balance -= amount
+    
+    bet = Bet(
+        user_id=current_user.id,
+        week=week,
+        team=data['description'],
+        amount=amount,
         odds=data['odds'],
-        potential_win=float(data['potential_win']),
-        week=data.get('week', 10)
+        potential_payout=float(data['potential_win']),
+        status='pending',
+        timestamp=datetime.now()
     )
-    if bet_id:
-        user = db.get_user(session['user_id'])
-        return jsonify({'success': True, 'balance': user['account_balance']})
-    return jsonify({'success': False, 'message': 'Insufficient balance'})
+    
+    db.session.add(bet)
+    
+    weekly_stat.bets_placed += 1
+    weekly_stat.ending_balance = current_user.balance
+    weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+    
+    db.session.commit()
+    
+    return jsonify({'success': True, 'balance': current_user.balance})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
-    """Serve static files (images)."""
     return send_from_directory('frontend/static', filename)
 
 @app.route('/api/teams')
-@login_required
+@require_login
 def get_teams():
-    """API endpoint to get list of teams."""
     try:
         conn = sqlite3.connect(LEAGUE_DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -147,15 +156,13 @@ def get_teams():
         return jsonify({'teams': []})
 
 @app.route('/api/team_players')
-@login_required
+@require_login
 def get_team_players():
-    """API endpoint to get players for a specific team."""
     team_owner = request.args.get('team')
     if not team_owner:
         return jsonify({'error': 'Team parameter required'}), 400
     
     try:
-        # Get roster for this team
         league_conn = sqlite3.connect(LEAGUE_DB_PATH)
         league_conn.row_factory = sqlite3.Row
         league_cursor = league_conn.cursor()
@@ -172,13 +179,11 @@ def get_team_players():
             league_conn.close()
             return jsonify({'players': []})
         
-        # Parse the starters list (it's stored as a string representation of a list)
         starters_str = roster['starters']
         player_ids = json.loads(starters_str.replace("'", '"'))
         
         league_conn.close()
         
-        # Get player stats from projections.db
         proj_conn = sqlite3.connect(PROJECTIONS_DB_PATH)
         proj_conn.row_factory = sqlite3.Row
         proj_cursor = proj_conn.cursor()
@@ -215,7 +220,5 @@ def get_team_players():
         return jsonify({'players': []})
 
 if __name__ == '__main__':
-    # Bind to 0.0.0.0:5000 for Replit environment
-    # Use environment variable for debug mode (only enable in development)
     debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
     app.run(host='0.0.0.0', port=5000, debug=debug_mode)
