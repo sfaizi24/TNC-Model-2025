@@ -6,6 +6,15 @@
 <style>
     .page-header {
         margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .header-left {
+        flex: 1;
     }
     
     .page-title {
@@ -17,6 +26,26 @@
     .page-subtitle {
         color: var(--text-secondary);
         font-size: 16px;
+    }
+    
+    .balance-display {
+        background: var(--fanduel-dark);
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+        text-align: right;
+    }
+    
+    .balance-label {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    .balance-amount {
+        color: var(--success-green);
+        font-size: 24px;
+        font-weight: bold;
     }
     
     .betting-tabs {
@@ -193,8 +222,14 @@
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">🎰 Betting Lines</h1>
-    <p class="page-subtitle">Live odds and predictions based on Monte Carlo simulations</p>
+    <div class="header-left">
+        <h1 class="page-title">🎰 Betting Lines</h1>
+        <p class="page-subtitle">Live odds and predictions based on Monte Carlo simulations</p>
+    </div>
+    <div class="balance-display">
+        <div class="balance-label">Available Balance</div>
+        <div class="balance-amount" id="userBalance">${{ "%.2f"|format(user.account_balance) }}</div>
+    </div>
 </div>
 
 <div class="betting-tabs">

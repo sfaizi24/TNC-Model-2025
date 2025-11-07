@@ -1,34 +1,109 @@
-from flask import Flask, render_template, send_from_directory, redirect, url_for
+from flask import Flask, render_template, send_from_directory, redirect, url_for, request, session, flash, jsonify
 import os
+from functools import wraps
+import sys
+sys.path.append('backend/scrapers')
+from database_users import UsersDB
 
 app = Flask(__name__, 
             template_folder='frontend/templates',
             static_folder='frontend/static')
+app.secret_key = os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production')
+
+db = UsersDB()
+
+def login_required(f):
+    """Decorator to require login."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def index():
-    """Redirect to login page."""
+    """Redirect to betting page."""
+    if 'user_id' in session:
+        return redirect(url_for('betting'))
     return redirect(url_for('login'))
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Render the login page."""
+    """Handle login."""
+    if request.method == 'POST':
+        data = request.get_json()
+        user = db.authenticate_user(data['username'], data['password'])
+        if user:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            return jsonify({'success': True})
+        return jsonify({'success': False, 'message': 'Invalid credentials'})
     return render_template('login.html')
 
+@app.route('/signup', methods=['POST'])
+def signup():
+    """Handle user signup."""
+    data = request.get_json()
+    user_id = db.create_user(
+        username=data['username'],
+        email=data['email'],
+        password=data['password'],
+        full_name=data.get('full_name', '')
+    )
+    if user_id:
+        session['user_id'] = user_id
+        session['username'] = data['username']
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Username or email already exists'})
+
+@app.route('/logout')
+def logout():
+    """Logout user."""
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/analytics')
+@login_required
 def analytics():
     """Render the analytics dashboard."""
-    return render_template('analytics.html')
+    user = db.get_user(session['user_id'])
+    return render_template('analytics.html', user=user)
 
 @app.route('/account')
+@login_required
 def account():
     """Render the account page."""
-    return render_template('account.html')
+    user = db.get_user(session['user_id'])
+    bets = db.get_user_bets(session['user_id'], limit=20)
+    weekly_stats = db.get_all_weekly_stats(session['user_id'])
+    return render_template('account.html', user=user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
+@login_required
 def betting():
     """Render the betting page."""
-    return render_template('betting.html')
+    user = db.get_user(session['user_id'])
+    return render_template('betting.html', user=user)
+
+@app.route('/api/place_bet', methods=['POST'])
+@login_required
+def place_bet():
+    """API endpoint to place a bet."""
+    data = request.get_json()
+    bet_id = db.place_bet(
+        user_id=session['user_id'],
+        bet_type=data['bet_type'],
+        description=data['description'],
+        amount=float(data['amount']),
+        odds=data['odds'],
+        potential_win=float(data['potential_win']),
+        week=data.get('week', 10)
+    )
+    if bet_id:
+        user = db.get_user(session['user_id'])
+        return jsonify({'success': True, 'balance': user['account_balance']})
+    return jsonify({'success': False, 'message': 'Insufficient balance'})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
