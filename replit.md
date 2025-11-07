@@ -53,26 +53,36 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
-  - **Compact UI and Improved Betting Display**:
-    - Dramatically reduced font sizes and spacing across all matchup cards:
-      - Card padding: 20px → 12px
-      - Team names: 18px → 13px
-      - Win probabilities: 13px → 10px
-      - Odds buttons: 18px → 14px with padding 12px → 8px
-      - Grid gap: 20px → 12px
-    - **Simplified Active Bets at Top**:
-      - Removed "Betting Lines" header and subtitle for cleaner layout
-      - Active bets now display at top in compact format: "Owner Moneyline $520"
-      - Small, minimalist design with Remove button
-      - Automatically hidden when no active bets
-    - **Owner Names Throughout**:
-      - Bet descriptions now use owner names (e.g., "sfaizi24 vs xavierking4")
-      - Instead of team numbers (e.g., "Team 6 vs Team 8")
-      - place_bet endpoint maps team IDs to owner names from league database
-      - Backward compatible with legacy bets (supports both formats)
-    - **Improved Multi-word Name Support**:
-      - Compact bet display correctly handles owner names with spaces
-      - Uses lastIndexOf parsing to extract "John Smith" instead of just "John"
+  - **Horizontal Matchup Card Layout**:
+    - **Redesigned matchup cards to be fully horizontal** - minimizes vertical space usage:
+      - Teams side-by-side with odds buttons inline (Team 1 + Odds | VS | Team 2 + Odds)
+      - Bet input, potential win display, and Place Bet button all on same row
+      - Fixed card height (60px desktop, 54px mobile) prevents dimension changes
+      - Matchup title positioned absolutely at top of card
+    - **Ultra-compact sizing**:
+      - Card padding: 10px 12px (desktop), 8px 10px (mobile)
+      - Team names: 12px (desktop), 11px (mobile)
+      - Win probabilities: 9px (desktop), 8px (mobile)
+      - Odds buttons: 13px font, 6px padding (desktop)
+      - Bet input: 90px width (desktop), 75px (mobile)
+      - Potential win: 10px font with fixed 140px width
+    - **Compact text labels**:
+      - Win probability: "X.X% win" (shortened from "X.X% Win Prob")
+      - Potential win: "Win: $X (Total: $Y)" (shortened, whole dollars)
+      - Button text: "Place Bet" (shortened from "Select Team & Enter Amount")
+  
+  - **Simplified Active Bets at Top**:
+    - Removed "Betting Lines" header and subtitle for cleaner layout
+    - Active bets now display at top in compact format: "Owner Moneyline $520"
+    - Small, minimalist design with Remove button
+    - Automatically hidden when no active bets
+  
+  - **Owner Names Throughout**:
+    - Bet descriptions now use owner names (e.g., "sfaizi24 vs xavierking4")
+    - Instead of team numbers (e.g., "Team 6 vs Team 8")
+    - place_bet endpoint maps team IDs to owner names from league database
+    - Backward compatible with legacy bets (supports both formats)
+    - Improved multi-word name support using lastIndexOf parsing
   
   - **Mobile UI Optimizations**:
     - Fixed hamburger menu z-index (z-index: 999) to prevent coverage by scrolling content
