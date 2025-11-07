@@ -176,7 +176,8 @@ def get_lineup(owner):
         cursor.execute("""
             SELECT slot, player_name, position, mu
             FROM team_lineups
-            WHERE owner = ? AND week = 10
+            WHERE owner = ? AND week = 10 
+                AND slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
             ORDER BY 
                 CASE slot
                     WHEN 'QB' THEN 1
@@ -187,7 +188,7 @@ def get_lineup(owner):
                     WHEN 'TE' THEN 6
                     WHEN 'FLEX' THEN 7
                     WHEN 'K' THEN 8
-                    WHEN 'DST' THEN 9
+                    WHEN 'DEF' THEN 9
                     ELSE 10
                 END
         """, (owner,))
