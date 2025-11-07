@@ -498,6 +498,35 @@
     }
     
     @media (max-width: 767px) {
+        .hs-team-row {
+            grid-template-columns: 1fr;
+            grid-template-areas: 
+                'win'
+                'owner'
+                'odds';
+            gap: 8px;
+            padding: 10px;
+        }
+        
+        .hs-win-prob {
+            grid-area: win;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .hs-owner {
+            grid-area: owner;
+            font-size: 18px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        
+        .hs-odds {
+            grid-area: odds;
+            font-size: 16px;
+            text-align: center;
+        }
+        
         .matchup-card {
             padding: 10px;
         }
