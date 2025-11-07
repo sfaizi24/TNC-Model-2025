@@ -328,6 +328,32 @@
         margin-bottom: 10px;
     }
     
+    @media (max-width: 767px) {
+        .matchup-card {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .matchups-grid {
+            padding: 0;
+        }
+        
+        .teams-container {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .vs-text {
+            display: none;
+        }
+        
+        .team-section {
+            padding: 10px;
+            background: var(--fanduel-dark);
+            border-radius: 8px;
+        }
+    }
+    
     @media (min-width: 768px) {
         .page-title {
             font-size: 42px;
@@ -444,7 +470,8 @@ function renderMatchups() {
     // Create a map of matchup descriptions to bet status
     const betMap = {};
     activeBetsData.forEach(bet => {
-        betMap[bet.description.split(':')[0]] = true;
+        const matchupFromBet = bet.description.split(':')[0].trim();
+        betMap[matchupFromBet] = true;
     });
     
     grid.innerHTML = allMatchups.map((m, idx) => {
