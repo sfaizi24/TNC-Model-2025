@@ -53,6 +53,16 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Mobile UI Optimizations**:
+    - Fixed hamburger menu z-index (z-index: 999) to prevent coverage by scrolling content
+    - Fixed bet indicator matching logic by trimming whitespace from matchup descriptions
+    - Added mobile-specific CSS for betting page (max-width: 767px):
+      - Matchup cards stack vertically instead of side-by-side
+      - Hidden "VS" text divider on mobile for cleaner layout
+      - Added background to individual team sections
+      - Centered and sized cards appropriately for mobile screens
+    - Verified green outline and "Bet Placed" badge now display correctly for active bets
+  
   - **Fixed JavaScript Syntax Error**: Corrected template string closure in renderMatchups() function
   - **Matchups Moneyline Betting System**:
     - Built complete betting interface with real matchup data from odds.db
