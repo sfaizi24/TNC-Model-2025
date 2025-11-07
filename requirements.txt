@@ -18,3 +18,13 @@ requests
 seaborn
 selenium
 webdriver-manager
+Flask-Dance
+Flask-Login
+Flask-SQLAlchemy
+psycopg2-binary
+PyJWT
+Flask-Dance
+Flask-Login
+Flask-SQLAlchemy
+psycopg2-binary
+PyJWT
