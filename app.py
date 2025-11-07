@@ -36,10 +36,16 @@ with app.app_context():
     db.create_all()
     logging.info("Database tables created")
 
-from flask_login import current_user
-from replit_auth import make_replit_blueprint, require_login
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 
-app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import User
+    return db.session.get(User, int(user_id))
 
 @app.before_request
 def make_session_permanent():
@@ -51,26 +57,77 @@ def index():
         return redirect(url_for('betting'))
     return render_template('login.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('betting'))
+    
+    if request.method == 'POST':
+        from models import User
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        user = db.session.query(User).filter_by(email=email).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('betting'))
+        else:
+            flash('Invalid email or password', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('betting'))
+    
+    if request.method == 'POST':
+        from models import User
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if db.session.query(User).filter_by(email=email).first():
+            flash('Email already registered', 'error')
+            return render_template('login.html')
+        
+        user = User(email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        login_user(user)
+        return redirect(url_for('betting'))
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 @app.route('/analytics')
-@require_login
+@login_required
 def analytics():
     return render_template('analytics.html', user=current_user)
 
 @app.route('/account')
-@require_login
+@login_required
 def account():
     from models import Bet, WeeklyStats
-    bets = db.session.query(Bet).filter_by(user_id=current_user.id).order_by(Bet.timestamp.desc()).limit(20).all()
+    bets = db.session.query(Bet).filter_by(user_id=current_user.id).order_by(Bet.created_at.desc()).limit(20).all()
     weekly_stats = db.session.query(WeeklyStats).filter_by(user_id=current_user.id).all()
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
-@require_login
+@login_required
 def betting():
     return render_template('betting.html', user=current_user)
 
 @app.route('/api/place_bet', methods=['POST'])
-@require_login
+@login_required
 def place_bet():
     from models import Bet, WeeklyStats
     from datetime import datetime
@@ -78,7 +135,7 @@ def place_bet():
     data = request.get_json()
     amount = float(data['amount'])
     
-    if current_user.balance < amount:
+    if current_user.account_balance < amount:
         return jsonify({'success': False, 'message': 'Insufficient balance'})
     
     week = data.get('week', 10)
@@ -91,43 +148,44 @@ def place_bet():
         weekly_stat = WeeklyStats(
             user_id=current_user.id,
             week=week,
-            starting_balance=current_user.balance,
-            ending_balance=current_user.balance,
+            starting_balance=current_user.account_balance,
+            ending_balance=current_user.account_balance,
             pnl=0.0,
             bets_placed=0,
             bets_won=0
         )
         db.session.add(weekly_stat)
     
-    current_user.balance -= amount
+    current_user.account_balance -= amount
     
     bet = Bet(
         user_id=current_user.id,
+        bet_type=data['bet_type'],
+        description=data['description'],
         week=week,
-        team=data['description'],
         amount=amount,
         odds=data['odds'],
-        potential_payout=float(data['potential_win']),
+        potential_win=float(data['potential_win']),
         status='pending',
-        timestamp=datetime.now()
+        created_at=datetime.now()
     )
     
     db.session.add(bet)
     
     weekly_stat.bets_placed += 1
-    weekly_stat.ending_balance = current_user.balance
+    weekly_stat.ending_balance = current_user.account_balance
     weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
     
     db.session.commit()
     
-    return jsonify({'success': True, 'balance': current_user.balance})
+    return jsonify({'success': True, 'balance': current_user.account_balance})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('frontend/static', filename)
 
 @app.route('/api/teams')
-@require_login
+@login_required
 def get_teams():
     try:
         conn = sqlite3.connect(LEAGUE_DB_PATH)
@@ -156,7 +214,7 @@ def get_teams():
         return jsonify({'teams': []})
 
 @app.route('/api/team_players')
-@require_login
+@login_required
 def get_team_players():
     team_owner = request.args.get('team')
     if not team_owner:

@@ -217,7 +217,7 @@
 
 <div class="page-header">
     <h1 class="page-title">💼 My Account</h1>
-    <a href="/logout" class="logout-btn">Logout</a>
+    <a href="{{ url_for('replit_auth.logout') }}" class="logout-btn">Logout</a>
 </div>
 
 <div class="balance-card">
@@ -231,23 +231,23 @@
 <div class="account-grid">
     <div class="account-card">
         <h3>Profile Information</h3>
+        {% if user.first_name or user.last_name %}
         <div class="info-row">
-            <span class="info-label">Username</span>
-            <span class="info-value">{{ user.username }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Email</span>
-            <span class="info-value">{{ user.email }}</span>
-        </div>
-        {% if user.full_name %}
-        <div class="info-row">
-            <span class="info-label">Full Name</span>
-            <span class="info-value">{{ user.full_name }}</span>
+            <span class="info-label">Name</span>
+            <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
         </div>
         {% endif %}
         <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user.email or 'Not provided' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">User ID</span>
+            <span class="info-value">{{ user.id }}</span>
+        </div>
+        <div class="info-row">
             <span class="info-label">Member Since</span>
-            <span class="info-value">{{ user.created_at[:10] }}</span>
+            <span class="info-value">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</span>
         </div>
     </div>
     
