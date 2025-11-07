@@ -53,6 +53,27 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Compact UI and Improved Betting Display**:
+    - Dramatically reduced font sizes and spacing across all matchup cards:
+      - Card padding: 20px → 12px
+      - Team names: 18px → 13px
+      - Win probabilities: 13px → 10px
+      - Odds buttons: 18px → 14px with padding 12px → 8px
+      - Grid gap: 20px → 12px
+    - **Simplified Active Bets at Top**:
+      - Removed "Betting Lines" header and subtitle for cleaner layout
+      - Active bets now display at top in compact format: "Owner Moneyline $520"
+      - Small, minimalist design with Remove button
+      - Automatically hidden when no active bets
+    - **Owner Names Throughout**:
+      - Bet descriptions now use owner names (e.g., "sfaizi24 vs xavierking4")
+      - Instead of team numbers (e.g., "Team 6 vs Team 8")
+      - place_bet endpoint maps team IDs to owner names from league database
+      - Backward compatible with legacy bets (supports both formats)
+    - **Improved Multi-word Name Support**:
+      - Compact bet display correctly handles owner names with spaces
+      - Uses lastIndexOf parsing to extract "John Smith" instead of just "John"
+  
   - **Mobile UI Optimizations**:
     - Fixed hamburger menu z-index (z-index: 999) to prevent coverage by scrolling content
     - Fixed bet indicator matching logic by trimming whitespace from matchup descriptions
