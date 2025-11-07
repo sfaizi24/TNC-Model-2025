@@ -475,7 +475,7 @@ function renderMatchups() {
     });
     
     grid.innerHTML = allMatchups.map((m, idx) => {
-        const hasBet = betMap[m.matchup] || false;
+        const hasBet = betMap[m.original_matchup] || false;
         return `
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}

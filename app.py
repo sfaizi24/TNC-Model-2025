@@ -114,6 +114,7 @@ def get_matchups():
             
             matchups.append({
                 'matchup': f"{team1_owner} vs {team2_owner}",
+                'original_matchup': row['matchup'],
                 'team1_id': row['team1_id'],
                 'team1_name': team1_owner,
                 'team1_win_prob': row['team1_win_prob'],
