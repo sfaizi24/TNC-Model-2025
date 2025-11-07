@@ -157,7 +157,7 @@
         <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
         <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
         <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
-        <a href="/auth/logout" class="nav-link">Logout</a>
+        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
         {% else %}
         <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
         {% endif %}
