@@ -210,6 +210,105 @@
         margin-bottom: 4px;
     }
     
+    .show-teams-btn {
+        width: 100%;
+        padding: 8px;
+        margin-top: 8px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+    
+    .show-teams-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dropdown-arrow {
+        font-size: 10px;
+        transition: transform 0.2s;
+    }
+    
+    .lineups-container {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .lineup-grid {
+        display: grid;
+        grid-template-columns: 1fr 1px 1fr;
+        gap: 16px;
+    }
+    
+    .lineup-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .lineup-divider {
+        background: rgba(255, 255, 255, 0.1);
+        width: 1px;
+    }
+    
+    .lineup-player {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 4px;
+    }
+    
+    .player-name {
+        color: var(--text-primary);
+        font-size: 11px;
+        flex: 1;
+    }
+    
+    .player-stats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+    }
+    
+    .player-position {
+        color: var(--text-secondary);
+        font-weight: 500;
+        min-width: 30px;
+        text-align: right;
+    }
+    
+    .player-points {
+        color: var(--primary-color);
+        font-weight: 600;
+        min-width: 30px;
+        text-align: right;
+    }
+    
+    .single-lineup {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .lineup-loading {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 12px;
+        font-size: 12px;
+    }
+    
     .btn-place-bet {
         flex: 1;
         padding: 10px 16px;
@@ -555,6 +654,20 @@ function renderMatchups() {
                         Place Bet
                     </button>
                 </div>
+                <button class="show-teams-btn" onclick="toggleLineups(${idx}, '${m.team1_name}', '${m.team2_name}')">
+                    Show Teams <span class="dropdown-arrow" id="arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="lineups-${idx}" style="display: none;">
+                    <div class="lineup-grid">
+                        <div class="lineup-column">
+                            <div class="lineup-loading">Loading...</div>
+                        </div>
+                        <div class="lineup-divider"></div>
+                        <div class="lineup-column">
+                            <div class="lineup-loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }).join('');
@@ -785,6 +898,12 @@ function renderTeamPerformance() {
                         Place Bet
                     </button>
                 </div>
+                <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="team-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="team-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
             </div>
         `;
     }).join('');
@@ -888,6 +1007,111 @@ async function placeTeamBet(teamIdx) {
         console.error('Error placing team bet:', error);
         alert('Failed to place bet');
     }
+}
+
+// Toggle lineup display
+const lineupCache = {};
+
+async function toggleLineups(idx, team1Owner, team2Owner) {
+    const container = document.getElementById(`lineups-${idx}`);
+    const arrow = document.getElementById(`arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineups if not cached
+        if (!lineupCache[`${team1Owner}-${team2Owner}`]) {
+            try {
+                const [lineup1, lineup2] = await Promise.all([
+                    fetch(`/api/lineup/${encodeURIComponent(team1Owner)}`).then(r => r.json()),
+                    fetch(`/api/lineup/${encodeURIComponent(team2Owner)}`).then(r => r.json())
+                ]);
+                
+                lineupCache[`${team1Owner}-${team2Owner}`] = { lineup1, lineup2 };
+                renderLineups(idx, lineup1, lineup2);
+            } catch (error) {
+                console.error('Error fetching lineups:', error);
+            }
+        } else {
+            const cached = lineupCache[`${team1Owner}-${team2Owner}`];
+            renderLineups(idx, cached.lineup1, cached.lineup2);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderLineups(idx, lineup1, lineup2) {
+    const container = document.getElementById(`lineups-${idx}`);
+    const grid = container.querySelector('.lineup-grid');
+    
+    const renderTeamLineup = (lineup) => {
+        return lineup.map(player => `
+            <div class="lineup-player">
+                <div class="player-name">${player.player_name}</div>
+                <div class="player-stats">
+                    <span class="player-position">${player.position}</span>
+                    <span class="player-points">${player.projected_points}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+    
+    grid.innerHTML = `
+        <div class="lineup-column">
+            ${renderTeamLineup(lineup1)}
+        </div>
+        <div class="lineup-divider"></div>
+        <div class="lineup-column">
+            ${renderTeamLineup(lineup2)}
+        </div>
+    `;
+}
+
+async function toggleTeamLineup(idx, owner) {
+    const container = document.getElementById(`team-lineups-${idx}`);
+    const arrow = document.getElementById(`team-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineup if not cached
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderTeamLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderTeamLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderTeamLineup(idx, lineup) {
+    const container = document.getElementById(`team-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 // Initialize - load bets first, then matchups and team performance

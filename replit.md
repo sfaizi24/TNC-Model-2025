@@ -53,6 +53,18 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Show Teams Lineup Dropdown**:
+    - Added collapsible dropdown under Place Bet button on both betting tabs
+    - Matchups tab displays both teams' lineups side-by-side
+    - Team Performance tab shows single team lineup
+    - Data from team_lineups table in projections.db (Week 10)
+    - Players ordered by position: QB, WR, RB, TE, FLEX, K, DEF
+    - Shows player name, position, and projected points
+    - Lineup data cached to avoid redundant API calls
+    - Dropdown arrow animates (▼ to ▲) on toggle
+    - API endpoint: GET /api/lineup/<owner>
+  
+  - **Team Performance Betting - Backend Integration**:
   - **Individual Team Performance Betting Tab**:
     - New betting type: Over/Under on team point totals
     - Format: "owner to score XXX points" centered across card with "Over" and "Under" buttons

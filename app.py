@@ -164,6 +164,50 @@ def get_team_performance():
         traceback.print_exc()
         return jsonify([])
 
+@app.route('/api/lineup/<owner>')
+@require_login
+def get_lineup(owner):
+    try:
+        conn = sqlite3.connect(PROJECTIONS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Fetch lineup for the owner
+        cursor.execute("""
+            SELECT slot, player_name, position, mu
+            FROM team_lineups
+            WHERE owner = ? AND week = 10
+            ORDER BY 
+                CASE slot
+                    WHEN 'QB' THEN 1
+                    WHEN 'WR' THEN 2
+                    WHEN 'RB' THEN 4
+                    WHEN 'TE' THEN 6
+                    WHEN 'FLEX' THEN 7
+                    WHEN 'K' THEN 8
+                    WHEN 'DEF' THEN 9
+                    ELSE 10
+                END,
+                mu DESC
+        """, (owner,))
+        
+        lineup = []
+        for row in cursor.fetchall():
+            lineup.append({
+                'slot': row['slot'],
+                'player_name': row['player_name'],
+                'position': row['position'],
+                'projected_points': round(row['mu'], 1)
+            })
+        
+        conn.close()
+        return jsonify(lineup)
+    except Exception as e:
+        print(f"Error getting lineup: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/place_bet', methods=['POST'])
 @require_login
 def place_bet():
