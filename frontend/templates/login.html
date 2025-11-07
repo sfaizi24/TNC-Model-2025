@@ -27,40 +27,13 @@
     .login-header p {
         color: var(--text-secondary);
         font-size: 14px;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-label {
-        display: block;
-        margin-bottom: 8px;
-        color: var(--text-primary);
-        font-weight: 500;
-        font-size: 14px;
-    }
-    
-    .form-input {
-        width: 100%;
-        padding: 12px 16px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
-        border-radius: 6px;
-        color: var(--text-primary);
-        font-size: 16px;
-        transition: all 0.3s ease;
-    }
-    
-    .form-input:focus {
-        outline: none;
-        border-color: var(--fanduel-blue);
-        box-shadow: 0 0 0 3px rgba(20, 147, 255, 0.1);
+        line-height: 1.6;
+        margin-top: 15px;
     }
     
     .btn-primary {
         width: 100%;
-        padding: 14px;
+        padding: 16px;
         background: var(--fanduel-blue);
         color: white;
         border: none;
@@ -69,6 +42,9 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
     }
     
     .btn-primary:hover {
@@ -76,335 +52,80 @@
         transform: translateY(-1px);
     }
     
-    .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
+    .features {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid var(--fanduel-light-gray);
     }
     
-    .error-message {
-        color: #ff4444;
-        font-size: 14px;
-        margin-top: 10px;
+    .features h3 {
+        color: var(--text-primary);
+        font-size: 18px;
+        margin-bottom: 15px;
         text-align: center;
     }
     
-    .divider {
-        margin: 30px 0;
-        text-align: center;
-        position: relative;
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
     
-    .divider::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: var(--fanduel-light-gray);
-    }
-    
-    .divider span {
-        background: var(--fanduel-gray);
-        padding: 0 15px;
-        position: relative;
+    .feature-list li {
+        padding: 12px 0;
         color: var(--text-secondary);
         font-size: 14px;
+        line-height: 1.6;
     }
     
-    .btn-secondary {
-        width: 100%;
-        padding: 12px;
-        background: transparent;
-        color: var(--text-primary);
-        border: 1px solid var(--fanduel-light-gray);
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 10px;
-    }
-    
-    .btn-secondary:hover {
-        background: var(--fanduel-light-gray);
-    }
-    
-    .hidden {
-        display: none;
-    }
-    
-    /* Welcome Popup Styles */
-    .popup-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .popup-overlay.active {
-        display: flex;
-    }
-    
-    .popup-content {
-        background: var(--fanduel-gray);
-        border-radius: 16px;
-        padding: 50px 40px;
-        max-width: 500px;
-        width: 90%;
-        border: 2px solid var(--fanduel-blue);
-        box-shadow: 0 20px 60px rgba(20, 147, 255, 0.3);
-        text-align: center;
-        animation: popupSlide 0.4s ease;
-    }
-    
-    @keyframes popupSlide {
-        from {
-            transform: translateY(-50px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-    
-    .popup-content h2 {
+    .feature-list li strong {
         color: var(--fanduel-blue);
-        font-size: 32px;
-        margin-bottom: 20px;
     }
     
-    .popup-content .prize-box {
+    .prize-box {
         background: var(--fanduel-dark);
         border: 2px solid var(--success-green);
         border-radius: 12px;
-        padding: 30px;
+        padding: 25px;
         margin: 25px 0;
+        text-align: center;
     }
     
-    .popup-content .prize-amount {
-        font-size: 48px;
+    .prize-amount {
+        font-size: 42px;
         font-weight: bold;
         color: var(--success-green);
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     
-    .popup-content .prize-label {
+    .prize-label {
         color: var(--text-secondary);
         font-size: 14px;
     }
-    
-    .popup-content .prizes-info {
-        color: var(--text-primary);
-        line-height: 1.8;
-        margin: 20px 0;
-        font-size: 15px;
-    }
-    
-    .popup-content .prizes-info strong {
-        color: var(--fanduel-blue);
-    }
-    
-    .popup-close-btn {
-        margin-top: 25px;
-        padding: 14px 40px;
-        background: var(--fanduel-blue);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    
-    .popup-close-btn:hover {
-        background: #0D7FE8;
-    }
 </style>
 
-<div class="login-container" id="loginForm">
+<div class="login-container">
     <div class="login-header">
         <h1>Welcome to TNCasino</h1>
-        <p>Sign in to start betting on fantasy football</p>
-    </div>
-    
-    <form onsubmit="handleLogin(event)">
-        <div class="form-group">
-            <label class="form-label" for="loginUsername">Email or Username</label>
-            <input type="text" id="loginUsername" class="form-input" placeholder="Enter your email or username" required>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="loginPassword">Password</label>
-            <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
-        </div>
-        
-        <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
-        <div class="error-message" id="loginError"></div>
-        
-        <div class="divider">
-            <span>OR</span>
-        </div>
-        
-        <button type="button" class="btn-secondary" onclick="showSignup()">Create New Account</button>
-    </form>
-</div>
-
-<div class="login-container hidden" id="signupForm">
-    <div class="login-header">
-        <h1>Create Account</h1>
-        <p>Join TNCasino and get $1,000 in free bets!</p>
-    </div>
-    
-    <form onsubmit="handleSignup(event)">
-        <div class="form-group">
-            <label class="form-label" for="signupFullName">Full Name</label>
-            <input type="text" id="signupFullName" class="form-input" placeholder="Enter your full name">
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="signupUsername">Username</label>
-            <input type="text" id="signupUsername" class="form-input" placeholder="Choose a username" required>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="signupEmail">Email</label>
-            <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="signupPassword">Password</label>
-            <input type="password" id="signupPassword" class="form-input" placeholder="Create a password" required>
-        </div>
-        
-        <button type="submit" class="btn-primary" id="signupBtn">Create Account</button>
-        <div class="error-message" id="signupError"></div>
-        
-        <div class="divider">
-            <span>Already have an account?</span>
-        </div>
-        
-        <button type="button" class="btn-secondary" onclick="showLogin()">Sign In</button>
-    </form>
-</div>
-
-<!-- Welcome Popup -->
-<div class="popup-overlay" id="welcomePopup">
-    <div class="popup-content">
-        <h2>🎉 Welcome to TNCasino!</h2>
-        
         <div class="prize-box">
             <div class="prize-amount">$1,000</div>
             <div class="prize-label">IN FREE BETS!</div>
         </div>
-        
-        <div class="prizes-info">
-            <p><strong>Weekly Prize:</strong> The PnL leader each week gets <strong>$20 REAL DOLLARS</strong>!</p>
-            <p><strong>Season Prize:</strong> The leader at the end of the season gets <strong>$100 REAL DOLLARS</strong>!</p>
-        </div>
-        
-        <button class="popup-close-btn" onclick="closeWelcomePopup()">Start Betting!</button>
+        <p>Sign in to start betting on fantasy football matchups</p>
+    </div>
+    
+    <a href="{{ url_for('replit_auth.login') }}" class="btn-primary">
+        Sign In to TNCasino
+    </a>
+    
+    <div class="features">
+        <h3>What You Get:</h3>
+        <ul class="feature-list">
+            <li><strong>$1,000</strong> in free bets to start</li>
+            <li><strong>Weekly Prize:</strong> $20 for the PnL leader each week</li>
+            <li><strong>Season Prize:</strong> $100 for the overall PnL leader</li>
+            <li><strong>Real-Time:</strong> Live matchup odds and analytics</li>
+        </ul>
     </div>
 </div>
-
-<script>
-    function showSignup() {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('signupForm').classList.remove('hidden');
-    }
-    
-    function showLogin() {
-        document.getElementById('signupForm').classList.add('hidden');
-        document.getElementById('loginForm').classList.remove('hidden');
-    }
-    
-    function showWelcomePopup() {
-        document.getElementById('welcomePopup').classList.add('active');
-    }
-    
-    function closeWelcomePopup() {
-        document.getElementById('welcomePopup').classList.remove('active');
-        window.location.href = '/betting';
-    }
-    
-    async function handleLogin(event) {
-        event.preventDefault();
-        const btn = document.getElementById('loginBtn');
-        const errorDiv = document.getElementById('loginError');
-        
-        btn.disabled = true;
-        btn.textContent = 'Signing In...';
-        errorDiv.textContent = '';
-        
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
-        
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, password })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                window.location.href = '/betting';
-            } else {
-                errorDiv.textContent = data.message || 'Invalid credentials';
-                btn.disabled = false;
-                btn.textContent = 'Sign In';
-            }
-        } catch (error) {
-            errorDiv.textContent = 'An error occurred. Please try again.';
-            btn.disabled = false;
-            btn.textContent = 'Sign In';
-        }
-    }
-    
-    async function handleSignup(event) {
-        event.preventDefault();
-        const btn = document.getElementById('signupBtn');
-        const errorDiv = document.getElementById('signupError');
-        
-        btn.disabled = true;
-        btn.textContent = 'Creating Account...';
-        errorDiv.textContent = '';
-        
-        const fullName = document.getElementById('signupFullName').value;
-        const username = document.getElementById('signupUsername').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-        
-        try {
-            const response = await fetch('/signup', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ full_name: fullName, username, email, password })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showWelcomePopup();
-            } else {
-                errorDiv.textContent = data.message || 'Signup failed';
-                btn.disabled = false;
-                btn.textContent = 'Create Account';
-            }
-        } catch (error) {
-            errorDiv.textContent = 'An error occurred. Please try again.';
-            btn.disabled = false;
-            btn.textContent = 'Create Account';
-        }
-    }
-</script>
 {% endblock %}
