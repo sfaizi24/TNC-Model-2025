@@ -1,5 +1,5 @@
 # Database files
-*.db
+montecarlo.db
 *.db-journal
 
 # Python
