@@ -28,6 +28,7 @@ def load_user(user_id):
 class UserSessionStorage(BaseStorage):
 
     def get(self, blueprint):
+        from app import db
         try:
             token = db.session.query(OAuth).filter_by(
                 user_id=current_user.get_id(),
@@ -39,6 +40,7 @@ class UserSessionStorage(BaseStorage):
         return token
 
     def set(self, blueprint, token):
+        from app import db
         db.session.query(OAuth).filter_by(
             user_id=current_user.get_id(),
             browser_session_key=g.browser_session_key,
@@ -53,6 +55,7 @@ class UserSessionStorage(BaseStorage):
         db.session.commit()
 
     def delete(self, blueprint):
+        from app import db
         db.session.query(OAuth).filter_by(
             user_id=current_user.get_id(),
             browser_session_key=g.browser_session_key,
