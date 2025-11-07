@@ -133,6 +133,37 @@ def get_matchups():
         traceback.print_exc()
         return jsonify([])
 
+@app.route('/api/team_performance')
+@require_login
+def get_team_performance():
+    try:
+        conn = sqlite3.connect(ODDS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM betting_odds_team_ou
+            WHERE week = 10
+            ORDER BY owner
+        """)
+        
+        teams = []
+        for row in cursor.fetchall():
+            teams.append({
+                'team_id': row['team_id'],
+                'owner': row['owner'],
+                'line': row['line'],
+                'over_prob': row['over_prob'],
+                'under_prob': row['under_prob']
+            })
+        
+        conn.close()
+        return jsonify(teams)
+    except Exception as e:
+        print(f"Error getting team performance: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/place_bet', methods=['POST'])
 @require_login
 def place_bet():

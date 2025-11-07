@@ -427,7 +427,7 @@
 
 <div class="betting-tabs">
     <button class="betting-tab active" data-tab="matchups-moneyline">Matchups Moneyline</button>
-    <button class="betting-tab" data-tab="over-under">Over/Under</button>
+    <button class="betting-tab" data-tab="team-performance">Individual Team Performance</button>
     <button class="betting-tab" data-tab="player-props">Player Props</button>
     <button class="betting-tab" data-tab="highest-scorer">Highest Scorer</button>
     <button class="betting-tab" data-tab="lowest-scorer">Lowest Scorer</button>
@@ -439,10 +439,9 @@
     </div>
 </div>
 
-<div id="over-under" class="betting-content">
-    <div class="coming-soon">
-        <h3>Over/Under Betting</h3>
-        <p>Coming soon...</p>
+<div id="team-performance" class="betting-content">
+    <div class="matchups-grid" id="teamPerformanceGrid">
+        <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading team performance bets...</p>
     </div>
 </div>
 
@@ -715,10 +714,132 @@ async function removeBet(betId) {
     }
 }
 
-// Initialize - load bets first, then matchups
+// Store team performance data globally
+let allTeams = [];
+let selectedTeamBets = {};
+
+// Load team performance
+async function loadTeamPerformance() {
+    try {
+        const response = await fetch('/api/team_performance');
+        allTeams = await response.json();
+        renderTeamPerformance();
+    } catch (error) {
+        console.error('Error loading team performance:', error);
+    }
+}
+
+// Render team performance bets
+function renderTeamPerformance() {
+    const grid = document.getElementById('teamPerformanceGrid');
+    
+    grid.innerHTML = allTeams.map((t, idx) => {
+        return `
+            <div class="matchup-card">
+                <div class="teams-container">
+                    <div class="team-section">
+                        <div class="team-name">${t.owner} to score ${t.line.toFixed(1)} points</div>
+                        <div class="win-prob">${(t.under_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button" 
+                                onclick="selectTeamOdds(${idx}, 'under')" 
+                                id="team-odds-${idx}-under">
+                            Under
+                        </button>
+                    </div>
+                    <div class="vs-text">OR</div>
+                    <div class="team-section">
+                        <div class="team-name">&nbsp;</div>
+                        <div class="win-prob">${(t.over_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button" 
+                                onclick="selectTeamOdds(${idx}, 'over')" 
+                                id="team-odds-${idx}-over">
+                            Over
+                        </button>
+                    </div>
+                </div>
+                <div class="potential-win" id="team-potential-${idx}"></div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="team-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateTeamPotentialWin(${idx})">
+                    </div>
+                    <button class="btn-place-bet" id="team-btn-${idx}" onclick="placeTeamBet(${idx})" disabled>
+                        Place Bet
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select team odds
+function selectTeamOdds(teamIdx, choice) {
+    const otherChoice = choice === 'over' ? 'under' : 'over';
+    const btn1 = document.getElementById(`team-odds-${teamIdx}-${choice}`);
+    const btn2 = document.getElementById(`team-odds-${teamIdx}-${otherChoice}`);
+    
+    btn1.classList.add('selected');
+    btn2.classList.remove('selected');
+    
+    selectedTeamBets[teamIdx] = { choice };
+    updateTeamPotentialWin(teamIdx);
+}
+
+// Update potential win for team bets (even money, no odds)
+function updateTeamPotentialWin(teamIdx) {
+    const amountInput = document.getElementById(`team-amount-${teamIdx}`);
+    const potentialDiv = document.getElementById(`team-potential-${teamIdx}`);
+    const btn = document.getElementById(`team-btn-${teamIdx}`);
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    const selected = selectedTeamBets[teamIdx];
+    
+    // Even money bet - win amount equals bet amount
+    if (selected && amount > 0) {
+        const win = amount;
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else if (!selected && amount > 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Select Over/Under';
+        btn.disabled = true;
+    } else if (selected && amount === 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Place Bet';
+        btn.disabled = true;
+    }
+}
+
+// Place team performance bet
+async function placeTeamBet(teamIdx) {
+    const selected = selectedTeamBets[teamIdx];
+    const amount = parseFloat(document.getElementById(`team-amount-${teamIdx}`).value);
+    
+    if (!selected || !amount || amount <= 0) {
+        alert('Please select over/under and enter a valid bet amount');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        alert('Insufficient balance');
+        return;
+    }
+    
+    alert('Team performance betting coming soon! This will be connected once the backend supports it.');
+}
+
+// Initialize - load bets first, then matchups and team performance
 async function initialize() {
     await loadActiveBets();
     await loadMatchups();
+    await loadTeamPerformance();
 }
 
 initialize();

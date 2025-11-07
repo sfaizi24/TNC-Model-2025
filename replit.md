@@ -53,6 +53,23 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Individual Team Performance Betting Tab**:
+    - New betting type: Over/Under on team point totals
+    - Format: "owner to score XXX points" with "Over" and "Under" buttons
+    - No odds displayed on buttons (even money bets)
+    - Real data from betting_odds_team_ou table in odds.db
+    - Shows win probabilities for both over and under
+    - API endpoint: GET /api/team_performance
+    - Note: Backend betting logic placeholder (alerts "coming soon")
+  
+  - **Fixed Mobile Zoom Issues**:
+    - Added maximum-scale=1.0 and user-scalable=no to viewport meta tag
+    - Prevents unwanted zoom when tapping inputs or keyboard pops up
+  
+  - **Optimized Matchup Card Spacing**:
+    - Removed unnecessary grey matchup title text
+    - Reduced padding between odds and bet placement controls
+    - Tighter margins throughout (12px → 8px, 8px → 4px)
   - **Horizontal Matchup Card Layout**:
     - **Redesigned matchup cards to be fully horizontal** - minimizes vertical space usage:
       - Teams side-by-side with odds buttons inline (Team 1 + Odds | VS | Team 2 + Odds)
