@@ -461,9 +461,10 @@
         align-items: center;
         gap: 12px;
         padding: 12px;
-        background: var(--fanduel-blue);
+        background: var(--fanduel-dark);
         border-radius: 6px;
         margin-bottom: 8px;
+        transition: all 0.3s ease;
     }
     
     .hs-win-prob {
@@ -485,11 +486,15 @@
         font-size: 18px;
         font-weight: 700;
         text-align: right;
+        transition: color 0.3s ease;
     }
     
     .matchup-card.selected .hs-team-row {
         background: var(--fanduel-blue);
-        box-shadow: 0 0 0 3px rgba(20, 147, 255, 0.3);
+    }
+    
+    .matchup-card.selected .hs-odds {
+        color: white;
     }
     
     @media (max-width: 767px) {
