@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - TNCasino{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 32px;
+        color: var(--text-primary);
+    }
+    
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .admin-card {
+        background: var(--fanduel-gray);
+        border-radius: 12px;
+        padding: 25px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .admin-card h3 {
+        color: var(--fanduel-blue);
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 12px;
+        background: var(--fanduel-dark);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: var(--fanduel-blue);
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        background: #0D7FE8;
+    }
+    
+    .btn-success {
+        background: var(--success-green);
+    }
+    
+    .btn-success:hover {
+        background: #2ea855;
+    }
+    
+    .btn-danger {
+        background: #ff4444;
+    }
+    
+    .btn-danger:hover {
+        background: #dd3333;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 12px;
+        background: var(--fanduel-dark);
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    td {
+        padding: 15px 12px;
+        border-bottom: 1px solid var(--fanduel-light-gray);
+        color: var(--text-primary);
+    }
+    
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .message {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .message-success {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--success-green);
+    }
+    
+    .message-error {
+        background: rgba(255, 68, 68, 0.2);
+        color: #ff4444;
+    }
+    
+    @media (min-width: 768px) {
+        .admin-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">🔧 Admin Panel</h1>
+</div>
+
+<div class="admin-grid">
+    <div class="admin-card">
+        <h3>Set Betting Period</h3>
+        <div id="setPeriodMessage"></div>
+        <form id="setPeriodForm">
+            <div class="form-group">
+                <label class="form-label">Week</label>
+                <input type="number" class="form-input" id="periodWeek" value="10" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Lock Date & Time</label>
+                <input type="datetime-local" class="form-input" id="periodLockTime" required>
+            </div>
+            <button type="submit" class="btn">Set Lock Time</button>
+        </form>
+    </div>
+    
+    <div class="admin-card">
+        <h3>Current Betting Periods</h3>
+        <div id="periodsTable">Loading...</div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3>Pending Bets - Week <span id="currentWeek"></span></h3>
+    <div id="settleMessage"></div>
+    <div id="pendingBetsTable">Loading...</div>
+</div>
+
+<div class="admin-card">
+    <h3>Mark Week as Settled</h3>
+    <div id="settleWeekMessage"></div>
+    <form id="settleWeekForm" style="display: flex; gap: 10px; align-items: end;">
+        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+            <label class="form-label">Week</label>
+            <input type="number" class="form-input" id="settleWeekNumber" required>
+        </div>
+        <button type="submit" class="btn">Mark Week as Settled</button>
+    </form>
+</div>
+
+<script>
+    let currentWeek = null;
+    
+    async function getCurrentWeek() {
+        try {
+            const periodsResponse = await fetch('/api/admin/betting_periods');
+            const periods = await periodsResponse.json();
+            
+            const unsettledPeriods = periods.filter(p => !p.is_settled);
+            if (unsettledPeriods.length > 0) {
+                return unsettledPeriods[0].week;
+            }
+            
+            return 10;
+        } catch (error) {
+            console.error('Error getting current week:', error);
+            return 10;
+        }
+    }
+    
+    async function loadBettingPeriods() {
+        try {
+            const response = await fetch('/api/admin/betting_periods');
+            const periods = await response.json();
+            
+            if (periods.length === 0) {
+                document.getElementById('periodsTable').innerHTML = '<p style="color: var(--text-secondary);">No betting periods set</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>Week</th><th>Lock Time</th><th>Status</th></tr></thead><tbody>';
+            periods.forEach(period => {
+                let status = period.is_settled ? 'Settled' : (period.is_locked ? 'Locked' : 'Open');
+                html += `<tr>
+                    <td>Week ${period.week}</td>
+                    <td>${period.lock_time}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('periodsTable').innerHTML = html;
+        } catch (error) {
+            console.error('Error loading betting periods:', error);
+            document.getElementById('periodsTable').innerHTML = '<p style="color: #ff4444;">Error loading periods</p>';
+        }
+    }
+    
+    async function loadPendingBets() {
+        try {
+            const response = await fetch(`/api/admin/pending_bets?week=${currentWeek}`);
+            const bets = await response.json();
+            
+            if (bets.length === 0) {
+                document.getElementById('pendingBetsTable').innerHTML = '<p style="color: var(--text-secondary);">No pending bets for this week</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>User</th><th>Description</th><th>Amount</th><th>Odds</th><th>Actions</th></tr></thead><tbody>';
+            bets.forEach(bet => {
+                html += `<tr>
+                    <td>${bet.user_id.substring(0, 8)}...</td>
+                    <td>${bet.description}</td>
+                    <td>$${bet.amount.toFixed(2)}</td>
+                    <td>${bet.odds}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="settleBet(${bet.id}, true)">Win</button>
+                        <button class="btn btn-danger btn-sm" onclick="settleBet(${bet.id}, false)">Loss</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('pendingBetsTable').innerHTML = html;
+        } catch (error) {
+            console.error('Error loading pending bets:', error);
+            document.getElementById('pendingBetsTable').innerHTML = '<p style="color: #ff4444;">Error loading bets</p>';
+        }
+    }
+    
+    document.getElementById('setPeriodForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const week = document.getElementById('periodWeek').value;
+        const lockTime = document.getElementById('periodLockTime').value;
+        
+        try {
+            const response = await fetch('/api/admin/set_betting_period', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ week, lock_time: lockTime })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('setPeriodMessage').innerHTML = '<div class="message message-success">Betting period set successfully!</div>';
+                loadBettingPeriods();
+            } else {
+                document.getElementById('setPeriodMessage').innerHTML = `<div class="message message-error">${result.error}</div>`;
+            }
+        } catch (error) {
+            console.error('Error setting betting period:', error);
+            document.getElementById('setPeriodMessage').innerHTML = '<div class="message message-error">Error setting betting period</div>';
+        }
+    });
+    
+    async function settleBet(betId, won) {
+        try {
+            const response = await fetch('/api/admin/settle_bet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bet_id: betId, won: won })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('settleMessage').innerHTML = `<div class="message message-success">Bet settled as ${won ? 'WON' : 'LOST'}!</div>`;
+                loadPendingBets();
+            } else {
+                document.getElementById('settleMessage').innerHTML = `<div class="message message-error">${result.error}</div>`;
+            }
+        } catch (error) {
+            console.error('Error settling bet:', error);
+            document.getElementById('settleMessage').innerHTML = '<div class="message message-error">Error settling bet</div>';
+        }
+    }
+    
+    document.getElementById('settleWeekForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const week = document.getElementById('settleWeekNumber').value;
+        
+        try {
+            const response = await fetch('/api/admin/settle_week', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ week: parseInt(week) })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('settleWeekMessage').innerHTML = '<div class="message message-success">Week marked as settled!</div>';
+                loadBettingPeriods();
+            } else {
+                document.getElementById('settleWeekMessage').innerHTML = `<div class="message message-error">${result.error}</div>`;
+            }
+        } catch (error) {
+            console.error('Error settling week:', error);
+            document.getElementById('settleWeekMessage').innerHTML = '<div class="message message-error">Error settling week</div>';
+        }
+    });
+    
+    async function initializeAdmin() {
+        currentWeek = await getCurrentWeek();
+        document.getElementById('currentWeek').textContent = currentWeek;
+        document.getElementById('periodWeek').value = currentWeek;
+        document.getElementById('settleWeekNumber').value = currentWeek;
+        
+        loadBettingPeriods();
+        loadPendingBets();
+    }
+    
+    initializeAdmin();
+</script>
+{% endblock %}

@@ -29,10 +29,58 @@ from database import db
 db.init_app(app)
 
 # Create tables
+def run_schema_migrations():
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        
+        if 'weekly_stats' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('weekly_stats')]
+            
+            if 'active_bets_amount' not in columns:
+                logging.info("Adding active_bets_amount column to weekly_stats")
+                with db.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN active_bets_amount DOUBLE PRECISION DEFAULT 0.0'))
+                    conn.execute(text('''
+                        UPDATE weekly_stats ws
+                        SET active_bets_amount = COALESCE((
+                            SELECT SUM(b.amount)
+                            FROM bets b
+                            WHERE b.user_id = ws.user_id
+                              AND b.week = ws.week
+                              AND b.status = 'pending'
+                        ), 0.0)
+                    '''))
+                    conn.commit()
+                logging.info("active_bets_amount column added and backfilled")
+            
+            if 'settled_pnl' not in columns:
+                logging.info("Adding settled_pnl column to weekly_stats")
+                with db.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN settled_pnl DOUBLE PRECISION DEFAULT 0.0'))
+                    conn.execute(text('''
+                        UPDATE weekly_stats ws
+                        SET settled_pnl = COALESCE((
+                            SELECT SUM(b.result)
+                            FROM bets b
+                            WHERE b.user_id = ws.user_id
+                              AND b.week = ws.week
+                              AND b.status IN ('won', 'lost')
+                        ), 0.0)
+                    '''))
+                    conn.commit()
+                logging.info("settled_pnl column added and backfilled")
+    except Exception as e:
+        logging.error(f"Migration error: {e}")
+        import traceback
+        traceback.print_exc()
+
 with app.app_context():
     import models  # noqa: F401
     db.create_all()
     logging.info("Database tables created")
+    run_schema_migrations()
+    logging.info("Schema migrations completed")
 
 # Import Replit Auth
 from replit_auth import login_manager, make_replit_blueprint, require_login
@@ -101,11 +149,12 @@ def get_matchups():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
+        week = get_current_week()
         cursor.execute("""
             SELECT * FROM betting_odds_matchup_ml
-            WHERE week = 10
+            WHERE week = ?
             ORDER BY matchup
-        """)
+        """, (week,))
         
         matchups = []
         for row in cursor.fetchall():
@@ -140,11 +189,12 @@ def get_team_performance():
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+        week = get_current_week()
         cursor.execute("""
             SELECT * FROM betting_odds_team_ou
-            WHERE week = 10
+            WHERE week = ?
             ORDER BY owner
-        """)
+        """, (week,))
         
         teams = []
         for row in cursor.fetchall():
@@ -171,12 +221,13 @@ def get_highest_scorer():
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+        week = get_current_week()
         cursor.execute("""
             SELECT owner, probability, odds
             FROM betting_odds_highest_scorer
-            WHERE week = 10
+            WHERE week = ?
             ORDER BY probability DESC
-        """)
+        """, (week,))
         
         teams = []
         for row in cursor.fetchall():
@@ -201,12 +252,13 @@ def get_lowest_scorer():
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+        week = get_current_week()
         cursor.execute("""
             SELECT owner, probability, odds
             FROM betting_odds_lowest_scorer
-            WHERE week = 10
+            WHERE week = ?
             ORDER BY probability DESC
-        """)
+        """, (week,))
         
         teams = []
         for row in cursor.fetchall():
@@ -233,10 +285,11 @@ def get_lineup(owner):
         cursor = conn.cursor()
         
         # Fetch lineup for the owner with proper slot ordering
+        week = get_current_week()
         cursor.execute("""
             SELECT slot, player_name, position, mu
             FROM team_lineups
-            WHERE owner = ? AND week = 10 
+            WHERE owner = ? AND week = ? 
                 AND slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
             ORDER BY 
                 CASE slot
@@ -251,7 +304,7 @@ def get_lineup(owner):
                     WHEN 'DEF' THEN 9
                     ELSE 10
                 END
-        """, (owner,))
+        """, (owner, week))
         
         lineup = []
         for row in cursor.fetchall():
@@ -270,6 +323,34 @@ def get_lineup(owner):
         traceback.print_exc()
         return jsonify([])
 
+def get_current_week():
+    from models import BettingPeriod
+    from datetime import datetime
+    
+    period = db.session.query(BettingPeriod).filter_by(is_settled=False).order_by(BettingPeriod.week.desc()).first()
+    
+    if period:
+        return period.week
+    
+    return 10
+
+def check_betting_period_lock(week):
+    from models import BettingPeriod
+    from datetime import datetime
+    
+    period = db.session.query(BettingPeriod).filter_by(week=week).first()
+    
+    if not period:
+        return None
+    
+    if period.is_locked or datetime.now() >= period.lock_time:
+        if not period.is_locked:
+            period.is_locked = True
+            db.session.commit()
+        return period.lock_time
+    
+    return None
+
 @app.route('/api/place_bet', methods=['POST'])
 @require_login
 def place_bet():
@@ -279,6 +360,14 @@ def place_bet():
     data = request.get_json()
     bet_type = data.get('bet_type', 'moneyline')
     amount = float(data.get('amount', 0))
+    week = get_current_week()
+    
+    lock_time = check_betting_period_lock(week)
+    if lock_time:
+        return jsonify({
+            'success': False,
+            'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p")}'
+        })
     
     if amount <= 0:
         return jsonify({'success': False, 'error': 'Invalid bet amount'})
@@ -302,7 +391,6 @@ def place_bet():
             else:
                 potential_win = amount * (100 / abs(odds_num))
             
-            week = 10
             weekly_stat = db.session.query(WeeklyStats).filter_by(
                 user_id=current_user.id,
                 week=week
@@ -315,6 +403,8 @@ def place_bet():
                     starting_balance=current_user.account_balance,
                     ending_balance=current_user.account_balance,
                     pnl=0.0,
+                    active_bets_amount=0.0,
+                    settled_pnl=0.0,
                     bets_placed=0,
                     bets_won=0
                 )
@@ -339,6 +429,7 @@ def place_bet():
             db.session.add(bet)
             
             weekly_stat.bets_placed += 1
+            weekly_stat.active_bets_amount += amount
             weekly_stat.ending_balance = current_user.account_balance
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
@@ -361,7 +452,6 @@ def place_bet():
             else:
                 potential_win = amount * (100 / abs(odds_num))
             
-            week = 10
             weekly_stat = db.session.query(WeeklyStats).filter_by(
                 user_id=current_user.id,
                 week=week
@@ -374,6 +464,8 @@ def place_bet():
                     starting_balance=current_user.account_balance,
                     ending_balance=current_user.account_balance,
                     pnl=0.0,
+                    active_bets_amount=0.0,
+                    settled_pnl=0.0,
                     bets_placed=0,
                     bets_won=0
                 )
@@ -398,6 +490,7 @@ def place_bet():
             db.session.add(bet)
             
             weekly_stat.bets_placed += 1
+            weekly_stat.active_bets_amount += amount
             weekly_stat.ending_balance = current_user.account_balance
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
@@ -413,7 +506,7 @@ def place_bet():
             conn = sqlite3.connect(ODDS_DB_PATH)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM betting_odds_team_ou WHERE week = 10 ORDER BY owner")
+            cursor.execute("SELECT * FROM betting_odds_team_ou WHERE week = ? ORDER BY owner", (week,))
             teams = cursor.fetchall()
             conn.close()
             
@@ -427,7 +520,6 @@ def place_bet():
             # Even money bet - win equals bet amount
             potential_win = amount
             
-            week = 10
             weekly_stat = db.session.query(WeeklyStats).filter_by(
                 user_id=current_user.id,
                 week=week
@@ -440,6 +532,8 @@ def place_bet():
                     starting_balance=current_user.account_balance,
                     ending_balance=current_user.account_balance,
                     pnl=0.0,
+                    active_bets_amount=0.0,
+                    settled_pnl=0.0,
                     bets_placed=0,
                     bets_won=0
                 )
@@ -464,6 +558,7 @@ def place_bet():
             db.session.add(bet)
             
             weekly_stat.bets_placed += 1
+            weekly_stat.active_bets_amount += amount
             weekly_stat.ending_balance = current_user.account_balance
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
@@ -494,7 +589,7 @@ def place_bet():
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM betting_odds_matchup_ml WHERE week = 10 ORDER BY matchup")
+        cursor.execute("SELECT * FROM betting_odds_matchup_ml WHERE week = ? ORDER BY matchup", (week,))
         matchups = cursor.fetchall()
         conn.close()
         
@@ -522,8 +617,6 @@ def place_bet():
         else:
             potential_win = amount * (100 / abs(odds_num))
         
-        week = 10
-        
         weekly_stat = db.session.query(WeeklyStats).filter_by(
             user_id=current_user.id, week=week
         ).first()
@@ -535,6 +628,8 @@ def place_bet():
                 starting_balance=current_user.account_balance,
                 ending_balance=current_user.account_balance,
                 pnl=0.0,
+                active_bets_amount=0.0,
+                settled_pnl=0.0,
                 bets_placed=0,
                 bets_won=0
             )
@@ -559,6 +654,7 @@ def place_bet():
         db.session.add(bet)
         
         weekly_stat.bets_placed += 1
+        weekly_stat.active_bets_amount += amount
         weekly_stat.ending_balance = current_user.account_balance
         weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
         
@@ -619,6 +715,13 @@ def remove_bet(bet_id):
         if not bet:
             return jsonify({'success': False, 'error': 'Bet not found'})
         
+        lock_time = check_betting_period_lock(bet.week)
+        if lock_time:
+            return jsonify({
+                'success': False,
+                'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p")}'
+            })
+        
         current_user.account_balance += bet.amount
         
         weekly_stat = db.session.query(WeeklyStats).filter_by(
@@ -628,6 +731,7 @@ def remove_bet(bet_id):
         
         if weekly_stat:
             weekly_stat.bets_placed -= 1
+            weekly_stat.active_bets_amount -= bet.amount
             weekly_stat.ending_balance = current_user.account_balance
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
         
@@ -709,14 +813,15 @@ def get_team_players():
         proj_conn.row_factory = sqlite3.Row
         proj_cursor = proj_conn.cursor()
         
+        week = get_current_week()
         placeholders = ','.join('?' * len(player_ids))
         proj_cursor.execute(f"""
             SELECT player_name, position, mu, sleeper_player_id
             FROM player_week_stats
             WHERE sleeper_player_id IN ({placeholders})
-            AND week = 10
+            AND week = ?
             ORDER BY mu DESC
-        """, player_ids)
+        """, player_ids + [week])
         
         players = []
         for row in proj_cursor.fetchall():
@@ -739,6 +844,190 @@ def get_team_players():
         import traceback
         traceback.print_exc()
         return jsonify({'players': []})
+
+@app.route('/admin')
+@require_login
+def admin():
+    return render_template('admin.html', user=current_user)
+
+@app.route('/api/admin/betting_periods', methods=['GET'])
+@require_login
+def get_betting_periods():
+    from models import BettingPeriod
+    
+    try:
+        periods = db.session.query(BettingPeriod).order_by(BettingPeriod.week.desc()).all()
+        
+        periods_data = []
+        for period in periods:
+            periods_data.append({
+                'id': period.id,
+                'week': period.week,
+                'lock_time': period.lock_time.strftime('%Y-%m-%d %I:%M %p'),
+                'is_locked': period.is_locked,
+                'is_settled': period.is_settled
+            })
+        
+        return jsonify(periods_data)
+    except Exception as e:
+        print(f"Error getting betting periods: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
+@app.route('/api/admin/set_betting_period', methods=['POST'])
+@require_login
+def set_betting_period():
+    from models import BettingPeriod
+    from datetime import datetime
+    
+    data = request.get_json()
+    week = data.get('week')
+    lock_time_str = data.get('lock_time')
+    
+    if not week or not lock_time_str:
+        return jsonify({'success': False, 'error': 'Week and lock time required'})
+    
+    try:
+        lock_time = datetime.strptime(lock_time_str, '%Y-%m-%dT%H:%M')
+        
+        period = db.session.query(BettingPeriod).filter_by(week=week).first()
+        
+        if period:
+            period.lock_time = lock_time
+            period.is_locked = False
+        else:
+            period = BettingPeriod(week=week, lock_time=lock_time, is_locked=False, is_settled=False)
+            db.session.add(period)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error setting betting period: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/pending_bets', methods=['GET'])
+@require_login
+def get_pending_bets():
+    from models import Bet
+    
+    week = request.args.get('week', 10, type=int)
+    
+    try:
+        bets = db.session.query(Bet).filter_by(week=week, status='pending').all()
+        
+        bets_data = []
+        for bet in bets:
+            bets_data.append({
+                'id': bet.id,
+                'user_id': bet.user_id,
+                'description': bet.description,
+                'amount': bet.amount,
+                'odds': bet.odds,
+                'potential_win': bet.potential_win,
+                'bet_type': bet.bet_type
+            })
+        
+        return jsonify(bets_data)
+    except Exception as e:
+        print(f"Error getting pending bets: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
+@app.route('/api/admin/settle_bet', methods=['POST'])
+@require_login
+def settle_bet():
+    from models import Bet, WeeklyStats, User
+    from datetime import datetime
+    
+    data = request.get_json()
+    bet_id = data.get('bet_id')
+    won = data.get('won', False)
+    
+    if not bet_id:
+        return jsonify({'success': False, 'error': 'Bet ID required'})
+    
+    try:
+        bet = db.session.query(Bet).filter_by(id=bet_id).first()
+        
+        if not bet:
+            return jsonify({'success': False, 'error': 'Bet not found'})
+        
+        if bet.status != 'pending':
+            return jsonify({'success': False, 'error': 'Bet already settled'})
+        
+        user = db.session.query(User).filter_by(id=bet.user_id).first()
+        
+        if won:
+            payout = bet.amount + bet.potential_win
+            bet.result = bet.potential_win
+            bet.status = 'won'
+        else:
+            payout = 0
+            bet.result = -bet.amount
+            bet.status = 'lost'
+        
+        user.account_balance += payout
+        user.total_pnl += bet.result
+        
+        bet.settled_at = datetime.now()
+        
+        weekly_stat = db.session.query(WeeklyStats).filter_by(
+            user_id=bet.user_id,
+            week=bet.week
+        ).first()
+        
+        if weekly_stat:
+            weekly_stat.active_bets_amount -= bet.amount
+            weekly_stat.settled_pnl += bet.result
+            weekly_stat.ending_balance = user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            if won:
+                weekly_stat.bets_won += 1
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error settling bet: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/admin/settle_week', methods=['POST'])
+@require_login
+def settle_week():
+    from models import BettingPeriod
+    
+    data = request.get_json()
+    week = data.get('week')
+    
+    if not week:
+        return jsonify({'success': False, 'error': 'Week required'})
+    
+    try:
+        period = db.session.query(BettingPeriod).filter_by(week=week).first()
+        
+        if not period:
+            return jsonify({'success': False, 'error': 'Betting period not found'})
+        
+        period.is_settled = True
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error settling week: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
 
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'

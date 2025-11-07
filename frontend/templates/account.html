@@ -254,15 +254,31 @@
     <div class="account-card">
         <h3>Weekly Performance</h3>
         {% if weekly_stats %}
-        <div class="weekly-stats-grid">
-            {% for stat in weekly_stats[:4] %}
-            <div class="stat-card">
-                <div class="week-label">Week {{ stat.week }}</div>
-                <div class="pnl-value {% if stat.pnl >= 0 %}positive{% else %}negative{% endif %}">
-                    {% if stat.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.pnl) }}
-                </div>
-            </div>
-            {% endfor %}
+        <div class="bets-table">
+            <table style="font-size: 14px;">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Active Bets</th>
+                        <th>Settled P&L</th>
+                        <th>Total P&L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in weekly_stats[:4] %}
+                    <tr>
+                        <td>Week {{ stat.week }}</td>
+                        <td class="negative">-${{ "%.0f"|format(stat.active_bets_amount) }}</td>
+                        <td class="{% if stat.settled_pnl >= 0 %}positive{% else %}negative{% endif %}">
+                            {% if stat.settled_pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.settled_pnl) }}
+                        </td>
+                        <td class="{% if stat.pnl >= 0 %}positive{% else %}negative{% endif %}">
+                            {% if stat.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.pnl) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         {% else %}
         <p class="no-bets">No weekly stats yet. Start betting!</p>

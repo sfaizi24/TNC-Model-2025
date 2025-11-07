@@ -143,6 +143,7 @@
                 <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
                 <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
                 <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
+                <a href="/admin" class="nav-link {% if request.path == '/admin' %}active{% endif %}">Admin</a>
                 <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
                 {% else %}
                 <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
@@ -158,6 +159,7 @@
         <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
         <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
         <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
+        <a href="/admin" class="nav-link {% if request.path == '/admin' %}active{% endif %}">Admin</a>
         <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
         {% else %}
         <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>

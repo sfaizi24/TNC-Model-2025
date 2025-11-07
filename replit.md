@@ -11,7 +11,28 @@ Do not make changes to the folder `Z`.
 Do not make changes to the file `Y`.
 
 ## System Architecture
-The platform is built around a Flask web server, serving HTML templates located in `frontend/templates/index.html` with static assets in `frontend/static/images/`. The backend utilizes SQLite databases (`projections.db`, `league.db`) for data storage. Data acquisition is handled by multiple web scrapers in `backend/scrapers/`, employing Selenium and Playwright. Data processing and analysis are conducted through a series of 7 Jupyter notebooks in `backend/notebooks/`, which implement a pipeline including league data fetching, projection scraping, data cleaning, player matching, statistical analysis, lineup optimization, and Monte Carlo simulations. The UI/UX features a FanDuel-inspired dark theme with a focus on mobile-responsiveness, using card-based layouts and intuitive navigation. Key features include a real-time betting system with various bet types (matchups, over/unders, highest/lowest scorer), an analytics page for team and player performance, and user account management.
+The platform is built around a Flask web server, serving HTML templates located in `frontend/templates/index.html` with static assets in `frontend/static/images/`. The backend utilizes SQLite databases (`projections.db`, `league.db`) for data storage. Data acquisition is handled by multiple web scrapers in `backend/scrapers/`, employing Selenium and Playwright. Data processing and analysis are conducted through a series of 7 Jupyter notebooks in `backend/notebooks/`, which implement a pipeline including league data fetching, projection scraping, data cleaning, player matching, statistical analysis, lineup optimization, and Monte Carlo simulations. The UI/UX features a FanDuel-inspired dark theme with a focus on mobile-responsiveness, using card-based layouts and intuitive navigation. 
+
+### Core Features
+- **Real-time Betting System**: Various bet types including matchups, over/unders, highest/lowest scorer
+- **Betting Period Management**: Time-based betting deadlines with automatic lock enforcement
+- **Admin Settlement Interface**: Complete bet settlement workflow with win/loss tracking
+- **Performance Tracking**: Separate tracking of active bets vs settled performance in weekly stats
+- **Analytics Dashboard**: Team and player performance insights
+- **User Account Management**: Profile management, betting history, and weekly performance tracking
+
+### Betting Lifecycle
+1. **Betting Period Setup**: Admin sets lock time for a week via `/admin` interface
+2. **Open Betting**: Users can place and remove bets until the lock time
+3. **Automatic Lock**: System automatically locks bets at the configured deadline
+4. **Settlement**: Admin settles individual bets as won/lost, crediting/debiting user balances
+5. **Week Closure**: Admin marks week as settled and creates a new betting period for next week
+
+### Database Models
+- **User**: Account information, balance, total P&L
+- **Bet**: Individual bets with type, amount, odds, status (pending/won/lost)
+- **WeeklyStats**: Performance tracking with active_bets_amount and settled_pnl
+- **BettingPeriod**: Week management with lock_time, is_locked, is_settled flags
 
 ## External Dependencies
 - **Python 3.11**

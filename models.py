@@ -61,6 +61,8 @@ class WeeklyStats(db.Model):
     starting_balance = db.Column(db.Float, nullable=False)
     ending_balance = db.Column(db.Float, nullable=False)
     pnl = db.Column(db.Float, nullable=False)
+    active_bets_amount = db.Column(db.Float, default=0.0)
+    settled_pnl = db.Column(db.Float, default=0.0)
     bets_placed = db.Column(db.Integer, default=0)
     bets_won = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.now)
@@ -68,3 +70,14 @@ class WeeklyStats(db.Model):
     user = db.relationship(User, backref='weekly_stats')
     
     __table_args__ = (UniqueConstraint('user_id', 'week', name='uq_user_week'),)
+
+class BettingPeriod(db.Model):
+    __tablename__ = 'betting_periods'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    week = db.Column(db.Integer, unique=True, nullable=False)
+    lock_time = db.Column(db.DateTime, nullable=False)
+    is_locked = db.Column(db.Boolean, default=False)
+    is_settled = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
