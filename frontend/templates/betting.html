@@ -865,6 +865,10 @@ async function loadActiveBets() {
                 // Highest scorer bet - format: "Owner: Highest Scorer +637"
                 const owner = bet.description.split(':')[0].trim();
                 betInfo = `${owner} Highest Scorer $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Lowest Scorer')) {
+                // Lowest scorer bet - format: "Owner: Lowest Scorer +595"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} Lowest Scorer $${bet.amount.toFixed(0)}`;
             } else {
                 // Moneyline bet - format: "Owner1 vs Owner2: Team Odds"
                 const parts = bet.description.split(':');
@@ -890,6 +894,7 @@ async function loadActiveBets() {
         renderMatchups();
         if (allTeams.length > 0) renderTeamPerformance();
         if (allHighestScorer.length > 0) renderHighestScorer();
+        if (allLowestScorer.length > 0) renderLowestScorer();
     } catch (error) {
         console.error('Error loading active bets:', error);
     }
