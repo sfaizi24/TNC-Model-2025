@@ -821,12 +821,9 @@ async function loadActiveBets() {
         
         if (activeBetsData.length === 0) {
             compactContainer.innerHTML = '';
-            renderMatchups();
-            return;
-        }
-        
-        // Render compact bets at top
-        compactContainer.innerHTML = activeBetsData.map(bet => {
+        } else {
+            // Render compact bets at top
+            compactContainer.innerHTML = activeBetsData.map(bet => {
             let betInfo = '';
             
             if (bet.description.includes('O/U')) {
@@ -854,7 +851,8 @@ async function loadActiveBets() {
                     <button class="compact-bet-remove" onclick="removeBet(${bet.id})">Remove</button>
                 </div>
             `;
-        }).join('');
+            }).join('');
+        }
         
         // Re-render all tabs with bet indicators
         renderMatchups();
