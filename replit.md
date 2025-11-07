@@ -53,6 +53,29 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Replit Auth Integration**:
+    - Migrated from custom username/password authentication to Replit Auth (OpenID Connect)
+    - Authentication now supports Google, GitHub, X, Apple, and email/password login methods
+    - User database migrated from SQLite to PostgreSQL for production reliability
+    - Database Models:
+      - `User`: Replit user profile with balance tracking (starts at $1,000)
+      - `OAuth`: OAuth token storage for Replit Auth sessions
+      - `Bet`: User betting history with week tracking
+      - `WeeklyStats`: Weekly performance metrics (PnL, bets placed, bets won)
+    - Tech Stack Updates:
+      - Added Flask-SQLAlchemy for PostgreSQL ORM
+      - Added Flask-Login for session management
+      - Added Flask-Dance for OAuth2/OpenID Connect
+      - Added PyJWT for token decoding
+    - Auth Endpoints:
+      - `/auth`: Initiates Replit Auth login flow
+      - `/auth/logout`: Logs out and redirects to Replit logout
+      - All protected routes use `@require_login` decorator
+    - User Experience:
+      - Single sign-on with Replit account
+      - Automatic $1,000 balance for new users
+      - Profile info from Replit (name, email, profile picture)
+  
   - **Analytics Page Integration with Real Data**:
     - Added team dropdown populated from `backend/data/databases/league.db` (12 teams)
     - "All Teams" displays `simulation_distributions_overlay_week_10.png`
