@@ -53,18 +53,20 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
-  - **Analytics Page Integration**:
-    - Added team dropdown to select individual teams or "All Teams"
+  - **Analytics Page Integration with Real Data**:
+    - Added team dropdown populated from `backend/data/databases/league.db` (12 teams)
     - "All Teams" displays `simulation_distributions_overlay_week_10.png`
     - Individual team selection shows `dist_Team_{owner}_week_10.png`
     - Player roster table displays when team is selected:
-      - Shows first name, last name, position
+      - Shows player names, positions from `player_week_stats` table
       - Displays mean projected points (mu) from Monte Carlo simulations
       - Players sorted by projected points (descending)
-    - Added `player_stats` table to `projections.db`:
-      - Columns: week, player names, position, team_owner, mu, sigma
-      - Stores Monte Carlo simulation results
-    - New API endpoints: `/api/teams` and `/api/team_players`
+    - Data sources:
+      - Team rosters: `backend/data/databases/league.db` (rosters + users tables)
+      - Player stats: `backend/data/databases/projections.db` (player_week_stats table)
+    - New API endpoints:
+      - `/api/teams`: Returns all 12 team owners from league database
+      - `/api/team_players?team={owner}`: Returns starters with stats for selected team
   
 - **November 7, 2025**:
   - **TNCasino Transformation**: Rebranded as fantasy football betting platform

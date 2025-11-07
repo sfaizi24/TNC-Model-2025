@@ -2,9 +2,10 @@ from flask import Flask, render_template, send_from_directory, redirect, url_for
 import os
 from functools import wraps
 import sys
+import sqlite3
+import json
 sys.path.append('backend/scrapers')
 from database_users import UsersDB
-from database import ProjectionsDB
 
 app = Flask(__name__, 
             template_folder='frontend/templates',
@@ -12,7 +13,10 @@ app = Flask(__name__,
 app.secret_key = os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production')
 
 db = UsersDB()
-proj_db = ProjectionsDB()
+
+# Database paths
+LEAGUE_DB_PATH = 'backend/data/databases/league.db'
+PROJECTIONS_DB_PATH = 'backend/data/databases/projections.db'
 
 def login_required(f):
     """Decorator to require login."""
@@ -117,25 +121,97 @@ def serve_static(filename):
 def get_teams():
     """API endpoint to get list of teams."""
     try:
-        teams = proj_db.get_all_team_owners(week="10")
+        conn = sqlite3.connect(LEAGUE_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT u.username, u.display_name
+            FROM rosters r
+            LEFT JOIN users u ON r.owner_id = u.user_id
+            ORDER BY r.roster_id
+        """)
+        
+        teams = []
+        for row in cursor.fetchall():
+            owner = row['username'] or row['display_name']
+            if owner:
+                teams.append(owner)
+        
+        conn.close()
         return jsonify({'teams': teams})
     except Exception as e:
         print(f"Error getting teams: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'teams': []})
 
 @app.route('/api/team_players')
 @login_required
 def get_team_players():
     """API endpoint to get players for a specific team."""
-    team = request.args.get('team')
-    if not team:
+    team_owner = request.args.get('team')
+    if not team_owner:
         return jsonify({'error': 'Team parameter required'}), 400
     
     try:
-        players = proj_db.get_player_stats(week="10", team_owner=team)
+        # Get roster for this team
+        league_conn = sqlite3.connect(LEAGUE_DB_PATH)
+        league_conn.row_factory = sqlite3.Row
+        league_cursor = league_conn.cursor()
+        
+        league_cursor.execute("""
+            SELECT r.starters, r.roster_id
+            FROM rosters r
+            LEFT JOIN users u ON r.owner_id = u.user_id
+            WHERE u.username = ? OR u.display_name = ?
+        """, (team_owner, team_owner))
+        
+        roster = league_cursor.fetchone()
+        if not roster or not roster['starters']:
+            league_conn.close()
+            return jsonify({'players': []})
+        
+        # Parse the starters list (it's stored as a string representation of a list)
+        starters_str = roster['starters']
+        player_ids = json.loads(starters_str.replace("'", '"'))
+        
+        league_conn.close()
+        
+        # Get player stats from projections.db
+        proj_conn = sqlite3.connect(PROJECTIONS_DB_PATH)
+        proj_conn.row_factory = sqlite3.Row
+        proj_cursor = proj_conn.cursor()
+        
+        placeholders = ','.join('?' * len(player_ids))
+        proj_cursor.execute(f"""
+            SELECT player_name, position, mu, sleeper_player_id
+            FROM player_week_stats
+            WHERE sleeper_player_id IN ({placeholders})
+            AND week = 10
+            ORDER BY mu DESC
+        """, player_ids)
+        
+        players = []
+        for row in proj_cursor.fetchall():
+            name_parts = row['player_name'].split(' ', 1)
+            first_name = name_parts[0] if len(name_parts) > 0 else ''
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            players.append({
+                'player_first_name': first_name,
+                'player_last_name': last_name,
+                'position': row['position'],
+                'mu': float(row['mu'])
+            })
+        
+        proj_conn.close()
         return jsonify({'players': players})
+        
     except Exception as e:
         print(f"Error getting team players: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'players': []})
 
 if __name__ == '__main__':
