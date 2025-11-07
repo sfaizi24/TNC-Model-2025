@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 class ESPNScraper:
     """Scraper for ESPN fantasy projections."""
     
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, db_path: str = None):
         """Initialize the scraper with Chrome options."""
         options = webdriver.ChromeOptions()
         if headless:
@@ -40,6 +40,7 @@ class ESPNScraper:
         self.wait = WebDriverWait(self.driver, 15)
         self.source = "espn.com"
         self.url = "https://fantasy.espn.com/football/players/projections"
+        self.db_path = db_path or "projections.db"
     
     def _map_team_name(self, team_name: str) -> str:
         """
@@ -328,7 +329,7 @@ class ESPNScraper:
         
         if projections:
             print(f"\nSaving {len(projections)} projections to database...")
-            with ProjectionsDB() as db:
+            with ProjectionsDB(db_path=self.db_path) as db:
                 db.insert_projections_batch(projections)
             print("✓ Successfully saved to database!")
         else:

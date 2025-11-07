@@ -23,7 +23,7 @@ if os.name == 'nt':
 class FantasyProsScraper:
     """Scraper for FantasyPros consensus rankings."""
     
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, db_path: str = None):
         """Initialize the scraper with Chrome options."""
         options = webdriver.ChromeOptions()
         if headless:
@@ -35,6 +35,7 @@ class FantasyProsScraper:
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
         self.source = "fantasypros.com"
+        self.db_path = db_path or "projections.db"
         
         # Position pages (PPR for skill positions, standard for others)
         self.position_urls = {
@@ -304,7 +305,7 @@ class FantasyProsScraper:
         
         if projections:
             print(f"\nSaving {len(projections)} projections to database...")
-            with ProjectionsDB() as db:
+            with ProjectionsDB(db_path=self.db_path) as db:
                 db.insert_projections_batch(projections)
             print("✓ Successfully saved to database!")
         else:

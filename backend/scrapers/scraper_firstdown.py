@@ -23,7 +23,7 @@ if os.name == 'nt':
 class FirstDownStudioScraper:
     """Scraper for First Down Studio fantasy projections."""
     
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, db_path: str = None):
         """Initialize the scraper with Chrome options."""
         options = webdriver.ChromeOptions()
         if headless:
@@ -35,6 +35,7 @@ class FirstDownStudioScraper:
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
         self.source = "firstdown.studio"
+        self.db_path = db_path or "projections.db"
     
     def scrape_week_projections(self, week: str = "Week 8", scoring: str = "PPR") -> List[Dict]:
         """
@@ -223,7 +224,7 @@ class FirstDownStudioScraper:
         
         if projections:
             print(f"\nSaving {len(projections)} projections to database...")
-            with ProjectionsDB() as db:
+            with ProjectionsDB(db_path=self.db_path) as db:
                 db.insert_projections_batch(projections)
             print("✓ Successfully saved to database!")
         else:

@@ -23,10 +23,11 @@ log = logging.getLogger(__name__)
 class SleeperScraper:
     """Scraper for Sleeper fantasy projections using their undocumented API."""
     
-    def __init__(self):
+    def __init__(self, db_path: str = None):
         """Initialize the scraper."""
         self.source = "sleeper.com"
         self.base_url = "https://api.sleeper.app"
+        self.db_path = db_path or "projections.db"
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -290,7 +291,7 @@ class SleeperScraper:
         
         if projections:
             print(f"\nSaving {len(projections)} projections to database...")
-            with ProjectionsDB() as db:
+            with ProjectionsDB(db_path=self.db_path) as db:
                 db.insert_projections_batch(projections)
             print("✓ Successfully saved to database!")
         else:

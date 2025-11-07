@@ -23,11 +23,12 @@ log = logging.getLogger(__name__)
 class FanDuelScraper:
     """Scraper for FanDuel fantasy projections using Playwright."""
     
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, db_path: str = None):
         """Initialize the scraper."""
         self.headless = headless
         self.source = "fanduel.com"
         self.url = "https://www.fanduel.com/research/nfl/fantasy/ppr"
+        self.db_path = db_path or "projections.db"
     
     def _parse_player_name(self, full_name: str) -> tuple[str, str]:
         """
@@ -173,7 +174,8 @@ class FanDuelScraper:
         
         if projections:
             print(f"\nSaving {len(projections)} projections to database...")
-            with ProjectionsDB() as db:
+            print(f"Using database: {self.db_path}")
+            with ProjectionsDB(db_path=self.db_path) as db:
                 db.insert_projections_batch(projections)
             print("✓ Successfully saved to database!")
         else:

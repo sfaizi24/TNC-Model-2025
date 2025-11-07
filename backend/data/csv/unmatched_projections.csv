@@ -1,21 +1,165 @@
-sleeper_player_id,match_method,id,source_website,week,player_first_name,player_last_name,position,projected_points,created_at,updated_at,team
-,,11608,sleeper.com,Week 10,Alec,Ingold,RB,2.0,2025-11-05 04:12:37,2025-11-05 04:16:28,MIA
-,,11121,fanduel.com,Week 10,Kyle,Juszczyk,RB,1.5,2025-11-05 04:12:36,2025-11-05 04:12:36,SF
-,,11636,sleeper.com,Week 10,Kyle,Juszczyk,RB,1.4,2025-11-05 04:12:37,2025-11-05 04:16:28,SF
-,,11148,fanduel.com,Week 10,Alec,Ingold,RB,0.98,2025-11-05 04:12:36,2025-11-05 04:12:36,MIA
-,,11664,sleeper.com,Week 10,C.J.,Ham,RB,0.8,2025-11-05 04:12:37,2025-11-05 04:16:28,MIN
-,,11156,fanduel.com,Week 10,Tay,Martin,WR,0.78,2025-11-05 04:12:36,2025-11-05 04:16:28,WAS
-,,11171,fanduel.com,Week 10,Andrew,Ogletree,TE,0.61,2025-11-05 04:12:36,2025-11-05 04:12:36,IND
-,,11174,fanduel.com,Week 10,Ben,Sims,TE,0.6,2025-11-05 04:12:36,2025-11-05 04:12:36,GB
-,,11175,fanduel.com,Week 10,Justin,Shorter,TE,0.59,2025-11-05 04:12:36,2025-11-05 04:12:36,LV
-,,11199,fanduel.com,Week 10,Irv,Smith Jr.,TE,0.43,2025-11-05 04:12:36,2025-11-05 04:12:36,HOU
-,,11719,sleeper.com,Week 10,Patrick,Ricard,RB,0.3,2025-11-05 04:12:37,2025-11-05 04:16:28,BAL
-,,11757,sleeper.com,Week 10,Tyler,Davis,K,0.1,2025-11-05 04:12:37,2025-11-05 04:12:37,FA
-,,11252,fanduel.com,Week 10,Dalevon,Campbell,WR,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,CAR
-,,11268,fanduel.com,Week 10,Patrick,Ricard,RB,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,BAL
-,,11269,fanduel.com,Week 10,C.J.,Ham,RB,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,MIN
-,,11286,fanduel.com,Week 10,Cade,McDonald,WR,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,CLE
-,,11296,fanduel.com,Week 10,Chase,Edmonds,RB,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,TB
-,,11299,fanduel.com,Week 10,Jack,Westover,RB,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,NE
-,,11305,fanduel.com,Week 10,Brady,Russell,RB,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,SEA
-,,11306,fanduel.com,Week 10,Trishton,Jackson,WR,0.0,2025-11-05 04:12:36,2025-11-05 04:12:36,ARI
+sleeper_player_id,match_method,id,source_website,week,player_first_name,player_last_name,position,team,projected_points,created_at,updated_at
+,,1563,firstdown.studio,Week 10,Josh,Allen,,BUF,23.0,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1593,firstdown.studio,Week 10,Puka,Nacua,WR,LA,21.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1564,firstdown.studio,Week 10,Lamar,Jackson,.,BAL,21.2,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1565,firstdown.studio,Week 10,Drake,Maye,,NE,20.0,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1566,firstdown.studio,Week 10,Justin,Herbert,.,LAC,19.5,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1567,firstdown.studio,Week 10,Matthew,Stafford,.,LA,18.9,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1568,firstdown.studio,Week 10,Jared,Goff,.,DET,18.8,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1569,firstdown.studio,Week 10,Jaxson,Dart,.,NYG,18.8,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1570,firstdown.studio,Week 10,Baker,Mayfield,.,TB,18.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1571,firstdown.studio,Week 10,Daniel,Jones,.,IND,18.1,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1572,firstdown.studio,Week 10,Caleb,Williams,.,CHI,18.1,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1573,firstdown.studio,Week 10,Bo,Nix,.,DEN,18.1,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1574,firstdown.studio,Week 10,Sam,Darnold,,SEA,18.0,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1575,firstdown.studio,Week 10,Jalen,Hurts,.,PHI,17.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,440,espn.com,Week 10,Marcus,Mariota,QB,WSH,16.3,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1576,firstdown.studio,Week 10,Jordan,Love,.,GB,15.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1577,firstdown.studio,Week 10,Jacoby,Brissett,.,ARI,15.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1578,firstdown.studio,Week 10,J.J.,McCarthy,.,MIN,15.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1579,firstdown.studio,Week 10,Marcus,Mariota,.,WAS,15.6,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1580,firstdown.studio,Week 10,Justin,Fields,.,NYJ,15.2,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1611,firstdown.studio,Week 10,Davante,Adams,WR,LA,14.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1581,firstdown.studio,Week 10,Aaron,Rodgers,.,PIT,14.4,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1582,firstdown.studio,Week 10,Michael,Penix,.,ATL,14.3,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,518,espn.com,Week 10,Deebo,Samuel,WR,WSH,14.0,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1333,fantasypros.com,Week 10,Trevor,Lawrence,QB,JAC,13.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1583,firstdown.studio,Week 10,Trevor,Lawrence,.,JAC,13.8,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1607,firstdown.studio,Week 10,Kyren,Williams,RB,LA,13.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1584,firstdown.studio,Week 10,Tua,Tagovailoa,.,MIA,13.6,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1585,firstdown.studio,Week 10,Bryce,Young,.,CAR,12.9,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1586,firstdown.studio,Week 10,Davis,Mills,.,HOU,12.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1587,firstdown.studio,Week 10,Dillon,Gabriel,.,CLE,12.7,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1379,fantasypros.com,Week 10,Travis,Etienne Jr.,RB,JAC,12.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1588,firstdown.studio,Week 10,Geno,Smith,.,LV,12.3,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1627,firstdown.studio,Week 10,Travis,Etienne,RB,JAC,11.8,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1589,firstdown.studio,Week 10,Tyler,Shough,.,NO,11.3,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1658,firstdown.studio,Week 10,P.,Washington,WR,JAC,10.3,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1538,fantasypros.com,Week 10,Denver Broncos,Defense,DST,DEN,10.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1539,fantasypros.com,Week 10,Seattle Seahawks,Defense,DST,SEA,9.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,567,espn.com,Week 10,Zach,Ertz,TE,WSH,9.5,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1540,fantasypros.com,Week 10,Cleveland Browns,Defense,DST,CLE,9.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,483,espn.com,Week 10,Jacory,Croskey-Merritt,RB,WSH,9.4,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1541,fantasypros.com,Week 10,Houston Texans,Defense,DST,HOU,9.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1542,fantasypros.com,Week 10,Detroit Lions,Defense,DST,DET,9.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1543,fantasypros.com,Week 10,Buffalo Bills,Defense,DST,BUF,8.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1544,fantasypros.com,Week 10,Carolina Panthers,Defense,DST,CAR,8.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1686,firstdown.studio,Week 10,Jakobi,Meyers,WR,JAC,8.4,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,628,espn.com,Week 10,Broncos D/ST,Defense,D/ST,DEN,8.2,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1545,fantasypros.com,Week 10,Jacksonville Jaguars,Defense,DST,JAC,8.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1546,fantasypros.com,Week 10,Los Angeles Rams,Defense,DST,LAR,8.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1547,fantasypros.com,Week 10,Baltimore Ravens,Defense,DST,BAL,7.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,621,espn.com,Week 10,Matt,Gay,K,WSH,7.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1548,fantasypros.com,Week 10,Chicago Bears,Defense,DST,CHI,7.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1549,fantasypros.com,Week 10,New England Patriots,Defense,DST,NE,7.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,629,espn.com,Week 10,Lions D/ST,Defense,D/ST,DET,7.1,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1528,fantasypros.com,Week 10,Cam,Little,K,JAC,7.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1550,fantasypros.com,Week 10,Los Angeles Chargers,Defense,DST,LAC,7.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,630,espn.com,Week 10,Texans D/ST,Defense,D/ST,HOU,6.8,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1551,fantasypros.com,Week 10,New York Jets,Defense,DST,NYJ,6.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,631,espn.com,Week 10,Seahawks D/ST,Defense,D/ST,SEA,6.7,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,632,espn.com,Week 10,Browns D/ST,Defense,D/ST,CLE,6.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1552,fantasypros.com,Week 10,Indianapolis Colts,Defense,DST,IND,6.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,633,espn.com,Week 10,Bills D/ST,Defense,D/ST,BUF,6.4,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,634,espn.com,Week 10,Panthers D/ST,Defense,D/ST,CAR,6.3,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,635,espn.com,Week 10,Ravens D/ST,Defense,D/ST,BAL,6.2,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1553,fantasypros.com,Week 10,Pittsburgh Steelers,Defense,DST,PIT,6.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,636,espn.com,Week 10,Jaguars D/ST,Defense,D/ST,JAX,6.1,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1554,fantasypros.com,Week 10,Tampa Bay Buccaneers,Defense,DST,TB,6.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1403,fantasypros.com,Week 10,Bhayshul,Tuten,RB,JAC,5.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1555,fantasypros.com,Week 10,Atlanta Falcons,Defense,DST,ATL,5.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,637,espn.com,Week 10,Jets D/ST,Defense,D/ST,NYJ,5.7,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,638,espn.com,Week 10,Chargers D/ST,Defense,D/ST,LAC,5.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,639,espn.com,Week 10,Steelers D/ST,Defense,D/ST,PIT,5.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,640,espn.com,Week 10,Rams D/ST,Defense,D/ST,LAR,5.5,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1556,fantasypros.com,Week 10,Green Bay Packers,Defense,DST,GB,5.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,641,espn.com,Week 10,Buccaneers D/ST,Defense,D/ST,TB,5.4,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,496,espn.com,Week 10,Jeremy,McNichols,RB,WSH,5.2,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,642,espn.com,Week 10,Packers D/ST,Defense,D/ST,GB,5.2,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1557,fantasypros.com,Week 10,New York Giants,Defense,DST,NYG,5.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1719,firstdown.studio,Week 10,Bhayshul,Tuten,RB,JAC,5.1,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,1558,fantasypros.com,Week 10,New Orleans Saints,Defense,DST,NO,5.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1717,firstdown.studio,Week 10,Blake,Corum,RB,LA,5.0,2025-11-07 00:05:51,2025-11-07 00:05:51
+,,643,espn.com,Week 10,Saints D/ST,Defense,D/ST,NO,4.9,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1559,fantasypros.com,Week 10,Philadelphia Eagles,Defense,DST,PHI,4.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,644,espn.com,Week 10,Patriots D/ST,Defense,D/ST,NE,4.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,645,espn.com,Week 10,Colts D/ST,Defense,D/ST,IND,4.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1560,fantasypros.com,Week 10,San Francisco 49ers,Defense,DST,SF,4.5,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,646,espn.com,Week 10,Cardinals D/ST,Defense,D/ST,ARI,4.3,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1561,fantasypros.com,Week 10,Arizona Cardinals,Defense,DST,ARI,4.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,647,espn.com,Week 10,Bears D/ST,Defense,D/ST,CHI,4.1,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1562,fantasypros.com,Week 10,Minnesota Vikings,Defense,DST,MIN,4.0,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,648,espn.com,Week 10,Eagles D/ST,Defense,D/ST,PHI,3.9,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,649,espn.com,Week 10,Vikings D/ST,Defense,D/ST,MIN,3.7,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,650,espn.com,Week 10,Falcons D/ST,Defense,D/ST,ATL,3.4,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,651,espn.com,Week 10,Raiders D/ST,Defense,D/ST,LV,3.3,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,652,espn.com,Week 10,49ers D/ST,Defense,D/ST,SF,2.9,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,591,espn.com,Week 10,John,Bates,TE,WSH,2.8,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,653,espn.com,Week 10,Dolphins D/ST,Defense,D/ST,MIA,2.7,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,654,espn.com,Week 10,Giants D/ST,Defense,D/ST,NYG,2.7,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1421,fantasypros.com,Week 10,LeQuint,Allen Jr.,RB,JAC,2.7,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,655,espn.com,Week 10,Commanders D/ST,Defense,D/ST,WSH,2.6,2025-11-06 23:32:22,2025-11-07 00:02:55
+,,1424,fantasypros.com,Week 10,Kyle,Juszczyk,RB,SF,2.4,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,263,sleeper.com,Week 10,Alec,Ingold,FB,MIA,2.0,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,288,sleeper.com,Week 10,Kyle,Juszczyk,FB,SF,1.4,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,298,sleeper.com,Week 10,Aidan,Hutchinson,DL,DET,1.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,313,sleeper.com,Week 10,Jared,Verse,DL,LAR,0.9,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,1434,fantasypros.com,Week 10,Alec,Ingold,RB,MIA,0.9,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,319,sleeper.com,Week 10,C.J.,Ham,FB,MIN,0.8,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,321,sleeper.com,Week 10,Will,Anderson,DL,HOU,0.8,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,1439,fantasypros.com,Week 10,Patrick,Ricard,RB,BAL,0.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1442,fantasypros.com,Week 10,Adam,Prentice,RB,DEN,0.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,1443,fantasypros.com,Week 10,C.J.,Ham,RB,MIN,0.8,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,327,sleeper.com,Week 10,Yaya,Diaby,DL,TB,0.7,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,328,sleeper.com,Week 10,Laiatu,Latu,DL,IND,0.7,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,329,sleeper.com,Week 10,Jalen,Carter,DL,PHI,0.7,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,331,sleeper.com,Week 10,Kayvon,Thibodeaux,DL,NYG,0.7,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,338,sleeper.com,Week 10,Jonathon,Cooper,DL,DEN,0.6,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,344,sleeper.com,Week 10,Braden,Fiske,DL,LAR,0.6,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,347,sleeper.com,Week 10,Abdul,Carter,DL,NYG,0.6,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,352,sleeper.com,Week 10,Tuli,Tuipulotu,DL,LAC,0.5,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,355,sleeper.com,Week 10,Boye,Mafe,DL,SEA,0.5,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,356,sleeper.com,Week 10,Gervon,Dexter,DL,CHI,0.5,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,357,sleeper.com,Week 10,Arnold,Ebiketie,DL,ATL,0.5,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,358,sleeper.com,Week 10,Jordan,Davis,DL,PHI,0.4,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,359,sleeper.com,Week 10,Devonte,Wyatt,DL,GB,0.4,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,360,sleeper.com,Week 10,Jordan,Jackson,DL,DEN,0.4,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,361,sleeper.com,Week 10,Kingsley,Enagbare,DL,GB,0.4,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,362,sleeper.com,Week 10,Eyioma,Uwazurike,DL,DEN,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,364,sleeper.com,Week 10,Rylie,Mills,DL,SEA,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,365,sleeper.com,Week 10,Logan,Hall,DL,TB,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,366,sleeper.com,Week 10,Keeanu,Benton,NT,PIT,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,367,sleeper.com,Week 10,Jalon,Walker,DL,ATL,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,370,sleeper.com,Week 10,Patrick,Ricard,FB,BAL,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,371,sleeper.com,Week 10,Princely,Umanmielen,DL,CAR,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,372,sleeper.com,Week 10,Landon,Jackson,DL,BUF,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,373,sleeper.com,Week 10,Derrick,Harmon,DL,PIT,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,375,sleeper.com,Week 10,Jer'Zhan,Newton,DL,WAS,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,376,sleeper.com,Week 10,JT,Tuimoloau,DL,IND,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,380,sleeper.com,Week 10,Alim,McNeill,NT,DET,0.3,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,381,sleeper.com,Week 10,Dominique,Robinson,DL,CHI,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,382,sleeper.com,Week 10,Isaiah,McGuire,DL,CLE,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,384,sleeper.com,Week 10,James,Pearce,DL,ATL,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,385,sleeper.com,Week 10,Walter,Nolen,DL,ARI,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,387,sleeper.com,Week 10,David,Ojabo,DL,BAL,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,388,sleeper.com,Week 10,Austin,Booker,DL,CHI,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,389,sleeper.com,Week 10,Mason,Graham,DL,CLE,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,390,sleeper.com,Week 10,Dylan,Horton,DL,HOU,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,391,sleeper.com,Week 10,Byron,Young,DL,PHI,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,392,sleeper.com,Week 10,Justin,Eboigbe,DL,LAC,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,397,sleeper.com,Week 10,Micheal,Clemons,DL,NYJ,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,399,sleeper.com,Week 10,Adetomiwa,Adebawore,DL,IND,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,400,sleeper.com,Week 10,Darius,Robinson,DL,ARI,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,401,sleeper.com,Week 10,Nic,Scourton,DL,CAR,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,402,sleeper.com,Week 10,Lukas,Van Ness,DL,GB,0.2,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,1360,fantasypros.com,Week 10,Nick,Mullens,QB,JAC,0.2,2025-11-07 00:04:37,2025-11-07 00:04:37
+,,403,sleeper.com,Week 10,Mike,Green,DL,BAL,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,404,sleeper.com,Week 10,Jordan,Burch,DL,ARI,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,405,sleeper.com,Week 10,Cameron,Thomas,DL,CLE,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,406,sleeper.com,Week 10,Tyler,Davis,K,FA,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,407,sleeper.com,Week 10,Jonah,Laulu,DL,LV,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,408,sleeper.com,Week 10,Joshua,Farmer,DL,NE,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,409,sleeper.com,Week 10,LaBryan,Ray,DL,CAR,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,410,sleeper.com,Week 10,Jordan,Phillips,DL,MIA,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,412,sleeper.com,Week 10,Alex,Wright,DL,CLE,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
+,,422,sleeper.com,Week 10,Josiah,Deguara,TE,FA,0.1,2025-11-06 23:31:24,2025-11-07 00:01:41
