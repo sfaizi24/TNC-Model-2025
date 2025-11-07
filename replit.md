@@ -53,6 +53,34 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 
 ## Recent Changes
 - **November 7, 2025** (Latest):
+  - **Matchups Moneyline Betting System**:
+    - Built complete betting interface with real matchup data from odds.db
+    - Features:
+      - 6 real matchups from Week 10 with live moneyline odds
+      - Interactive odds selection (selectable buttons for each team)
+      - Bet amount input with real-time potential win calculation
+      - Place bet functionality with database transaction
+      - Active bets display on same page with remove/edit capability
+      - Live account balance updates after each bet
+      - Horizontal tab navigation for future betting types (Over/Under, Player Props, etc.)
+    - API Endpoints:
+      - `GET /api/matchups`: Fetches Week 10 matchups from betting_odds_matchup_ml table
+      - `POST /api/place_bet`: Places bet, updates balance, creates weekly stats
+      - `GET /api/my_bets`: Returns user's pending bets
+      - `DELETE /api/remove_bet/<id>`: Removes bet and refunds amount
+    - Data Sources:
+      - Matchup odds: `backend/data/databases/odds.db` (betting_odds_matchup_ml table)
+      - Team names in format "Team 2", "Team 5", etc.
+      - American odds format (+123, -123, etc.)
+      - Win probabilities from Monte Carlo simulations
+    - User Experience:
+      - Clean card-based layout for each matchup
+      - Win probability display for each team
+      - Green positive odds (+), standard negative odds (-)
+      - Real-time validation (insufficient balance alerts)
+      - Bets are editable/removable before settlement
+
+- **November 7, 2025**:
   - **Replit Auth Integration**:
     - Migrated to Replit Auth (OpenID Connect OAuth)
     - Authentication supports multiple login methods via Replit:

@@ -72,6 +72,44 @@ def account():
 def betting():
     return render_template('betting.html', user=current_user)
 
+ODDS_DB_PATH = 'backend/data/databases/odds.db'
+
+@app.route('/api/matchups')
+@require_login
+def get_matchups():
+    try:
+        conn = sqlite3.connect(ODDS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM betting_odds_matchup_ml
+            WHERE week = 10
+            ORDER BY matchup
+        """)
+        
+        matchups = []
+        for row in cursor.fetchall():
+            matchups.append({
+                'matchup': row['matchup'],
+                'team1_id': row['team1_id'],
+                'team1_name': row['team1_name'],
+                'team1_win_prob': row['team1_win_prob'],
+                'team1_ml': row['team1_ml'],
+                'team2_id': row['team2_id'],
+                'team2_name': row['team2_name'],
+                'team2_win_prob': row['team2_win_prob'],
+                'team2_ml': row['team2_ml']
+            })
+        
+        conn.close()
+        return jsonify(matchups)
+    except Exception as e:
+        print(f"Error getting matchups: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/place_bet', methods=['POST'])
 @require_login
 def place_bet():
@@ -79,52 +117,164 @@ def place_bet():
     from datetime import datetime
     
     data = request.get_json()
-    amount = float(data['amount'])
+    matchup_idx = data.get('matchup_idx')
+    team = data.get('team')
+    amount = float(data.get('amount', 0))
+    
+    if amount <= 0:
+        return jsonify({'success': False, 'error': 'Invalid bet amount'})
     
     if current_user.account_balance < amount:
-        return jsonify({'success': False, 'message': 'Insufficient balance'})
+        return jsonify({'success': False, 'error': 'Insufficient balance'})
     
-    week = data.get('week', 10)
-    
-    weekly_stat = db.session.query(WeeklyStats).filter_by(
-        user_id=current_user.id, week=week
-    ).first()
-    
-    if not weekly_stat:
-        weekly_stat = WeeklyStats(
+    try:
+        conn = sqlite3.connect(ODDS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM betting_odds_matchup_ml WHERE week = 10 ORDER BY matchup")
+        matchups = cursor.fetchall()
+        conn.close()
+        
+        if matchup_idx >= len(matchups):
+            return jsonify({'success': False, 'error': 'Invalid matchup'})
+        
+        matchup = matchups[matchup_idx]
+        
+        if team == 'team1':
+            team_name = matchup['team1_name']
+            odds = matchup['team1_ml']
+        elif team == 'team2':
+            team_name = matchup['team2_name']
+            odds = matchup['team2_ml']
+        else:
+            return jsonify({'success': False, 'error': 'Invalid team'})
+        
+        odds_num = int(odds)
+        if odds_num > 0:
+            potential_win = amount * (odds_num / 100)
+        else:
+            potential_win = amount * (100 / abs(odds_num))
+        
+        week = 10
+        
+        weekly_stat = db.session.query(WeeklyStats).filter_by(
+            user_id=current_user.id, week=week
+        ).first()
+        
+        if not weekly_stat:
+            weekly_stat = WeeklyStats(
+                user_id=current_user.id,
+                week=week,
+                starting_balance=current_user.account_balance,
+                ending_balance=current_user.account_balance,
+                pnl=0.0,
+                bets_placed=0,
+                bets_won=0
+            )
+            db.session.add(weekly_stat)
+        
+        current_user.account_balance -= amount
+        
+        description = f"{matchup['matchup']}: {team_name} {odds}"
+        
+        bet = Bet(
             user_id=current_user.id,
+            bet_type='moneyline',
+            description=description,
             week=week,
-            starting_balance=current_user.account_balance,
-            ending_balance=current_user.account_balance,
-            pnl=0.0,
-            bets_placed=0,
-            bets_won=0
+            amount=amount,
+            odds=odds,
+            potential_win=potential_win,
+            status='pending',
+            created_at=datetime.now()
         )
-        db.session.add(weekly_stat)
+        
+        db.session.add(bet)
+        
+        weekly_stat.bets_placed += 1
+        weekly_stat.ending_balance = current_user.account_balance
+        weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'new_balance': current_user.account_balance})
     
-    current_user.account_balance -= amount
+    except Exception as e:
+        print(f"Error placing bet: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/my_bets')
+@require_login
+def get_my_bets():
+    from models import Bet
     
-    bet = Bet(
-        user_id=current_user.id,
-        bet_type=data['bet_type'],
-        description=data['description'],
-        week=week,
-        amount=amount,
-        odds=data['odds'],
-        potential_win=float(data['potential_win']),
-        status='pending',
-        created_at=datetime.now()
-    )
+    try:
+        bets = db.session.query(Bet).filter_by(
+            user_id=current_user.id,
+            status='pending'
+        ).order_by(Bet.created_at.desc()).all()
+        
+        bets_data = []
+        for bet in bets:
+            bets_data.append({
+                'id': bet.id,
+                'description': bet.description,
+                'amount': bet.amount,
+                'odds': bet.odds,
+                'potential_win': bet.potential_win,
+                'status': bet.status,
+                'week': bet.week
+            })
+        
+        return jsonify(bets_data)
     
-    db.session.add(bet)
+    except Exception as e:
+        print(f"Error getting bets: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
+@app.route('/api/remove_bet/<int:bet_id>', methods=['DELETE'])
+@require_login
+def remove_bet(bet_id):
+    from models import Bet, WeeklyStats
     
-    weekly_stat.bets_placed += 1
-    weekly_stat.ending_balance = current_user.account_balance
-    weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+    try:
+        bet = db.session.query(Bet).filter_by(
+            id=bet_id,
+            user_id=current_user.id,
+            status='pending'
+        ).first()
+        
+        if not bet:
+            return jsonify({'success': False, 'error': 'Bet not found'})
+        
+        current_user.account_balance += bet.amount
+        
+        weekly_stat = db.session.query(WeeklyStats).filter_by(
+            user_id=current_user.id,
+            week=bet.week
+        ).first()
+        
+        if weekly_stat:
+            weekly_stat.bets_placed -= 1
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+        
+        db.session.delete(bet)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'new_balance': current_user.account_balance})
     
-    db.session.commit()
-    
-    return jsonify({'success': True, 'balance': current_user.account_balance})
+    except Exception as e:
+        print(f"Error removing bet: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
