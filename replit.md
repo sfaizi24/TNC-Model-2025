@@ -52,6 +52,20 @@ A comprehensive fantasy football analytics platform featuring web scrapers, Mont
 - `LEAGUE_ID`: Your Sleeper league ID (optional, for league features)
 
 ## Recent Changes
+- **November 7, 2025** (Latest):
+  - **Analytics Page Integration**:
+    - Added team dropdown to select individual teams or "All Teams"
+    - "All Teams" displays `simulation_distributions_overlay_week_10.png`
+    - Individual team selection shows `dist_Team_{owner}_week_10.png`
+    - Player roster table displays when team is selected:
+      - Shows first name, last name, position
+      - Displays mean projected points (mu) from Monte Carlo simulations
+      - Players sorted by projected points (descending)
+    - Added `player_stats` table to `projections.db`:
+      - Columns: week, player names, position, team_owner, mu, sigma
+      - Stores Monte Carlo simulation results
+    - New API endpoints: `/api/teams` and `/api/team_players`
+  
 - **November 7, 2025**:
   - **TNCasino Transformation**: Rebranded as fantasy football betting platform
   - **User Authentication System**:
