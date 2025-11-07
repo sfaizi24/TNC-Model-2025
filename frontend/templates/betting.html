@@ -795,6 +795,11 @@ async function loadActiveBets() {
             if (bet.description.includes('O/U')) {
                 // Team performance bet - format: "Owner O/U 113.3: Over"
                 betInfo = `${bet.description.replace(':', '')} $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Highest Scorer')) {
+                // Highest scorer bet - format: "Owner: Highest Scorer +637"
+                const owner = bet.description.split(':')[0].trim();
+                const odds = bet.description.split(' ').pop();
+                betInfo = `${owner} Highest Scorer ${odds} $${bet.amount.toFixed(0)}`;
             } else {
                 // Moneyline bet - format: "Owner1 vs Owner2: Team Odds"
                 const parts = bet.description.split(':');
