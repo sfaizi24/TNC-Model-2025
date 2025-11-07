@@ -172,35 +172,41 @@ def get_lineup(owner):
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        # Fetch lineup for the owner
+        # Fetch lineup for the owner - get all rows
         cursor.execute("""
             SELECT slot, player_name, position, mu
             FROM team_lineups
             WHERE owner = ? AND week = 10
-            ORDER BY 
-                CASE slot
-                    WHEN 'QB' THEN 1
-                    WHEN 'WR' THEN 2
-                    WHEN 'RB' THEN 4
-                    WHEN 'TE' THEN 6
-                    WHEN 'FLEX' THEN 7
-                    WHEN 'K' THEN 8
-                    WHEN 'DEF' THEN 9
-                    ELSE 10
-                END,
-                mu DESC
         """, (owner,))
         
-        lineup = []
-        for row in cursor.fetchall():
-            lineup.append({
-                'slot': row['slot'],
-                'player_name': row['player_name'],
-                'position': row['position'],
-                'projected_points': round(row['mu'], 1)
-            })
-        
+        rows = cursor.fetchall()
         conn.close()
+        
+        # Build lineup with proper position ordering
+        lineup = []
+        position_counts = {'QB': 0, 'WR': 0, 'RB': 0, 'TE': 0}
+        
+        # First pass: add players by slot priority
+        slot_order = ['QB', 'WR', 'RB', 'TE', 'FLEX', 'K', 'DEF']
+        for slot_name in slot_order:
+            for row in rows:
+                if row['slot'] == slot_name:
+                    pos = row['position']
+                    
+                    # Label players by position count
+                    if pos in position_counts:
+                        position_counts[pos] += 1
+                        display_slot = f"{pos}{position_counts[pos]}" if position_counts[pos] > 1 else pos
+                    else:
+                        display_slot = row['slot']
+                    
+                    lineup.append({
+                        'slot': display_slot,
+                        'player_name': row['player_name'],
+                        'position': row['position'],
+                        'projected_points': round(row['mu'], 1)
+                    })
+        
         return jsonify(lineup)
     except Exception as e:
         print(f"Error getting lineup: {e}")
