@@ -455,6 +455,43 @@
         margin-bottom: 10px;
     }
     
+    .hs-team-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 100px;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--fanduel-blue);
+        border-radius: 6px;
+        margin-bottom: 8px;
+    }
+    
+    .hs-win-prob {
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: left;
+    }
+    
+    .hs-owner {
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        text-align: center;
+    }
+    
+    .hs-odds {
+        color: var(--success-green);
+        font-size: 18px;
+        font-weight: 700;
+        text-align: right;
+    }
+    
+    .matchup-card.selected .hs-team-row {
+        background: var(--fanduel-blue);
+        box-shadow: 0 0 0 3px rgba(20, 147, 255, 0.3);
+    }
+    
     @media (max-width: 767px) {
         .matchup-card {
             padding: 10px;
@@ -819,8 +856,10 @@ async function loadActiveBets() {
             `;
         }).join('');
         
-        // Re-render matchups with bet indicators
+        // Re-render all tabs with bet indicators
         renderMatchups();
+        if (allTeams.length > 0) renderTeamPerformance();
+        if (allHighestScorer.length > 0) renderHighestScorer();
     } catch (error) {
         console.error('Error loading active bets:', error);
     }
@@ -867,9 +906,20 @@ async function loadTeamPerformance() {
 function renderTeamPerformance() {
     const grid = document.getElementById('teamPerformanceGrid');
     
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('O/U')) {
+            const owner = bet.description.split(' O/U')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
     grid.innerHTML = allTeams.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
         return `
-            <div class="matchup-card">
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="team-line">${t.owner} to score ${t.line.toFixed(1)} points</div>
                 <div class="teams-container">
                     <div class="team-section">
@@ -1119,7 +1169,7 @@ function renderTeamLineup(idx, lineup) {
 
 // Store highest scorer data globally
 let allHighestScorer = [];
-let selectedHighestScorerBets = {};
+let selectedHighestScorerTeam = null;
 
 // Load highest scorer
 async function loadHighestScorer() {
@@ -1136,32 +1186,36 @@ async function loadHighestScorer() {
 function renderHighestScorer() {
     const grid = document.getElementById('highestScorerGrid');
     
-    grid.innerHTML = allHighestScorer.map((t, idx) => {
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Highest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const betControls = `
+        <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
+            <input type="number" class="bet-amount-input" id="hs-global-amount" 
+                   placeholder="Bet Amount" min="0" step="0.01">
+            <button class="btn-place-bet" id="hs-global-btn" onclick="placeHighestScorerBet()" disabled>
+                Place Bet
+            </button>
+        </div>
+    `;
+    
+    const teams = allHighestScorer.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
         return `
-            <div class="matchup-card">
-                <div class="team-line">${t.owner} to be highest scorer</div>
-                <div class="teams-container" style="grid-template-columns: 1fr;">
-                    <div class="team-section">
-                        <div class="win-prob">${t.win_prob}% win</div>
-                        <button class="odds-button ${t.odds.startsWith('+') ? 'positive-odds' : ''}" 
-                                onclick="selectHighestScorerOdds(${idx})" 
-                                id="hs-odds-${idx}">
-                            ${t.odds}
-                        </button>
-                    </div>
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="hs-card-${idx}" onclick="selectHighestScorerTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-win-prob">${t.win_prob}% Win</div>
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
                 </div>
-                <div class="potential-win" id="hs-potential-${idx}"></div>
-                <div class="bet-controls">
-                    <div class="bet-input-group">
-                        <input type="number" class="bet-amount-input" id="hs-amount-${idx}" 
-                               placeholder="Bet $" min="0" step="0.01"
-                               oninput="updateHighestScorerPotentialWin(${idx})">
-                    </div>
-                    <button class="btn-place-bet" id="hs-btn-${idx}" onclick="placeHighestScorerBet(${idx})" disabled>
-                        Place Bet
-                    </button>
-                </div>
-                <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, '${t.owner}')">
+                <button class="show-teams-btn" onclick="toggleHighestScorerLineup(event, ${idx}, '${t.owner}')">
                     Show Team <span class="dropdown-arrow" id="hs-arrow-${idx}">▼</span>
                 </button>
                 <div class="lineups-container" id="hs-lineups-${idx}" style="display: none;">
@@ -1170,76 +1224,64 @@ function renderHighestScorer() {
             </div>
         `;
     }).join('');
+    
+    grid.innerHTML = betControls + teams;
 }
 
-// Select highest scorer odds
-function selectHighestScorerOdds(idx) {
-    const button = document.getElementById(`hs-odds-${idx}`);
+// Select highest scorer team
+function selectHighestScorerTeam(idx) {
+    // Remove selection from all cards
+    allHighestScorer.forEach((_, i) => {
+        const card = document.getElementById(`hs-card-${i}`);
+        if (card) card.classList.remove('selected');
+    });
     
-    // Toggle selection
-    if (selectedHighestScorerBets[idx]) {
-        delete selectedHighestScorerBets[idx];
-        button.classList.remove('selected');
-    } else {
-        selectedHighestScorerBets[idx] = {
-            owner: allHighestScorer[idx].owner,
-            odds: allHighestScorer[idx].odds
-        };
-        button.classList.add('selected');
-    }
+    // Select this card
+    const card = document.getElementById(`hs-card-${idx}`);
+    card.classList.add('selected');
+    selectedHighestScorerTeam = idx;
     
-    updateHighestScorerPotentialWin(idx);
-}
-
-// Update potential win for highest scorer
-function updateHighestScorerPotentialWin(idx) {
-    const selected = selectedHighestScorerBets[idx];
-    const amount = parseFloat(document.getElementById(`hs-amount-${idx}`).value) || 0;
-    const potentialDiv = document.getElementById(`hs-potential-${idx}`);
-    const btn = document.getElementById(`hs-btn-${idx}`);
+    // Update button state
+    const amountInput = document.getElementById('hs-global-amount');
+    const amount = parseFloat(amountInput.value) || 0;
+    const btn = document.getElementById('hs-global-btn');
     
-    if (selected && amount > 0) {
-        const odds = selected.odds;
-        let potentialWin = 0;
-        
-        if (odds.startsWith('+')) {
-            const oddsValue = parseInt(odds.substring(1));
-            potentialWin = amount * (oddsValue / 100);
-        } else {
-            const oddsValue = Math.abs(parseInt(odds));
-            potentialWin = amount * (100 / oddsValue);
-        }
-        
-        const totalReturn = amount + potentialWin;
-        potentialDiv.textContent = `Win: $${Math.floor(potentialWin)} (Total: $${Math.floor(totalReturn)})`;
-        btn.textContent = 'Place Bet';
+    if (amount > 0) {
         btn.disabled = false;
-    } else if (!selected && amount === 0) {
-        potentialDiv.textContent = '';
-        btn.textContent = 'Select Team & Enter Amount';
-        btn.disabled = true;
-    } else if (!selected) {
-        potentialDiv.textContent = '';
-        btn.textContent = 'Select a Team';
-        btn.disabled = true;
-    } else if (selected && amount === 0) {
-        potentialDiv.textContent = '';
-        btn.textContent = 'Enter Bet Amount';
-        btn.disabled = true;
     } else {
-        potentialDiv.textContent = '';
-        btn.textContent = 'Place Bet';
         btn.disabled = true;
     }
 }
+
+// Update global bet amount input
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const amountInput = document.getElementById('hs-global-amount');
+        if (amountInput) {
+            amountInput.addEventListener('input', () => {
+                const amount = parseFloat(amountInput.value) || 0;
+                const btn = document.getElementById('hs-global-btn');
+                if (selectedHighestScorerTeam !== null && amount > 0) {
+                    btn.disabled = false;
+                } else {
+                    btn.disabled = true;
+                }
+            });
+        }
+    }, 500);
+});
 
 // Place highest scorer bet
-async function placeHighestScorerBet(idx) {
-    const selected = selectedHighestScorerBets[idx];
-    const amount = parseFloat(document.getElementById(`hs-amount-${idx}`).value);
+async function placeHighestScorerBet() {
+    if (selectedHighestScorerTeam === null) {
+        alert('Please select a team');
+        return;
+    }
     
-    if (!selected || !amount || amount <= 0) {
-        alert('Please select a team and enter a valid bet amount');
+    const amount = parseFloat(document.getElementById('hs-global-amount').value);
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid bet amount');
         return;
     }
     
@@ -1248,14 +1290,16 @@ async function placeHighestScorerBet(idx) {
         return;
     }
     
+    const team = allHighestScorer[selectedHighestScorerTeam];
+    
     try {
         const response = await fetch('/api/place_bet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 bet_type: 'highest_scorer',
-                owner: selected.owner,
-                odds: selected.odds,
+                owner: team.owner,
+                odds: team.odds,
                 amount: amount
             })
         });
@@ -1266,10 +1310,11 @@ async function placeHighestScorerBet(idx) {
             userBalance = result.new_balance;
             document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
             
-            document.getElementById(`hs-amount-${idx}`).value = '';
-            document.getElementById(`hs-odds-${idx}`).classList.remove('selected');
-            delete selectedHighestScorerBets[idx];
-            updateHighestScorerPotentialWin(idx);
+            document.getElementById('hs-global-amount').value = '';
+            const card = document.getElementById(`hs-card-${selectedHighestScorerTeam}`);
+            if (card) card.classList.remove('selected');
+            selectedHighestScorerTeam = null;
+            document.getElementById('hs-global-btn').disabled = true;
             
             loadActiveBets();
             alert('Bet placed successfully!');
@@ -1282,7 +1327,9 @@ async function placeHighestScorerBet(idx) {
     }
 }
 
-async function toggleHighestScorerLineup(idx, owner) {
+async function toggleHighestScorerLineup(event, idx, owner) {
+    event.stopPropagation(); // Prevent card selection when clicking show team
+    
     const container = document.getElementById(`hs-lineups-${idx}`);
     const arrow = document.getElementById(`hs-arrow-${idx}`);
     
