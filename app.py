@@ -164,6 +164,36 @@ def get_team_performance():
         traceback.print_exc()
         return jsonify([])
 
+@app.route('/api/highest_scorer')
+@require_login
+def get_highest_scorer():
+    try:
+        conn = sqlite3.connect(ODDS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT owner, probability, odds
+            FROM betting_odds_highest_scorer
+            WHERE week = 10
+            ORDER BY probability DESC
+        """)
+        
+        teams = []
+        for row in cursor.fetchall():
+            teams.append({
+                'owner': row['owner'],
+                'win_prob': round(row['probability'] * 100, 1),
+                'odds': row['odds']
+            })
+        
+        conn.close()
+        return jsonify(teams)
+    except Exception as e:
+        print(f"Error getting highest scorer: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/lineup/<owner>')
 @require_login
 def get_lineup(owner):
