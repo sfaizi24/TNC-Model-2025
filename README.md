@@ -2,6 +2,11 @@
 
 A comprehensive fantasy football analytics platform with web scrapers, Monte Carlo simulations, betting odds analysis, and an interactive dashboard.
 
+## Branching
+
+- **main**: Stable snapshot of the latest released work.
+- **dev**: Actively developed branch that tracks `main` for ongoing updates.
+
 ## Features
 
 - **Light & Fast**: SQLite database for quick queries
