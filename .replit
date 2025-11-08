@@ -60,5 +60,5 @@ localPort = 42925
 externalPort = 3001
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "gce"
 run = ["python", "app.py"]
