@@ -3,6 +3,9 @@
 ## Overview
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
+## Recent Changes
+- **November 8, 2025**: Integrated TNC branding with transparent logo in header, removed placeholder statistics from analytics dashboard for cleaner presentation
+
 ## User Preferences
 I want iterative development.
 Ask before making major changes.
