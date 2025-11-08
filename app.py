@@ -172,6 +172,10 @@ def index():
         return redirect(url_for('betting'))
     return render_template('login.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/analytics')
 @require_login
 def analytics():

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="about">
+    <h1>How the model works</h1>
+    <ul>
+        <li>I automate scrapes from five projection sites and align everything with Sleeper's roster data, even the multi-position edge cases.</li>
+        <li>I layer in injuries and byes to rebuild each lineup before anyone remembers to set theirs.</li>
+        <li>I capture variance from all five feeds, treat player outcomes as log-normal, and fire 50,000 Monte Carlo runs per team.</li>
+        <li>I translate the simulated distributions into the odds you see on the board.</li>
+    </ul>
+    <p>Add or withdraw bets whenever you like until The Lock, which lands right after Thursday night kickoff. Once The Lock hits, slips stay put and settle after Monday night wraps.</p>
+</section>
+{% endblock %}
