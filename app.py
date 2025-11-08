@@ -1053,6 +1053,35 @@ def settle_week():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/admin/unlock_period', methods=['POST'])
+@admin_required
+def unlock_period():
+    from models import BettingPeriod
+    
+    data = request.get_json()
+    week = data.get('week')
+    
+    if not week:
+        return jsonify({'success': False, 'error': 'Week required'})
+    
+    try:
+        period = db.session.query(BettingPeriod).filter_by(week=week).first()
+        
+        if not period:
+            return jsonify({'success': False, 'error': 'Betting period not found'})
+        
+        period.is_locked = False
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error unlocking period: {e}")
+        import traceback
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
     app.run(host='0.0.0.0', port=5000, debug=debug_mode)
