@@ -5,6 +5,7 @@ import logging
 import sys
 import sqlite3
 import json
+from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,6 +34,50 @@ def run_schema_migrations():
     try:
         from sqlalchemy import inspect, text
         inspector = inspect(db.engine)
+        
+        # Migrate datetime columns to timezone-aware (TIMESTAMPTZ)
+        logging.info("Checking and migrating datetime columns to timezone-aware")
+        with db.engine.connect() as conn:
+            # Convert all TIMESTAMP WITHOUT TIME ZONE to TIMESTAMP WITH TIME ZONE
+            # These columns assume existing values are in UTC
+            datetime_migrations = [
+                ('users', 'created_at'),
+                ('users', 'updated_at'),
+                ('bets', 'created_at'),
+                ('bets', 'settled_at'),
+                ('weekly_stats', 'created_at'),
+                ('betting_periods', 'lock_time'),
+                ('betting_periods', 'created_at'),
+                ('betting_periods', 'updated_at'),
+            ]
+            
+            for table, column in datetime_migrations:
+                if table in inspector.get_table_names():
+                    # Check if column is already TIMESTAMPTZ
+                    result = conn.execute(text(f'''
+                        SELECT data_type 
+                        FROM information_schema.columns 
+                        WHERE table_name = '{table}' 
+                        AND column_name = '{column}'
+                    ''')).first()
+                    
+                    if result and result[0] == 'timestamp without time zone':
+                        try:
+                            # Convert column to timezone-aware, treating existing values as UTC
+                            conn.execute(text(f'''
+                                ALTER TABLE {table} 
+                                ALTER COLUMN {column} TYPE TIMESTAMP WITH TIME ZONE 
+                                USING {column} AT TIME ZONE 'UTC'
+                            '''))
+                            conn.commit()
+                            logging.info(f"Converted {table}.{column} to TIMESTAMPTZ")
+                        except Exception as col_error:
+                            conn.rollback()
+                            logging.error(f"Error converting {table}.{column}: {col_error}")
+                    elif result and result[0] == 'timestamp with time zone':
+                        logging.debug(f"{table}.{column} already TIMESTAMPTZ, skipping")
+                    else:
+                        logging.debug(f"{table}.{column} not found or unexpected type")
         
         if 'users' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('users')]
@@ -367,7 +412,7 @@ def check_betting_period_lock(week):
     if not period:
         return None
     
-    if period.is_locked or datetime.now() >= period.lock_time:
+    if period.is_locked or datetime.now(timezone.utc) >= period.lock_time:
         if not period.is_locked:
             period.is_locked = True
             db.session.commit()
@@ -390,7 +435,7 @@ def place_bet():
     if lock_time:
         return jsonify({
             'success': False,
-            'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p")}'
+            'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p UTC")}'
         })
     
     if amount <= 0:
@@ -447,7 +492,7 @@ def place_bet():
                 odds=odds,
                 potential_win=potential_win,
                 status='pending',
-                created_at=datetime.now()
+                created_at=datetime.now(timezone.utc)
             )
             
             db.session.add(bet)
@@ -508,7 +553,7 @@ def place_bet():
                 odds=odds,
                 potential_win=potential_win,
                 status='pending',
-                created_at=datetime.now()
+                created_at=datetime.now(timezone.utc)
             )
             
             db.session.add(bet)
@@ -576,7 +621,7 @@ def place_bet():
                 odds='EVEN',
                 potential_win=potential_win,
                 status='pending',
-                created_at=datetime.now()
+                created_at=datetime.now(timezone.utc)
             )
             
             db.session.add(bet)
@@ -743,7 +788,7 @@ def remove_bet(bet_id):
         if lock_time:
             return jsonify({
                 'success': False,
-                'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p")}'
+                'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p UTC")}'
             })
         
         current_user.account_balance += bet.amount
@@ -887,7 +932,7 @@ def get_betting_periods():
             periods_data.append({
                 'id': period.id,
                 'week': period.week,
-                'lock_time': period.lock_time.strftime('%Y-%m-%d %I:%M %p'),
+                'lock_time': period.lock_time.strftime('%Y-%m-%d %I:%M %p UTC'),
                 'is_locked': period.is_locked,
                 'is_settled': period.is_settled
             })
@@ -913,7 +958,8 @@ def set_betting_period():
         return jsonify({'success': False, 'error': 'Week and lock time required'})
     
     try:
-        lock_time = datetime.strptime(lock_time_str, '%Y-%m-%dT%H:%M')
+        # Parse as naive datetime and convert to UTC
+        lock_time = datetime.strptime(lock_time_str, '%Y-%m-%dT%H:%M').replace(tzinfo=timezone.utc)
         
         period = db.session.query(BettingPeriod).filter_by(week=week).first()
         
@@ -999,7 +1045,7 @@ def settle_bet():
         user.account_balance += payout
         user.total_pnl += bet.result
         
-        bet.settled_at = datetime.now()
+        bet.settled_at = datetime.now(timezone.utc)
         
         weekly_stat = db.session.query(WeeklyStats).filter_by(
             user_id=bet.user_id,

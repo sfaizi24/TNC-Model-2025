@@ -1,8 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from sqlalchemy import UniqueConstraint
 from database import db
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 # Replit Auth User Model - ID is String (Replit user ID)
 class User(UserMixin, db.Model):
@@ -18,8 +21,8 @@ class User(UserMixin, db.Model):
     total_pnl = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
     
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 # OAuth table for Replit Auth
 class OAuth(OAuthConsumerMixin, db.Model):
@@ -48,8 +51,8 @@ class Bet(db.Model):
     status = db.Column(db.String, default='pending')
     result = db.Column(db.Float, default=0.0)
     week = db.Column(db.Integer, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    settled_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
+    settled_at = db.Column(db.DateTime(timezone=True), nullable=True)
     
     user = db.relationship(User, backref='bets')
 
@@ -66,7 +69,7 @@ class WeeklyStats(db.Model):
     settled_pnl = db.Column(db.Float, default=0.0)
     bets_placed = db.Column(db.Integer, default=0)
     bets_won = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
     
     user = db.relationship(User, backref='weekly_stats')
     
@@ -77,8 +80,8 @@ class BettingPeriod(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     week = db.Column(db.Integer, unique=True, nullable=False)
-    lock_time = db.Column(db.DateTime, nullable=False)
+    lock_time = db.Column(db.DateTime(timezone=True), nullable=False)
     is_locked = db.Column(db.Boolean, default=False)
     is_settled = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now)
