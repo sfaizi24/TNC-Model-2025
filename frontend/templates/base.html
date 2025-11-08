@@ -147,6 +147,7 @@
             
             <nav class="desktop-nav">
                 {% if current_user.is_authenticated %}
+                <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
                 <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
                 <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
                 <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
@@ -155,6 +156,7 @@
                 {% endif %}
                 <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
                 {% else %}
+                <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
                 <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
                 {% endif %}
             </nav>
@@ -165,6 +167,7 @@
     
     <nav class="mobile-nav" id="mobileNav">
         {% if current_user.is_authenticated %}
+        <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
         <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
         <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
         <a href="/account" class="nav-link {% if request.path == '/account' %}active{% endif %}">Account</a>
@@ -173,6 +176,7 @@
         {% endif %}
         <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
         {% else %}
+        <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
         <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
         {% endif %}
     </nav>
