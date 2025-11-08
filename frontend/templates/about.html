@@ -3,14 +3,161 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<section class="about">
-    <h1>How the model works</h1>
-    <ul>
-        <li>I automate scrapes from five projection sites and align everything with Sleeper's roster data, even the multi-position edge cases.</li>
-        <li>I layer in injuries and byes to rebuild each lineup before anyone remembers to set theirs.</li>
-        <li>I capture variance from all five feeds, treat player outcomes as log-normal, and fire 50,000 Monte Carlo runs per team.</li>
-        <li>I translate the simulated distributions into the odds you see on the board.</li>
-    </ul>
-    <p>Add or withdraw bets whenever you like until The Lock, which lands right after Thursday night kickoff. Once The Lock hits, slips stay put and settle after Monday night wraps.</p>
-</section>
+<style>
+    .about-container {
+        max-width: 900px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+    
+    .about-header {
+        margin-bottom: 40px;
+    }
+    
+    .about-header h1 {
+        font-size: 2.5em;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+    }
+    
+    .about-header p {
+        font-size: 1.2em;
+        color: var(--text-secondary);
+    }
+    
+    .section {
+        background: var(--fanduel-gray);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 8px;
+        padding: 32px;
+        margin-bottom: 32px;
+    }
+    
+    .section h2 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        color: var(--fanduel-blue);
+        border-bottom: 2px solid var(--fanduel-light-gray);
+        padding-bottom: 12px;
+    }
+    
+    .section h3 {
+        font-size: 1.3em;
+        margin: 24px 0 12px 0;
+        color: var(--text-primary);
+    }
+    
+    .section p {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        font-size: 1.05em;
+    }
+    
+    .section ul {
+        margin: 16px 0 16px 24px;
+        color: var(--text-secondary);
+    }
+    
+    .section li {
+        margin-bottom: 12px;
+        font-size: 1.05em;
+    }
+    
+    .highlight {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .visual-example {
+        margin: 24px 0;
+        padding: 20px;
+        background: var(--fanduel-dark);
+        border-radius: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .visual-example img {
+        width: 100%;
+        max-width: 700px;
+        height: auto;
+        border-radius: 4px;
+        display: block;
+        margin: 16px auto;
+    }
+    
+    .visual-example p {
+        text-align: center;
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        font-style: italic;
+        margin-top: 12px;
+    }
+    
+    .lock-notice {
+        background: rgba(20, 147, 255, 0.1);
+        border-left: 4px solid var(--fanduel-blue);
+        padding: 20px;
+        margin-top: 32px;
+        border-radius: 4px;
+    }
+    
+    .lock-notice p {
+        color: var(--text-primary);
+        margin: 0;
+    }
+</style>
+
+<div class="about-container">
+    <div class="about-header">
+        <h1>How It Works</h1>
+        <p>Understanding the odds behind TNC Casino</p>
+    </div>
+    
+    <div class="section">
+        <h2>Calculating the Odds</h2>
+        
+        <p>Every set of odds you see on TNC Casino starts with data aggregation and ends with probability calculations. Here's how we get from player projections to betting lines.</p>
+        
+        <h3>Step 1: Projection Aggregation</h3>
+        <p>We automatically pull player projections from five different sources: ESPN, FanDuel, FantasyPros, First Down Studio, and Sleeper. Each source has its own methods and biases, which gives us a more complete picture than relying on any single forecast.</p>
+        
+        <p>Once collected, these projections are mapped to your actual league rosters. We handle all the edge cases (players listed at multiple positions, injury designations, free agents) so the data lines up cleanly with your Sleeper league.</p>
+        
+        <h3>Step 2: Building in Variance</h3>
+        <p>Fantasy football is unpredictable. A running back projected for 12 points might score 2 or 25. To capture this uncertainty, we calculate variance in two ways:</p>
+        
+        <ul>
+            <li><span class="highlight">Projection disagreement:</span> When sources disagree on a player's outlook, that signals higher uncertainty. A wide spread between projections increases our variance estimate.</li>
+            <li><span class="highlight">Historical positional variance:</span> We analyze past performance data to understand how much players at each position typically deviate from their projections. Kickers are consistent. Running backs are volatile. This baseline helps calibrate expectations.</li>
+        </ul>
+        
+        <p>The combination of these two factors gives each player a mean projection and a variance estimate, which together define a probability distribution for their possible outcomes.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Monte Carlo Simulations</h2>
+        
+        <p>A Monte Carlo simulation is a way to understand all the possible outcomes when dealing with uncertainty. Instead of making a single prediction, we run thousands of simulated weeks to see what could happen.</p>
+        
+        <h3>How It Works</h3>
+        <p>For each simulation run, we randomly generate a score for every player based on their probability distribution (that mean and variance we calculated earlier). We assume player performance follows a log-normal distribution, which matches real-world scoring patterns better than a normal curve.</p>
+        
+        <p>We sum up the scores for each team's optimal lineup, then compare the results to determine winners, highest scorers, and all the other betting markets you see. We repeat this process 50,000 times per week.</p>
+        
+        <h3>Why 50,000 Simulations?</h3>
+        <p>More simulations give us more confidence in the probabilities. With 50,000 runs, the odds stabilize and accurately reflect the range of likely outcomes. Fewer runs would leave too much noise in the estimates.</p>
+        
+        <div class="visual-example">
+            <img src="/static/images/dist_Team_sfaizi24_week_10.png" alt="Example distribution showing 50,000 simulated outcomes">
+            <p>Example distribution from 50,000 simulations showing the range of possible scores for one team</p>
+        </div>
+        
+        <h3>From Simulations to Odds</h3>
+        <p>Once all 50,000 simulations finish, we tally the results. If a team won 35,000 times out of 50,000, their win probability is 70%. We convert these probabilities into the moneylines, over/unders, and prop bet odds you see on the betting board.</p>
+    </div>
+    
+    <div class="lock-notice">
+        <p><strong>The Lock:</strong> You can place, modify, or cancel bets anytime before The Lock, which happens right after Thursday Night Football kicks off. Once locked, all bets stay in place and settle after Monday Night Football ends.</p>
+    </div>
+</div>
 {% endblock %}
