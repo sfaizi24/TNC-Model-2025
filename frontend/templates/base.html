@@ -143,7 +143,7 @@
 <body>
     <header class="header">
         <div class="nav-container">
-            <a href="{{ url_for('index') }}" class="logo"><img src="/static/images/TNC Transparent Full Logo.png" alt="TNC"></a>
+            <a href="{{ url_for('betting') }}" class="logo"><img src="/static/images/TNC Transparent Full Logo.png" alt="TNC"></a>
             
             <nav class="desktop-nav">
                 {% if current_user.is_authenticated %}
@@ -157,7 +157,9 @@
                 <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
                 {% else %}
                 <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
-                <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
+                <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+                <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
+                <a href="{{ url_for('replit_auth.login') }}" class="nav-link">Login</a>
                 {% endif %}
             </nav>
             
@@ -177,7 +179,9 @@
         <a href="{{ url_for('replit_auth.logout') }}" class="nav-link">Logout</a>
         {% else %}
         <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
-        <a href="{{ url_for('replit_auth.login') }}" class="nav-link {% if request.path == '/login' or request.path == '/' %}active{% endif %}">Login</a>
+        <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+        <a href="/betting" class="nav-link {% if request.path == '/betting' %}active{% endif %}">Betting</a>
+        <a href="{{ url_for('replit_auth.login') }}" class="nav-link">Login</a>
         {% endif %}
     </nav>
     

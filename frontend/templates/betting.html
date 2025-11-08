@@ -593,12 +593,14 @@
     }
 </style>
 
+{% if user %}
 <div class="page-header">
     <div class="balance-display">
         <div class="balance-label">Available Balance</div>
         <div class="balance-amount" id="userBalance">${{ "%.2f"|format(user.account_balance) }}</div>
     </div>
 </div>
+{% endif %}
 
 <div class="active-bets-compact" id="activeBetsCompact">
 </div>
@@ -643,7 +645,8 @@
 
 <script>
 let selectedBets = {};
-let userBalance = {{ user.account_balance }};
+let userBalance = {{ user.account_balance if user else 0 }};
+let isAuthenticated = {{ 'true' if user else 'false' }};
 
 // Tab switching
 document.querySelectorAll('.betting-tab').forEach(tab => {
@@ -718,8 +721,8 @@ function renderMatchups() {
                                placeholder="Bet $" min="0" step="0.01"
                                oninput="updatePotentialWin(${idx})">
                     </div>
-                    <button class="btn-place-bet" id="btn-${idx}" onclick="placeBet(${idx})" disabled>
-                        Place Bet
+                    <button class="btn-place-bet" id="btn-${idx}" onclick="isAuthenticated ? placeBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
                     </button>
                 </div>
                 <button class="show-teams-btn" onclick="toggleLineups(${idx}, ${JSON.stringify(m.team1_name)}, ${JSON.stringify(m.team2_name)})">
@@ -769,6 +772,10 @@ function updatePotentialWin(matchupIdx) {
     const amountInput = document.getElementById(`amount-${matchupIdx}`);
     const potentialDiv = document.getElementById(`potential-${matchupIdx}`);
     const btn = document.getElementById(`btn-${matchupIdx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
     
     const amount = parseFloat(amountInput.value) || 0;
     const selected = selectedBets[matchupIdx];
@@ -982,8 +989,8 @@ function renderTeamPerformance() {
                                placeholder="Bet $" min="0" step="0.01"
                                oninput="updateTeamPotentialWin(${idx})">
                     </div>
-                    <button class="btn-place-bet" id="team-btn-${idx}" onclick="placeTeamBet(${idx})" disabled>
-                        Place Bet
+                    <button class="btn-place-bet" id="team-btn-${idx}" onclick="isAuthenticated ? placeTeamBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
                     </button>
                 </div>
                 <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, ${JSON.stringify(t.owner)})">
@@ -1015,6 +1022,10 @@ function updateTeamPotentialWin(teamIdx) {
     const amountInput = document.getElementById(`team-amount-${teamIdx}`);
     const potentialDiv = document.getElementById(`team-potential-${teamIdx}`);
     const btn = document.getElementById(`team-btn-${teamIdx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
     
     const amount = parseFloat(amountInput.value) || 0;
     const selected = selectedTeamBets[teamIdx];
@@ -1238,8 +1249,8 @@ function renderHighestScorer() {
         <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
             <input type="number" class="bet-amount-input" id="hs-global-amount" 
                    placeholder="Bet Amount" min="0" step="0.01">
-            <button class="btn-place-bet" id="hs-global-btn" onclick="placeHighestScorerBet()" disabled>
-                Place Bet
+            <button class="btn-place-bet" id="hs-global-btn" onclick="isAuthenticated ? placeHighestScorerBet() : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                ${isAuthenticated ? 'Place Bet' : 'Login'}
             </button>
         </div>
     `;
@@ -1440,8 +1451,8 @@ function renderLowestScorer() {
         <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
             <input type="number" class="bet-amount-input" id="ls-global-amount" 
                    placeholder="Bet Amount" min="0" step="0.01">
-            <button class="btn-place-bet" id="ls-global-btn" onclick="placeLowestScorerBet()" disabled>
-                Place Bet
+            <button class="btn-place-bet" id="ls-global-btn" onclick="isAuthenticated ? placeLowestScorerBet() : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                ${isAuthenticated ? 'Place Bet' : 'Login'}
             </button>
         </div>
     `;
@@ -1596,7 +1607,9 @@ function renderLowestScorerLineup(idx, lineup) {
 
 // Initialize - load bets first, then matchups and team performance
 async function initialize() {
-    await loadActiveBets();
+    if (isAuthenticated) {
+        await loadActiveBets();
+    }
     await loadMatchups();
     await loadTeamPerformance();
     await loadHighestScorer();

@@ -168,18 +168,15 @@ def make_session_permanent():
 
 @app.route('/')
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('betting'))
-    return render_template('login.html')
+    return redirect(url_for('betting'))
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
 @app.route('/analytics')
-@require_login
 def analytics():
-    return render_template('analytics.html', user=current_user)
+    return render_template('analytics.html', user=current_user if current_user.is_authenticated else None)
 
 @app.route('/account')
 @require_login
@@ -190,14 +187,12 @@ def account():
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
-@require_login
 def betting():
-    return render_template('betting.html', user=current_user)
+    return render_template('betting.html', user=current_user if current_user.is_authenticated else None)
 
 ODDS_DB_PATH = 'backend/data/databases/odds.db'
 
 @app.route('/api/matchups')
-@require_login
 def get_matchups():
     try:
         # Get team ID to owner name mapping from league database
@@ -257,7 +252,6 @@ def get_matchups():
         return jsonify([])
 
 @app.route('/api/team_performance')
-@require_login
 def get_team_performance():
     try:
         conn = sqlite3.connect(ODDS_DB_PATH)
@@ -289,7 +283,6 @@ def get_team_performance():
         return jsonify([])
 
 @app.route('/api/highest_scorer')
-@require_login
 def get_highest_scorer():
     try:
         conn = sqlite3.connect(ODDS_DB_PATH)
@@ -320,7 +313,6 @@ def get_highest_scorer():
         return jsonify([])
 
 @app.route('/api/lowest_scorer')
-@require_login
 def get_lowest_scorer():
     try:
         conn = sqlite3.connect(ODDS_DB_PATH)
