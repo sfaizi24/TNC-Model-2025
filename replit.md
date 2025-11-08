@@ -17,6 +17,9 @@ The platform is built around a Flask web server, serving HTML templates located 
 - **Real-time Betting System**: Various bet types including matchups, over/unders, highest/lowest scorer
 - **Betting Period Management**: Time-based betting deadlines with automatic lock enforcement
 - **Admin Settlement Interface**: Complete bet settlement workflow with win/loss tracking
+- **Admin Access Control**: Role-based permissions with is_admin column, admin-only navigation and routes
+- **Unlock Functionality**: Admins can unlock locked betting periods via dedicated endpoint
+- **UTC Timezone Handling**: All datetimes stored and displayed in UTC with clear labeling
 - **Performance Tracking**: Separate tracking of active bets vs settled performance in weekly stats
 - **Analytics Dashboard**: Team and player performance insights
 - **User Account Management**: Profile management, betting history, and weekly performance tracking
@@ -29,10 +32,17 @@ The platform is built around a Flask web server, serving HTML templates located 
 5. **Week Closure**: Admin marks week as settled and creates a new betting period for next week
 
 ### Database Models
-- **User**: Account information, balance, total P&L
-- **Bet**: Individual bets with type, amount, odds, status (pending/won/lost)
+- **User**: Account information, balance, total P&L, is_admin flag (default: False)
+- **Bet**: Individual bets with type, amount, odds, status (pending/won/lost), timezone-aware timestamps
 - **WeeklyStats**: Performance tracking with active_bets_amount and settled_pnl
-- **BettingPeriod**: Week management with lock_time, is_locked, is_settled flags
+- **BettingPeriod**: Week management with UTC lock_time, is_locked, is_settled flags
+
+### Technical Implementation
+- **Admin System**: `admin_required` decorator protects admin routes, navigation hidden for non-admins
+- **Timezone Handling**: All DateTime columns use `DateTime(timezone=True)` for PostgreSQL TIMESTAMPTZ
+- **Idempotent Migrations**: Schema migrations check column types before conversion, safe for multiple restarts
+- **Dynamic Week Tracking**: Current week determined via `get_current_week()` helper function
+- **Security**: Admin privileges must be manually set in database, no self-service admin escalation
 
 ## External Dependencies
 - **Python 3.11**
