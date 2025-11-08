@@ -34,6 +34,16 @@ def run_schema_migrations():
         from sqlalchemy import inspect, text
         inspector = inspect(db.engine)
         
+        if 'users' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            
+            if 'is_admin' not in columns:
+                logging.info("Adding is_admin column to users")
+                with db.engine.connect() as conn:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE'))
+                    conn.commit()
+                logging.info("is_admin column added")
+        
         if 'weekly_stats' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('weekly_stats')]
             
