@@ -92,7 +92,7 @@
 </div>
 
 <div id="team-distribution" class="section">
-    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" style="width: 100%; max-width: 1200px; border-radius: 12px; border: 1px solid var(--fanduel-light-gray);">
+    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" style="width: 100%; max-width: 1200px; border-radius: 12px; border: 1px solid var(--fanduel-light-gray);" decoding="async">
 </div>
 
 <div id="team-players" class="section" style="display: none;">
@@ -104,27 +104,27 @@
     <h2 class="section-title">Monte Carlo Simulation Results</h2>
     <div class="image-grid">
         <div class="image-card">
-            <img src="/static/images/simulation_distributions_week_10.png" alt="Team Distributions">
+            <img src="/static/images/simulation_distributions_week_10.png" alt="Team Distributions" loading="lazy" decoding="async">
             <div class="image-caption">Team Score Distributions</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison">
+            <img src="/static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison" loading="lazy" decoding="async">
             <div class="image-caption">Box Plot Comparison</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/simulation_violin_week_10.png" alt="Violin Plot">
+            <img src="/static/images/simulation_violin_week_10.png" alt="Violin Plot" loading="lazy" decoding="async">
             <div class="image-caption">Violin Plot with Percentiles</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/win_probability_heatmap_week_10.png" alt="Win Probability">
+            <img src="/static/images/win_probability_heatmap_week_10.png" alt="Win Probability" loading="lazy" decoding="async">
             <div class="image-caption">Win Probability Heatmap</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/percentile_ranges_week_10.png" alt="Percentile Ranges">
+            <img src="/static/images/percentile_ranges_week_10.png" alt="Percentile Ranges" loading="lazy" decoding="async">
             <div class="image-caption">Percentile Ranges</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/cdf_plot_week_10.png" alt="CDF Plot">
+            <img src="/static/images/cdf_plot_week_10.png" alt="CDF Plot" loading="lazy" decoding="async">
             <div class="image-caption">Cumulative Distribution Functions</div>
         </div>
     </div>
@@ -134,11 +134,11 @@
     <h2 class="section-title">Betting Odds Analysis</h2>
     <div class="image-grid">
         <div class="image-card">
-            <img src="/static/images/betting_odds_high_low_week_10.png" alt="High/Low Scorer Odds">
+            <img src="/static/images/betting_odds_high_low_week_10.png" alt="High/Low Scorer Odds" loading="lazy" decoding="async">
             <div class="image-caption">Highest & Lowest Scorer Odds</div>
         </div>
         <div class="image-card">
-            <img src="/static/images/betting_odds_moneyline_week_10.png" alt="Moneyline Odds">
+            <img src="/static/images/betting_odds_moneyline_week_10.png" alt="Moneyline Odds" loading="lazy" decoding="async">
             <div class="image-caption">Matchup Moneyline Odds</div>
         </div>
     </div>
@@ -156,7 +156,15 @@ async function loadTeams() {
         const response = await fetch('/api/teams');
         const data = await response.json();
         const select = document.getElementById('team-select');
-        
+        const existingAllOption = select.querySelector('option[value="all"]');
+        select.innerHTML = '';
+
+        const allOption = existingAllOption || document.createElement('option');
+        allOption.value = 'all';
+        allOption.textContent = 'All Teams';
+        allOption.selected = true;
+        select.appendChild(allOption);
+
         data.teams.forEach(team => {
             const option = document.createElement('option');
             option.value = team;
@@ -186,7 +194,8 @@ document.getElementById('team-select').addEventListener('change', async function
         
         // Load player stats for this team
         try {
-            const response = await fetch(`/api/team_players?team=${selectedTeam}`);
+            const teamParam = encodeURIComponent(selectedTeam);
+            const response = await fetch(`/api/team_players?team=${teamParam}`);
             const data = await response.json();
             
             if (data.players && data.players.length > 0) {

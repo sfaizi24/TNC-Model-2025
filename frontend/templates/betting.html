@@ -722,7 +722,7 @@ function renderMatchups() {
                         Place Bet
                     </button>
                 </div>
-                <button class="show-teams-btn" onclick="toggleLineups(${idx}, '${m.team1_name}', '${m.team2_name}')">
+                <button class="show-teams-btn" onclick="toggleLineups(${idx}, ${JSON.stringify(m.team1_name)}, ${JSON.stringify(m.team2_name)})">
                     Show Teams <span class="dropdown-arrow" id="arrow-${idx}">▼</span>
                 </button>
                 <div class="lineups-container" id="lineups-${idx}" style="display: none;">
@@ -986,7 +986,7 @@ function renderTeamPerformance() {
                         Place Bet
                     </button>
                 </div>
-                <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, '${t.owner}')">
+                <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, ${JSON.stringify(t.owner)})">
                     Show Team <span class="dropdown-arrow" id="team-arrow-${idx}">▼</span>
                 </button>
                 <div class="lineups-container" id="team-lineups-${idx}" style="display: none;">
