@@ -94,10 +94,24 @@ with app.app_context():
 
 # Import Replit Auth
 from replit_auth import login_manager, make_replit_blueprint, require_login
-from flask_login import current_user
+from flask_login import current_user, login_required
+from functools import wraps
 
 # Initialize login manager
 login_manager.init_app(app)
+
+# Admin required decorator
+def admin_required(f):
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('index'))
+        if not getattr(current_user, 'is_admin', False):
+            flash('You do not have permission to access this page.', 'error')
+            return redirect(url_for('betting'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Register Replit Auth blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
@@ -856,12 +870,12 @@ def get_team_players():
         return jsonify({'players': []})
 
 @app.route('/admin')
-@require_login
+@admin_required
 def admin():
     return render_template('admin.html', user=current_user)
 
 @app.route('/api/admin/betting_periods', methods=['GET'])
-@require_login
+@admin_required
 def get_betting_periods():
     from models import BettingPeriod
     
@@ -886,7 +900,7 @@ def get_betting_periods():
         return jsonify([])
 
 @app.route('/api/admin/set_betting_period', methods=['POST'])
-@require_login
+@admin_required
 def set_betting_period():
     from models import BettingPeriod
     from datetime import datetime
@@ -921,7 +935,7 @@ def set_betting_period():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/admin/pending_bets', methods=['GET'])
-@require_login
+@admin_required
 def get_pending_bets():
     from models import Bet
     
@@ -950,7 +964,7 @@ def get_pending_bets():
         return jsonify([])
 
 @app.route('/api/admin/settle_bet', methods=['POST'])
-@require_login
+@admin_required
 def settle_bet():
     from models import Bet, WeeklyStats, User
     from datetime import datetime
@@ -1011,7 +1025,7 @@ def settle_bet():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/admin/settle_week', methods=['POST'])
-@require_login
+@admin_required
 def settle_week():
     from models import BettingPeriod
     
