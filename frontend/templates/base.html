@@ -49,10 +49,14 @@
         }
         
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--fanduel-blue);
+            display: flex;
+            align-items: center;
             text-decoration: none;
+        }
+        
+        .logo img {
+            height: 40px;
+            width: auto;
         }
         
         .desktop-nav {
@@ -136,7 +140,7 @@
 <body>
     <header class="header">
         <div class="nav-container">
-            <a href="/login" class="logo">⚡ FantasyAnalytics</a>
+            <a href="/login" class="logo"><img src="/static/images/TNC Transparent Full Logo.png" alt="TNC"></a>
             
             <nav class="desktop-nav">
                 {% if current_user.is_authenticated %}
