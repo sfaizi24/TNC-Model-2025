@@ -5,6 +5,7 @@ import logging
 import sys
 import sqlite3
 import json
+import ast
 from datetime import datetime, timezone
 
 logging.basicConfig(level=logging.DEBUG)
@@ -705,9 +706,9 @@ def place_bet():
             db.session.add(weekly_stat)
         
         current_user.account_balance -= amount
-        
+
         description = f"{matchup_display}: {team_name} {odds}"
-        
+
         bet = Bet(
             user_id=current_user.id,
             bet_type='moneyline',
@@ -717,7 +718,7 @@ def place_bet():
             odds=odds,
             potential_win=potential_win,
             status='pending',
-            created_at=datetime.now()
+            created_at=datetime.now(timezone.utc)
         )
         
         db.session.add(bet)
@@ -874,14 +875,29 @@ def get_team_players():
             return jsonify({'players': []})
         
         starters_str = roster['starters']
-        player_ids = json.loads(starters_str.replace("'", '"'))
-        
+
+        try:
+            player_ids = ast.literal_eval(starters_str)
+        except (ValueError, SyntaxError):
+            # Fallback to JSON decoding for legacy data formats
+            try:
+                player_ids = json.loads(starters_str.replace("'", '"'))
+            except json.JSONDecodeError:
+                league_conn.close()
+                return jsonify({'players': []})
+
+        if not isinstance(player_ids, (list, tuple)) or not player_ids:
+            league_conn.close()
+            return jsonify({'players': []})
+
+        player_ids = [int(pid) for pid in player_ids]
+
         league_conn.close()
-        
+
         proj_conn = sqlite3.connect(PROJECTIONS_DB_PATH)
         proj_conn.row_factory = sqlite3.Row
         proj_cursor = proj_conn.cursor()
-        
+
         week = get_current_week()
         placeholders = ','.join('?' * len(player_ids))
         proj_cursor.execute(f"""
