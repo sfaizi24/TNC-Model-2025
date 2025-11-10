@@ -7,8 +7,9 @@
     .page-header {
         margin-bottom: 15px;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
+        gap: 20px;
     }
     
     .balance-display {
@@ -29,6 +30,33 @@
         color: var(--success-green);
         font-size: 24px;
         font-weight: bold;
+    }
+    
+    .prize-info {
+        background: var(--fanduel-dark);
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .prize-row {
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+    
+    .prize-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .prize-label {
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+    
+    .prize-amount {
+        color: var(--fanduel-blue);
+        font-weight: 600;
     }
     
     .betting-tabs {
@@ -498,6 +526,15 @@
     }
     
     @media (max-width: 767px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .prize-info, .balance-display {
+            text-align: center;
+        }
+        
         .hs-team-row {
             grid-template-columns: 1fr;
             grid-template-areas: 
@@ -595,6 +632,14 @@
 
 {% if user %}
 <div class="page-header">
+    <div class="prize-info">
+        <div class="prize-row">
+            <span class="prize-label">Weekly Prize:</span> #1 in PnL for the week receives <span class="prize-amount">$20</span>
+        </div>
+        <div class="prize-row">
+            <span class="prize-label">Season Prize:</span> #1 in PnL for the season receives <span class="prize-amount">$100</span>
+        </div>
+    </div>
     <div class="balance-display">
         <div class="balance-label">Available Balance</div>
         <div class="balance-amount" id="userBalance">${{ "%.2f"|format(user.account_balance) }}</div>
