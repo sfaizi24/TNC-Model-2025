@@ -486,30 +486,26 @@
     .hs-team-row {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 3px;
         padding: 8px;
         background: var(--fanduel-dark);
         border-radius: 4px;
         margin-bottom: 6px;
         transition: all 0.3s ease;
         cursor: pointer;
-    }
-    
-    .hs-top-row {
-        display: flex;
-        justify-content: space-between;
         align-items: center;
     }
     
     .hs-win-prob {
         color: var(--text-secondary);
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
+        text-align: center;
     }
     
     .hs-owner {
         color: white;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         text-align: center;
     }
@@ -518,6 +514,7 @@
         color: var(--success-green);
         font-size: 13px;
         font-weight: 700;
+        text-align: center;
         transition: color 0.3s ease;
     }
     
@@ -530,7 +527,11 @@
     }
     
     .matchup-card.selected .hs-win-prob {
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .matchup-card.selected .hs-owner {
+        color: white;
     }
     
     @media (max-width: 767px) {
@@ -564,16 +565,16 @@
         }
         
         .hs-team-row {
-            gap: 3px;
+            gap: 2px;
             padding: 6px;
         }
         
         .hs-win-prob {
-            font-size: 10px;
+            font-size: 9px;
         }
         
         .hs-owner {
-            font-size: 12px;
+            font-size: 11px;
             word-break: break-word;
             overflow-wrap: anywhere;
         }
@@ -860,6 +861,56 @@ function updatePotentialWin(matchupIdx) {
     } else {
         potentialDiv.textContent = '';
         btn.textContent = 'Place Bet';
+        btn.disabled = true;
+    }
+}
+
+// Update potential win for highest scorer
+function updateHighestScorerPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`hs-amount-${idx}`);
+    const potentialDiv = document.getElementById(`hs-potential-win-${idx}`);
+    const btn = document.getElementById(`hs-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    }
+}
+
+// Update potential win for lowest scorer
+function updateLowestScorerPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`ls-amount-${idx}`);
+    const potentialDiv = document.getElementById(`ls-potential-win-${idx}`);
+    const btn = document.getElementById(`ls-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
         btn.disabled = true;
     }
 }
@@ -1324,11 +1375,20 @@ function renderHighestScorer() {
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="hs-card-${idx}" onclick="selectHighestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-top-row">
-                        <div class="hs-win-prob">${t.win_prob}% Win</div>
-                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
-                    </div>
+                    <div class="hs-win-prob">${t.win_prob}% Win</div>
                     <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <div class="potential-win" id="hs-potential-win-${idx}"></div>
+                        <input type="number" class="bet-amount-input" id="hs-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateHighestScorerPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="hs-btn-${idx}" onclick="isAuthenticated ? placeHighestScorerBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
                 </div>
                 <button class="show-teams-btn" onclick="toggleHighestScorerLineup(event, ${idx}, '${t.owner}')">
                     Show Team <span class="dropdown-arrow" id="hs-arrow-${idx}">▼</span>
@@ -1528,11 +1588,20 @@ function renderLowestScorer() {
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ls-card-${idx}" onclick="selectLowestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-top-row">
-                        <div class="hs-win-prob">${t.win_prob}% Win</div>
-                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
-                    </div>
+                    <div class="hs-win-prob">${t.win_prob}% Win</div>
                     <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <div class="potential-win" id="ls-potential-win-${idx}"></div>
+                        <input type="number" class="bet-amount-input" id="ls-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateLowestScorerPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="ls-btn-${idx}" onclick="isAuthenticated ? placeLowestScorerBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
                 </div>
                 <button class="show-teams-btn" onclick="toggleLowestScorerLineup(event, ${idx}, '${t.owner}')">
                     Show Team <span class="dropdown-arrow" id="ls-arrow-${idx}">▼</span>
