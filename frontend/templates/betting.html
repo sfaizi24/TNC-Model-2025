@@ -484,36 +484,40 @@
     }
     
     .hs-team-row {
-        display: grid;
-        grid-template-columns: 100px 1fr 100px;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
         background: var(--fanduel-dark);
-        border-radius: 6px;
-        margin-bottom: 8px;
+        border-radius: 4px;
+        margin-bottom: 6px;
         transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .hs-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .hs-win-prob {
-        color: white;
-        font-size: 16px;
+        color: var(--text-secondary);
+        font-size: 11px;
         font-weight: 600;
-        text-align: left;
     }
     
     .hs-owner {
         color: white;
-        font-size: 20px;
+        font-size: 14px;
         font-weight: 700;
         text-align: center;
     }
     
     .hs-odds {
         color: var(--success-green);
-        font-size: 18px;
+        font-size: 13px;
         font-weight: 700;
-        text-align: right;
         transition: color 0.3s ease;
     }
     
@@ -523,6 +527,10 @@
     
     .matchup-card.selected .hs-odds {
         color: white;
+    }
+    
+    .matchup-card.selected .hs-win-prob {
+        color: rgba(255, 255, 255, 0.8);
     }
     
     @media (max-width: 767px) {
@@ -556,32 +564,22 @@
         }
         
         .hs-team-row {
-            grid-template-columns: 1fr;
-            grid-template-areas: 
-                'win'
-                'owner'
-                'odds';
-            gap: 8px;
-            padding: 10px;
+            gap: 3px;
+            padding: 6px;
         }
         
         .hs-win-prob {
-            grid-area: win;
-            font-size: 14px;
-            text-align: center;
+            font-size: 10px;
         }
         
         .hs-owner {
-            grid-area: owner;
-            font-size: 18px;
+            font-size: 12px;
             word-break: break-word;
             overflow-wrap: anywhere;
         }
         
         .hs-odds {
-            grid-area: odds;
-            font-size: 16px;
-            text-align: center;
+            font-size: 11px;
         }
         
         .matchup-card {
@@ -1326,9 +1324,11 @@ function renderHighestScorer() {
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="hs-card-${idx}" onclick="selectHighestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-win-prob">${t.win_prob}% Win</div>
+                    <div class="hs-top-row">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
                     <div class="hs-owner">${t.owner}</div>
-                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
                 </div>
                 <button class="show-teams-btn" onclick="toggleHighestScorerLineup(event, ${idx}, '${t.owner}')">
                     Show Team <span class="dropdown-arrow" id="hs-arrow-${idx}">▼</span>
@@ -1528,9 +1528,11 @@ function renderLowestScorer() {
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ls-card-${idx}" onclick="selectLowestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-win-prob">${t.win_prob}% Win</div>
+                    <div class="hs-top-row">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
                     <div class="hs-owner">${t.owner}</div>
-                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
                 </div>
                 <button class="show-teams-btn" onclick="toggleLowestScorerLineup(event, ${idx}, '${t.owner}')">
                     Show Team <span class="dropdown-arrow" id="ls-arrow-${idx}">▼</span>
