@@ -52,6 +52,10 @@ localPort = 39315
 externalPort = 3000
 
 [[ports]]
+localPort = 41249
+externalPort = 6800
+
+[[ports]]
 localPort = 42081
 externalPort = 5000
 
@@ -62,10 +66,6 @@ externalPort = 5173
 [[ports]]
 localPort = 42925
 externalPort = 3001
-
-[[ports]]
-localPort = 43483
-externalPort = 6000
 
 [deployment]
 deploymentTarget = "gce"

@@ -486,7 +486,7 @@
     .hs-team-row {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
         padding: 8px;
         background: var(--fanduel-dark);
         border-radius: 4px;
@@ -496,13 +496,6 @@
         align-items: center;
     }
     
-    .hs-win-prob {
-        color: var(--text-secondary);
-        font-size: 10px;
-        font-weight: 600;
-        text-align: center;
-    }
-    
     .hs-owner {
         color: white;
         font-size: 13px;
@@ -510,11 +503,23 @@
         text-align: center;
     }
     
+    .hs-stats {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hs-win-prob {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
     .hs-odds {
         color: var(--success-green);
         font-size: 13px;
         font-weight: 700;
-        text-align: center;
         transition: color 0.3s ease;
     }
     
@@ -527,11 +532,17 @@
     }
     
     .matchup-card.selected .hs-win-prob {
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.9);
     }
     
     .matchup-card.selected .hs-owner {
         color: white;
+    }
+    
+    .matchup-card .potential-win {
+        display: block;
+        text-align: center;
+        width: 100%;
     }
     
     @media (max-width: 767px) {
@@ -565,18 +576,22 @@
         }
         
         .hs-team-row {
-            gap: 2px;
+            gap: 3px;
             padding: 6px;
-        }
-        
-        .hs-win-prob {
-            font-size: 9px;
         }
         
         .hs-owner {
             font-size: 11px;
             word-break: break-word;
             overflow-wrap: anywhere;
+        }
+        
+        .hs-stats {
+            gap: 6px;
+        }
+        
+        .hs-win-prob {
+            font-size: 9px;
         }
         
         .hs-odds {
@@ -1359,29 +1374,21 @@ function renderHighestScorer() {
         }
     });
     
-    const betControls = `
-        <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
-            <input type="number" class="bet-amount-input" id="hs-global-amount" 
-                   placeholder="Bet Amount" min="0" step="0.01">
-            <button class="btn-place-bet" id="hs-global-btn" onclick="isAuthenticated ? placeHighestScorerBet() : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
-                ${isAuthenticated ? 'Place Bet' : 'Login'}
-            </button>
-        </div>
-    `;
-    
     const teams = allHighestScorer.map((t, idx) => {
         const hasBet = teamHasBet[t.owner] || false;
         return `
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="hs-card-${idx}" onclick="selectHighestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-win-prob">${t.win_prob}% Win</div>
                     <div class="hs-owner">${t.owner}</div>
-                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
                 </div>
+                <div class="potential-win" id="hs-potential-win-${idx}"></div>
                 <div class="bet-controls">
                     <div class="bet-input-group">
-                        <div class="potential-win" id="hs-potential-win-${idx}"></div>
                         <input type="number" class="bet-amount-input" id="hs-amount-${idx}" 
                                placeholder="Bet $" min="0" step="0.01"
                                oninput="updateHighestScorerPotentialWin(${idx}, '${t.odds}')">
@@ -1400,7 +1407,7 @@ function renderHighestScorer() {
         `;
     }).join('');
     
-    grid.innerHTML = betControls + teams;
+    grid.innerHTML = teams;
 }
 
 // Select highest scorer team
@@ -1572,29 +1579,21 @@ function renderLowestScorer() {
         }
     });
     
-    const betControls = `
-        <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
-            <input type="number" class="bet-amount-input" id="ls-global-amount" 
-                   placeholder="Bet Amount" min="0" step="0.01">
-            <button class="btn-place-bet" id="ls-global-btn" onclick="isAuthenticated ? placeLowestScorerBet() : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
-                ${isAuthenticated ? 'Place Bet' : 'Login'}
-            </button>
-        </div>
-    `;
-    
     const teams = allLowestScorer.map((t, idx) => {
         const hasBet = teamHasBet[t.owner] || false;
         return `
             <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ls-card-${idx}" onclick="selectLowestScorerTeam(${idx})" style="cursor: pointer;">
                 ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
                 <div class="hs-team-row">
-                    <div class="hs-win-prob">${t.win_prob}% Win</div>
                     <div class="hs-owner">${t.owner}</div>
-                    <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
                 </div>
+                <div class="potential-win" id="ls-potential-win-${idx}"></div>
                 <div class="bet-controls">
                     <div class="bet-input-group">
-                        <div class="potential-win" id="ls-potential-win-${idx}"></div>
                         <input type="number" class="bet-amount-input" id="ls-amount-${idx}" 
                                placeholder="Bet $" min="0" step="0.01"
                                oninput="updateLowestScorerPotentialWin(${idx}, '${t.odds}')">
@@ -1613,10 +1612,7 @@ function renderLowestScorer() {
         `;
     }).join('');
     
-    grid.innerHTML = betControls + teams;
-    
-    // Update button state
-    document.getElementById('ls-global-amount').addEventListener('input', updateLowestScorerButton);
+    grid.innerHTML = teams;
 }
 
 function updateLowestScorerButton() {
