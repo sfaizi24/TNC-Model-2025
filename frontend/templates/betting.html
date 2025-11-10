@@ -804,7 +804,7 @@ function renderMatchups() {
                         ${isAuthenticated ? 'Place Bet' : 'Login'}
                     </button>
                 </div>
-                <button class="show-teams-btn" onclick="toggleLineups(${idx}, ${JSON.stringify(m.team1_name)}, ${JSON.stringify(m.team2_name)})">
+                <button class="show-teams-btn" onclick="toggleLineups(event, ${idx}, ${JSON.stringify(m.team1_name)}, ${JSON.stringify(m.team2_name)})">
                     Show Teams <span class="dropdown-arrow" id="arrow-${idx}">▼</span>
                 </button>
                 <div class="lineups-container" id="lineups-${idx}" style="display: none;">
@@ -1122,7 +1122,7 @@ function renderTeamPerformance() {
                         ${isAuthenticated ? 'Place Bet' : 'Login'}
                     </button>
                 </div>
-                <button class="show-teams-btn" onclick="toggleTeamLineup(${idx}, ${JSON.stringify(t.owner)})">
+                <button class="show-teams-btn" onclick="toggleTeamLineup(event, ${idx}, ${JSON.stringify(t.owner)})">
                     Show Team <span class="dropdown-arrow" id="team-arrow-${idx}">▼</span>
                 </button>
                 <div class="lineups-container" id="team-lineups-${idx}" style="display: none;">
@@ -1240,7 +1240,8 @@ async function placeTeamBet(teamIdx) {
 // Toggle lineup display
 const lineupCache = {};
 
-async function toggleLineups(idx, team1Owner, team2Owner) {
+async function toggleLineups(event, idx, team1Owner, team2Owner) {
+    event.stopPropagation();
     const container = document.getElementById(`lineups-${idx}`);
     const arrow = document.getElementById(`arrow-${idx}`);
     
@@ -1298,7 +1299,8 @@ function renderLineups(idx, lineup1, lineup2) {
     `;
 }
 
-async function toggleTeamLineup(idx, owner) {
+async function toggleTeamLineup(event, idx, owner) {
+    event.stopPropagation();
     const container = document.getElementById(`team-lineups-${idx}`);
     const arrow = document.getElementById(`team-arrow-${idx}`);
     
@@ -1422,36 +1424,8 @@ function selectHighestScorerTeam(idx) {
     const card = document.getElementById(`hs-card-${idx}`);
     card.classList.add('selected');
     selectedHighestScorerTeam = idx;
-    
-    // Update button state
-    const amountInput = document.getElementById('hs-global-amount');
-    const amount = parseFloat(amountInput.value) || 0;
-    const btn = document.getElementById('hs-global-btn');
-    
-    if (amount > 0) {
-        btn.disabled = false;
-    } else {
-        btn.disabled = true;
-    }
 }
 
-// Update global bet amount input
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const amountInput = document.getElementById('hs-global-amount');
-        if (amountInput) {
-            amountInput.addEventListener('input', () => {
-                const amount = parseFloat(amountInput.value) || 0;
-                const btn = document.getElementById('hs-global-btn');
-                if (selectedHighestScorerTeam !== null && amount > 0) {
-                    btn.disabled = false;
-                } else {
-                    btn.disabled = true;
-                }
-            });
-        }
-    }, 500);
-});
 
 // Place highest scorer bet
 async function placeHighestScorerBet() {
@@ -1615,12 +1589,6 @@ function renderLowestScorer() {
     grid.innerHTML = teams;
 }
 
-function updateLowestScorerButton() {
-    const amount = parseFloat(document.getElementById('ls-global-amount').value);
-    const btn = document.getElementById('ls-global-btn');
-    btn.disabled = !(selectedLowestScorerTeam !== null && amount > 0);
-}
-
 function selectLowestScorerTeam(idx) {
     // Deselect previous team
     if (selectedLowestScorerTeam !== null) {
@@ -1632,8 +1600,6 @@ function selectLowestScorerTeam(idx) {
     selectedLowestScorerTeam = idx;
     const card = document.getElementById(`ls-card-${idx}`);
     if (card) card.classList.add('selected');
-    
-    updateLowestScorerButton();
 }
 
 async function placeLowestScorerBet() {
