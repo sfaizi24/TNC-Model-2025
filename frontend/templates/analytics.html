@@ -31,56 +31,34 @@
         border-bottom: 2px solid var(--fanduel-light-gray);
     }
     
-    .image-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    
-    .image-card {
-        background: var(--fanduel-gray);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid var(--fanduel-light-gray);
-        transition: all 0.3s ease;
-    }
-    
-    .image-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--fanduel-blue);
-        box-shadow: 0 8px 25px rgba(20, 147, 255, 0.15);
-    }
-    
-    .image-card img {
-        width: 100%;
-        height: auto;
+    .edge-to-edge-image {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
         display: block;
     }
     
-    .image-caption {
-        padding: 15px 20px;
+    .roster-divider {
+        margin: 20px 0;
+        padding: 10px 0;
+        border-top: 2px solid var(--fanduel-light-gray);
+        border-bottom: 2px solid var(--fanduel-light-gray);
+        text-align: center;
+        color: var(--text-secondary);
         font-weight: 600;
-        color: var(--text-primary);
-        background: var(--fanduel-darker);
-        border-top: 1px solid var(--fanduel-light-gray);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
     @media (min-width: 768px) {
         .page-title {
             font-size: 42px;
         }
-        
-        .image-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-        }
     }
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">Analytics Dashboard</h1>
-    <p class="page-subtitle">Monte Carlo Simulations & Betting Odds Analysis - Week 10</p>
+    <h1 class="page-title">Research teams and view league-wide analytics</h1>
 </div>
 
 <div style="margin-bottom: 30px;">
@@ -92,7 +70,7 @@
 </div>
 
 <div id="team-distribution" class="section">
-    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" style="width: 100%; max-width: 1200px; border-radius: 12px; border: 1px solid var(--fanduel-light-gray);" decoding="async">
+    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" class="edge-to-edge-image" decoding="async">
 </div>
 
 <div id="team-players" class="section" style="display: none;">
@@ -101,52 +79,7 @@
 </div>
 
 <div class="section">
-    <h2 class="section-title">Monte Carlo Simulation Results</h2>
-    <div class="image-grid">
-        <div class="image-card">
-            <img src="/static/images/simulation_distributions_week_10.png" alt="Team Distributions" loading="lazy" decoding="async">
-            <div class="image-caption">Team Score Distributions</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison" loading="lazy" decoding="async">
-            <div class="image-caption">Box Plot Comparison</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/simulation_violin_week_10.png" alt="Violin Plot" loading="lazy" decoding="async">
-            <div class="image-caption">Violin Plot with Percentiles</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/win_probability_heatmap_week_10.png" alt="Win Probability" loading="lazy" decoding="async">
-            <div class="image-caption">Win Probability Heatmap</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/percentile_ranges_week_10.png" alt="Percentile Ranges" loading="lazy" decoding="async">
-            <div class="image-caption">Percentile Ranges</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/cdf_plot_week_10.png" alt="CDF Plot" loading="lazy" decoding="async">
-            <div class="image-caption">Cumulative Distribution Functions</div>
-        </div>
-    </div>
-</div>
-
-<div class="section">
-    <h2 class="section-title">Betting Odds Analysis</h2>
-    <div class="image-grid">
-        <div class="image-card">
-            <img src="/static/images/betting_odds_high_low_week_10.png" alt="High/Low Scorer Odds" loading="lazy" decoding="async">
-            <div class="image-caption">Highest & Lowest Scorer Odds</div>
-        </div>
-        <div class="image-card">
-            <img src="/static/images/betting_odds_moneyline_week_10.png" alt="Moneyline Odds" loading="lazy" decoding="async">
-            <div class="image-caption">Matchup Moneyline Odds</div>
-        </div>
-    </div>
-</div>
-
-<div style="text-align: center; margin-top: 50px; padding: 30px; border-top: 1px solid var(--fanduel-light-gray);">
-    <p style="color: var(--text-secondary); margin-bottom: 10px;">Data aggregated from multiple sources: Sleeper, ESPN, FantasyPros, FanDuel, FirstDown</p>
-    <p style="color: var(--text-secondary); font-size: 14px;">Generated from Monte Carlo simulations (N=50,000) based on player projections</p>
+    <img src="/static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
 </div>
 
 <script>
@@ -184,21 +117,18 @@ document.getElementById('team-select').addEventListener('change', async function
     const playersContainer = document.getElementById('players-table-container');
     
     if (selectedTeam === 'all') {
-        // Show overlay image for all teams
         distributionImage.src = '/static/images/simulation_distributions_overlay_week_10.png';
         playersSection.style.display = 'none';
     } else {
-        // Show specific team distribution
         distributionImage.src = `/static/images/dist_Team_${selectedTeam}_week_10.png`;
         playersSection.style.display = 'block';
         
-        // Load player stats for this team
         try {
             const teamParam = encodeURIComponent(selectedTeam);
             const response = await fetch(`/api/team_players?team=${teamParam}`);
             const data = await response.json();
             
-            if (data.players && data.players.length > 0) {
+            if ((data.starters && data.starters.length > 0) || (data.bench && data.bench.length > 0)) {
                 let html = `
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; background: var(--fanduel-gray); border-radius: 12px; overflow: hidden; border: 1px solid var(--fanduel-light-gray);">
@@ -212,15 +142,39 @@ document.getElementById('team-select').addEventListener('change', async function
                             <tbody>
                 `;
                 
-                data.players.forEach((player, index) => {
+                let rowIndex = 0;
+                
+                if (data.starters && data.starters.length > 0) {
+                    data.starters.forEach((player) => {
+                        html += `
+                            <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
+                                <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                            </tr>
+                        `;
+                        rowIndex++;
+                    });
+                }
+                
+                if (data.bench && data.bench.length > 0) {
                     html += `
-                        <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${index % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
-                            <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
-                            <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
-                            <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                        <tr>
+                            <td colspan="3" class="roster-divider">Bench Players</td>
                         </tr>
                     `;
-                });
+                    
+                    data.bench.forEach((player) => {
+                        html += `
+                            <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
+                                <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                            </tr>
+                        `;
+                        rowIndex++;
+                    });
+                }
                 
                 html += `
                             </tbody>
