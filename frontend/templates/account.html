@@ -14,7 +14,7 @@
     }
     
     .page-title {
-        font-size: 32px;
+        font-size: 20px;
         color: var(--text-primary);
         margin-bottom: 0;
     }
@@ -83,15 +83,15 @@
     .account-card {
         background: var(--fanduel-gray);
         border-radius: 12px;
-        padding: 25px;
+        padding: 16px;
         border: 1px solid var(--fanduel-light-gray);
     }
     
     .account-card h3 {
         color: var(--fanduel-blue);
-        font-size: 20px;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
+        font-size: 16px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
         border-bottom: 1px solid var(--fanduel-light-gray);
     }
     
@@ -99,7 +99,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 0;
+        padding: 10px 0;
         border-bottom: 1px solid var(--fanduel-light-gray);
     }
     
@@ -109,12 +109,13 @@
     
     .info-label {
         color: var(--text-secondary);
-        font-size: 14px;
+        font-size: 13px;
     }
     
     .info-value {
         color: var(--text-primary);
         font-weight: 600;
+        font-size: 13px;
     }
     
     .bets-table {
@@ -129,18 +130,19 @@
     
     th {
         text-align: left;
-        padding: 12px;
+        padding: 8px 10px;
         background: var(--fanduel-dark);
         color: var(--text-secondary);
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
     }
     
     td {
-        padding: 15px 12px;
+        padding: 10px;
         border-bottom: 1px solid var(--fanduel-light-gray);
         color: var(--text-primary);
+        font-size: 13px;
     }
     
     tr:last-child td {
@@ -207,7 +209,7 @@
     
     @media (min-width: 768px) {
         .page-title {
-            font-size: 42px;
+            font-size: 28px;
         }
         
         .account-grid {
@@ -217,7 +219,7 @@
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">💼 My Account</h1>
+    <h1 class="page-title">My Account</h1>
     <a href="{{ url_for('replit_auth.logout') }}" class="logout-btn">Logout</a>
 </div>
 
@@ -256,13 +258,12 @@
         <h3>Weekly Performance</h3>
         {% if weekly_stats %}
         <div class="bets-table">
-            <table style="font-size: 14px;">
+            <table>
                 <thead>
                     <tr>
                         <th>Week</th>
                         <th>Active Bets</th>
                         <th>Settled P&L</th>
-                        <th>Total P&L</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -272,9 +273,6 @@
                         <td class="negative">-${{ "%.0f"|format(stat.active_bets_amount) }}</td>
                         <td class="{% if stat.settled_pnl >= 0 %}positive{% else %}negative{% endif %}">
                             {% if stat.settled_pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.settled_pnl) }}
-                        </td>
-                        <td class="{% if stat.pnl >= 0 %}positive{% else %}negative{% endif %}">
-                            {% if stat.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.pnl) }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -294,7 +292,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
+                    <th>Week</th>
                     <th>Description</th>
                     <th>Type</th>
                     <th>Amount</th>
@@ -306,9 +304,15 @@
             <tbody>
                 {% for bet in bets %}
                 <tr>
-                    <td>{{ bet.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ bet.week }}</td>
                     <td>{{ bet.description }}</td>
-                    <td>{{ bet.bet_type }}</td>
+                    <td>
+                        {% if bet.bet_type == 'team_ou' %}Over/Under
+                        {% elif bet.bet_type == 'matchup' %}Matchup
+                        {% elif bet.bet_type == 'highest_scorer' %}Highest Scorer
+                        {% elif bet.bet_type == 'lowest_scorer' %}Lowest Scorer
+                        {% else %}{{ bet.bet_type }}{% endif %}
+                    </td>
                     <td>${{ "%.2f"|format(bet.amount) }}</td>
                     <td>{{ bet.odds }}</td>
                     <td>
