@@ -5,13 +5,13 @@
 {% block content %}
 <style>
     .page-header {
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     
     .page-title {
-        font-size: 32px;
+        font-size: 20px;
         color: var(--text-primary);
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
     
     .page-subtitle {
@@ -20,14 +20,14 @@
     }
     
     .section {
-        margin-bottom: 50px;
+        margin-bottom: 40px;
     }
     
     .section-title {
-        font-size: 24px;
+        font-size: 18px;
         color: var(--fanduel-blue);
-        margin-bottom: 20px;
-        padding-bottom: 10px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
         border-bottom: 2px solid var(--fanduel-light-gray);
     }
     
@@ -52,7 +52,7 @@
     
     @media (min-width: 768px) {
         .page-title {
-            font-size: 42px;
+            font-size: 28px;
         }
     }
 </style>
@@ -61,9 +61,9 @@
     <h1 class="page-title">Research teams and view league-wide analytics</h1>
 </div>
 
-<div style="margin-bottom: 30px;">
-    <label for="team-select" style="display: block; font-size: 16px; color: var(--text-primary); margin-bottom: 10px; font-weight: 600;">Select Team:</label>
-    <select id="team-select" style="width: 100%; max-width: 400px; padding: 12px 15px; font-size: 16px; background: var(--fanduel-gray); color: var(--text-primary); border: 1px solid var(--fanduel-light-gray); border-radius: 8px; cursor: pointer;">
+<div style="margin-bottom: 20px;">
+    <label for="team-select" style="display: block; font-size: 14px; color: var(--text-primary); margin-bottom: 8px; font-weight: 600;">Select Team:</label>
+    <select id="team-select" style="width: 100%; max-width: 400px; padding: 10px 12px; font-size: 14px; background: var(--fanduel-gray); color: var(--text-primary); border: 1px solid var(--fanduel-light-gray); border-radius: 8px; cursor: pointer;">
         <option value="all">All Teams</option>
         <!-- Teams will be loaded dynamically -->
     </select>
@@ -134,10 +134,10 @@ document.getElementById('team-select').addEventListener('change', async function
                         <table style="width: 100%; background: var(--fanduel-gray); border-radius: 12px; overflow: hidden; border: 1px solid var(--fanduel-light-gray);">
                             <thead>
                                 <tr style="background: var(--fanduel-darker); border-bottom: 2px solid var(--fanduel-blue);">
-                                    <th style="padding: 15px; text-align: left; color: var(--fanduel-blue); font-weight: 600;">Player</th>
-                                    <th style="padding: 15px; text-align: center; color: var(--fanduel-blue); font-weight: 600;">Position</th>
-                                    <th style="padding: 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600;">Projected Points</th>
-                                    <th style="padding: 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600;">Variance Score</th>
+                                    <th style="padding: 8px 10px; text-align: left; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Player</th>
+                                    <th style="padding: 8px 10px; text-align: center; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Pos</th>
+                                    <th style="padding: 8px 10px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Proj</th>
+                                    <th style="padding: 8px 10px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Var</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -151,10 +151,10 @@ document.getElementById('team-select').addEventListener('change', async function
                         const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
                             <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
-                                <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
-                                <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${muDisplay}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 16px;">${varDisplay}</td>
+                                <td style="padding: 6px 8px; color: var(--text-primary); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 6px 8px; text-align: center; color: var(--text-secondary); font-weight: 600; font-size: 12px;">${player.position}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 13px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;
@@ -173,10 +173,10 @@ document.getElementById('team-select').addEventListener('change', async function
                         const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
                             <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
-                                <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
-                                <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${muDisplay}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 16px;">${varDisplay}</td>
+                                <td style="padding: 6px 8px; color: var(--text-primary); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 6px 8px; text-align: center; color: var(--text-secondary); font-weight: 600; font-size: 12px;">${player.position}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 13px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;
