@@ -137,6 +137,7 @@ document.getElementById('team-select').addEventListener('change', async function
                                     <th style="padding: 15px; text-align: left; color: var(--fanduel-blue); font-weight: 600;">Player</th>
                                     <th style="padding: 15px; text-align: center; color: var(--fanduel-blue); font-weight: 600;">Position</th>
                                     <th style="padding: 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600;">Projected Points</th>
+                                    <th style="padding: 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600;">Variance Score</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -146,11 +147,14 @@ document.getElementById('team-select').addEventListener('change', async function
                 
                 if (data.starters && data.starters.length > 0) {
                     data.starters.forEach((player) => {
+                        const muDisplay = player.mu !== null ? player.mu.toFixed(1) : '-';
+                        const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
                             <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
                                 <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
                                 <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${muDisplay}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 16px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;
@@ -160,16 +164,19 @@ document.getElementById('team-select').addEventListener('change', async function
                 if (data.bench && data.bench.length > 0) {
                     html += `
                         <tr>
-                            <td colspan="3" class="roster-divider">Bench Players</td>
+                            <td colspan="4" class="roster-divider">Bench Players</td>
                         </tr>
                     `;
                     
                     data.bench.forEach((player) => {
+                        const muDisplay = player.mu !== null ? player.mu.toFixed(1) : '-';
+                        const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
                             <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
                                 <td style="padding: 12px 15px; color: var(--text-primary);">${player.player_first_name} ${player.player_last_name}</td>
                                 <td style="padding: 12px 15px; text-align: center; color: var(--text-secondary); font-weight: 600;">${player.position}</td>
-                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${player.mu.toFixed(1)}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 18px;">${muDisplay}</td>
+                                <td style="padding: 12px 15px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 16px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;

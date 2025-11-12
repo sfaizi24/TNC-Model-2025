@@ -854,17 +854,42 @@ def get_team_players():
         return jsonify({'error': 'Team parameter required'}), 400
     
     try:
-        proj_conn = sqlite3.connect(PROJECTIONS_DB_PATH)
-        proj_conn.row_factory = sqlite3.Row
-        proj_cursor = proj_conn.cursor()
-
-        week = get_current_week()
+        league_conn = sqlite3.connect(LEAGUE_DB_PATH)
+        league_conn.row_factory = sqlite3.Row
+        league_cursor = league_conn.cursor()
         
-        proj_cursor.execute("""
-            SELECT player_first_name, player_last_name, position, mu
-            FROM player_stats
-            WHERE team_owner = ?
-            AND week = ?
+        league_cursor.execute("""
+            SELECT r.roster_id, r.starters, r.players
+            FROM rosters r
+            LEFT JOIN users u ON r.owner_id = u.user_id
+            WHERE u.username = ? OR u.display_name = ?
+        """, (team_owner, team_owner))
+        
+        roster = league_cursor.fetchone()
+        if not roster:
+            league_conn.close()
+            return jsonify({'error': 'Team not found'}), 404
+        
+        roster_id = roster['roster_id']
+        team_name = f"Team {roster_id}"
+        
+        starters_str = roster['starters']
+        try:
+            starter_ids = ast.literal_eval(starters_str) if starters_str else []
+            if not isinstance(starter_ids, (list, tuple)):
+                starter_ids = []
+        except (ValueError, SyntaxError):
+            try:
+                starter_ids = json.loads(starters_str.replace("'", '"')) if starters_str else []
+            except json.JSONDecodeError:
+                starter_ids = []
+        
+        starter_ids = [str(pid) for pid in starter_ids if pid]
+        
+        league_cursor.execute("""
+            SELECT sleeper_player_id, first_name, last_name, position, mu, var
+            FROM projections_rosters
+            WHERE roster_id = ?
             ORDER BY 
                 CASE position
                     WHEN 'QB' THEN 1
@@ -876,23 +901,37 @@ def get_team_players():
                     ELSE 7
                 END,
                 mu DESC
-        """, (team_owner, week))
+        """, (roster_id,))
         
-        all_players = []
-        for row in proj_cursor.fetchall():
-            all_players.append({
-                'player_first_name': row['player_first_name'],
-                'player_last_name': row['player_last_name'],
+        all_players = {}
+        for row in league_cursor.fetchall():
+            player_id = str(row['sleeper_player_id'])
+            all_players[player_id] = {
+                'player_first_name': row['first_name'] or '',
+                'player_last_name': row['last_name'] or '',
                 'position': row['position'],
-                'mu': float(row['mu'])
-            })
+                'mu': float(row['mu']) if row['mu'] is not None else None,
+                'var': float(row['var']) if row['var'] is not None else None
+            }
         
-        proj_conn.close()
+        league_conn.close()
         
-        if len(all_players) <= 9:
-            return jsonify({'starters': all_players, 'bench': []})
-        else:
-            return jsonify({'starters': all_players[:9], 'bench': all_players[9:]})
+        starters = []
+        for pid in starter_ids:
+            if pid in all_players:
+                starters.append(all_players[pid])
+        
+        bench = []
+        for pid, player in all_players.items():
+            if pid not in starter_ids:
+                bench.append(player)
+        
+        bench.sort(key=lambda x: (
+            {'QB': 1, 'RB': 2, 'WR': 3, 'TE': 4, 'K': 5, 'DEF': 6}.get(x['position'], 7),
+            -(x['mu'] if x['mu'] is not None else 0)
+        ))
+        
+        return jsonify({'starters': starters, 'bench': bench})
         
     except Exception as e:
         print(f"Error getting team players: {e}")
