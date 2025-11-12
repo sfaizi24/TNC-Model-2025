@@ -109,51 +109,40 @@
 
 <div class="about-container">
     <div class="about-header">
-        <h1>How It Works</h1>
-        <p>Understanding the odds behind TNC Casino</p>
+        <h1>What is TNC Casino?</h1>
+        <p>TLDR: Odds are calculated by running 50,000 simulations of each team's lineup and seeing how often each team wins.</p>
     </div>
     
     <div class="section">
-        <h2>Calculating the Odds</h2>
+        <h2>Step 1: Getting Projections and Lineup Data</h2>
         
-        <p>Every set of odds you see on TNC Casino starts with data aggregation and ends with probability calculations. Here's how we get from player projections to betting lines.</p>
+        <h3>Scraping Projections</h3>
+        <p>I pull player projections from five different sources which I will not name because my wife is not yet bar-certified. I then combine them with the league data I get from Sleeper.</p>
         
-        <h3>Step 1: Projection Aggregation</h3>
-        <p>We automatically pull player projections from five different sources: ESPN, FanDuel, FantasyPros, First Down Studio, and Sleeper. Each source has its own methods and biases, which gives us a more complete picture than relying on any single forecast.</p>
-        
-        <p>Once collected, these projections are mapped to your actual league rosters. We handle all the edge cases (players listed at multiple positions, injury designations, free agents) so the data lines up cleanly with your Sleeper league.</p>
+        <p>I then calculate "expected lineups" for each team, factoring in injuries, bye weeks, and start/sit decisions. This process isn't perfect especially because all of the backend data you see on this site is ran and updated whenever I feel like.</p>
         
         <h3>Step 2: Building in Variance</h3>
-        <p>Fantasy football is unpredictable. A running back projected for 12 points might score 2 or 25. To capture this uncertainty, we calculate variance in two ways:</p>
+        <p>Of course I'm not gonna just average the projections and call it a day. I use 2 inputs to determine a players point-scoring distribution:</p>
         
         <ul>
-            <li><span class="highlight">Projection disagreement:</span> When sources disagree on a player's outlook, that signals higher uncertainty. A wide spread between projections increases our variance estimate.</li>
-            <li><span class="highlight">Historical positional variance:</span> We analyze past performance data to understand how much players at each position typically deviate from their projections. Kickers are consistent. Running backs are volatile. This baseline helps calibrate expectations.</li>
+            <li><span class="highlight">Projection disagreement:</span> The variance between projections from different sources. A wide spread between projections increases our variance estimate.</li>
+            <li><span class="highlight">Historical positional variance:</span> A super quick historical analysis gave me some sigma values to bake in for each position.</li>
         </ul>
         
-        <p>The combination of these two factors gives each player a mean projection and a variance estimate, which together define a probability distribution for their possible outcomes.</p>
     </div>
     
     <div class="section">
-        <h2>Monte Carlo Simulations</h2>
+        <h2>Step 2:Monte Carlo Simulations</h2>
         
-        <p>A Monte Carlo simulation is a way to understand all the possible outcomes when dealing with uncertainty. Instead of making a single prediction, we run thousands of simulated weeks to see what could happen.</p>
+        <p>Once we have the values for each player, we can use Monte Carlo simulations to run 50,000 simus of each team's lineup and see how many points they score.</p>
         
-        <h3>How It Works</h3>
-        <p>For each simulation run, we randomly generate a score for every player based on their probability distribution (that mean and variance we calculated earlier). We assume player performance follows a log-normal distribution, which matches real-world scoring patterns better than a normal curve.</p>
-        
-        <p>We sum up the scores for each team's optimal lineup, then compare the results to determine winners, highest scorers, and all the other betting markets you see. We repeat this process 50,000 times per week.</p>
-        
-        <h3>Why 50,000 Simulations?</h3>
-        <p>More simulations give us more confidence in the probabilities. With 50,000 runs, the odds stabilize and accurately reflect the range of likely outcomes. Fewer runs would leave too much noise in the estimates.</p>
+        <p>Simulations are done with a log-normal distribution so there is a heavy right-skew</p>
         
         <div class="visual-example">
             <img src="/static/images/dist_Team_sfaizi24_week_10.png" alt="Example distribution showing 50,000 simulated outcomes">
-            <p>Example distribution from 50,000 simulations showing the range of possible scores for one team</p>
         </div>
         
-        <h3>From Simulations to Odds</h3>
-        <p>Once all 50,000 simulations finish, we tally the results. If a team won 35,000 times out of 50,000, their win probability is 70%. We convert these probabilities into the moneylines, over/unders, and prop bet odds you see on the betting board.</p>
+        <p>These 50,000 simulations turn into the odds you see on the betting board. If amir812 was the highest scorer in 6,800 of the simulations, then he has a 13.6% of being the highest scorer, which converts to betting odds of +637</p>
     </div>
     
     <div class="lock-notice">
