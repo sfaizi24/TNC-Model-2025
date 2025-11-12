@@ -873,21 +873,8 @@ def get_team_players():
         roster_id = roster['roster_id']
         team_name = f"Team {roster_id}"
         
-        starters_str = roster['starters']
-        try:
-            starter_ids = ast.literal_eval(starters_str) if starters_str else []
-            if not isinstance(starter_ids, (list, tuple)):
-                starter_ids = []
-        except (ValueError, SyntaxError):
-            try:
-                starter_ids = json.loads(starters_str.replace("'", '"')) if starters_str else []
-            except json.JSONDecodeError:
-                starter_ids = []
-        
-        starter_ids = [str(pid) for pid in starter_ids if pid]
-        
         league_cursor.execute("""
-            SELECT sleeper_player_id, first_name, last_name, position, mu, var
+            SELECT sleeper_player_id, first_name, last_name, position, mu, var, starting_status
             FROM projections_rosters
             WHERE roster_id = ?
             ORDER BY 
@@ -903,28 +890,24 @@ def get_team_players():
                 mu DESC
         """, (roster_id,))
         
-        all_players = {}
+        starters = []
+        bench = []
+        
         for row in league_cursor.fetchall():
-            player_id = str(row['sleeper_player_id'])
-            all_players[player_id] = {
+            player_data = {
                 'player_first_name': row['first_name'] or '',
                 'player_last_name': row['last_name'] or '',
                 'position': row['position'],
                 'mu': float(row['mu']) if row['mu'] is not None else None,
                 'var': float(row['var']) if row['var'] is not None else None
             }
+            
+            if row['starting_status'] and str(row['starting_status']).strip():
+                starters.append(player_data)
+            else:
+                bench.append(player_data)
         
         league_conn.close()
-        
-        starters = []
-        for pid in starter_ids:
-            if pid in all_players:
-                starters.append(all_players[pid])
-        
-        bench = []
-        for pid, player in all_players.items():
-            if pid not in starter_ids:
-                bench.append(player)
         
         bench.sort(key=lambda x: (
             {'QB': 1, 'RB': 2, 'WR': 3, 'TE': 4, 'K': 5, 'DEF': 6}.get(x['position'], 7),
