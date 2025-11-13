@@ -70,7 +70,7 @@
     <div id="teams-error" style="display: none; margin-top: 12px; padding: 12px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; color: #ef4444; font-size: 13px;"></div>
 </div>
 
-<div id="team-distribution" class="section">
+<div id="team-distribution" class="section" data-week="{{ current_week|default(10) }}">
     <img id="distribution-image" src="/analytics-images/simulation_distributions_overlay_week_{{ current_week }}.png" alt="Team Distribution" class="edge-to-edge-image" decoding="async">
 </div>
 
@@ -84,7 +84,8 @@
 </div>
 
 <script>
-const currentWeek = {{ current_week }};
+// Get current week from data attribute
+const currentWeek = parseInt(document.getElementById('team-distribution').getAttribute('data-week')) || 10;
 
 // Helper function for fetch with timeout
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {

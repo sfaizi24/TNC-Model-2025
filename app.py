@@ -34,98 +34,111 @@ db.init_app(app)
 def run_schema_migrations():
     try:
         from sqlalchemy import inspect, text
-        inspector = inspect(db.engine)
         
-        # Migrate datetime columns to timezone-aware (TIMESTAMPTZ)
-        logging.info("Checking and migrating datetime columns to timezone-aware")
-        with db.engine.connect() as conn:
-            # Convert all TIMESTAMP WITHOUT TIME ZONE to TIMESTAMP WITH TIME ZONE
-            # These columns assume existing values are in UTC
-            datetime_migrations = [
-                ('users', 'created_at'),
-                ('users', 'updated_at'),
-                ('bets', 'created_at'),
-                ('bets', 'settled_at'),
-                ('weekly_stats', 'created_at'),
-                ('betting_periods', 'lock_time'),
-                ('betting_periods', 'created_at'),
-                ('betting_periods', 'updated_at'),
-            ]
+        # Helper to check if column exists
+        def column_exists(inspector, table_name, column_name):
+            if table_name not in inspector.get_table_names():
+                return False
+            columns = [col['name'] for col in inspector.get_columns(table_name)]
+            return column_name in columns
+        
+        # Detect database dialect
+        dialect = db.engine.dialect.name
+        logging.info(f"Running schema migrations for dialect: {dialect}")
+        
+        with db.engine.begin() as conn:
+            inspector = inspect(db.engine)
             
-            for table, column in datetime_migrations:
-                if table in inspector.get_table_names():
-                    # Check if column is already TIMESTAMPTZ
-                    result = conn.execute(text(f'''
-                        SELECT data_type 
-                        FROM information_schema.columns 
-                        WHERE table_name = '{table}' 
-                        AND column_name = '{column}'
-                    ''')).first()
-                    
-                    if result and result[0] == 'timestamp without time zone':
+            # Migrate datetime columns to timezone-aware (PostgreSQL only)
+            # SQLite doesn't need this as it stores datetimes as TEXT/REAL
+            if dialect == 'postgresql':
+                logging.info("PostgreSQL detected: migrating datetime columns to timezone-aware")
+                datetime_migrations = [
+                    ('users', 'created_at'),
+                    ('users', 'updated_at'),
+                    ('bets', 'created_at'),
+                    ('bets', 'settled_at'),
+                    ('weekly_stats', 'created_at'),
+                    ('betting_periods', 'lock_time'),
+                    ('betting_periods', 'created_at'),
+                    ('betting_periods', 'updated_at'),
+                ]
+                
+                for table, column in datetime_migrations:
+                    if column_exists(inspector, table, column):
                         try:
-                            # Convert column to timezone-aware, treating existing values as UTC
-                            conn.execute(text(f'''
-                                ALTER TABLE {table} 
-                                ALTER COLUMN {column} TYPE TIMESTAMP WITH TIME ZONE 
-                                USING {column} AT TIME ZONE 'UTC'
-                            '''))
-                            conn.commit()
-                            logging.info(f"Converted {table}.{column} to TIMESTAMPTZ")
+                            result = conn.execute(text(f'''
+                                SELECT data_type 
+                                FROM information_schema.columns 
+                                WHERE table_name = '{table}' 
+                                AND column_name = '{column}'
+                            ''')).first()
+                            
+                            if result and result[0] == 'timestamp without time zone':
+                                conn.execute(text(f'''
+                                    ALTER TABLE {table} 
+                                    ALTER COLUMN {column} TYPE TIMESTAMP WITH TIME ZONE 
+                                    USING {column} AT TIME ZONE 'UTC'
+                                '''))
+                                logging.info(f"Converted {table}.{column} to TIMESTAMPTZ")
                         except Exception as col_error:
-                            conn.rollback()
                             logging.error(f"Error converting {table}.{column}: {col_error}")
-                    elif result and result[0] == 'timestamp with time zone':
-                        logging.debug(f"{table}.{column} already TIMESTAMPTZ, skipping")
-                    else:
-                        logging.debug(f"{table}.{column} not found or unexpected type")
-        
-        if 'users' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('users')]
+            else:
+                logging.info(f"{dialect} detected: skipping timezone migration (not needed)")
             
-            if 'is_admin' not in columns:
+            # Add missing columns (all dialects)
+            inspector = inspect(db.engine)
+            
+            if not column_exists(inspector, 'users', 'is_admin'):
                 logging.info("Adding is_admin column to users")
-                with db.engine.connect() as conn:
+                if dialect == 'postgresql':
                     conn.execute(text('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE'))
-                    conn.commit()
+                else:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0'))
                 logging.info("is_admin column added")
-        
-        if 'weekly_stats' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('weekly_stats')]
             
-            if 'active_bets_amount' not in columns:
+            if not column_exists(inspector, 'weekly_stats', 'active_bets_amount'):
                 logging.info("Adding active_bets_amount column to weekly_stats")
-                with db.engine.connect() as conn:
+                if dialect == 'postgresql':
                     conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN active_bets_amount DOUBLE PRECISION DEFAULT 0.0'))
-                    conn.execute(text('''
-                        UPDATE weekly_stats ws
-                        SET active_bets_amount = COALESCE((
-                            SELECT SUM(b.amount)
-                            FROM bets b
-                            WHERE b.user_id = ws.user_id
-                              AND b.week = ws.week
-                              AND b.status = 'pending'
-                        ), 0.0)
-                    '''))
-                    conn.commit()
+                else:
+                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN active_bets_amount REAL DEFAULT 0.0'))
+                
+                # Backfill values
+                conn.execute(text('''
+                    UPDATE weekly_stats
+                    SET active_bets_amount = COALESCE((
+                        SELECT SUM(b.amount)
+                        FROM bets b
+                        WHERE b.user_id = weekly_stats.user_id
+                          AND b.week = weekly_stats.week
+                          AND b.status = 'pending'
+                    ), 0.0)
+                '''))
                 logging.info("active_bets_amount column added and backfilled")
             
-            if 'settled_pnl' not in columns:
+            if not column_exists(inspector, 'weekly_stats', 'settled_pnl'):
                 logging.info("Adding settled_pnl column to weekly_stats")
-                with db.engine.connect() as conn:
+                if dialect == 'postgresql':
                     conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN settled_pnl DOUBLE PRECISION DEFAULT 0.0'))
-                    conn.execute(text('''
-                        UPDATE weekly_stats ws
-                        SET settled_pnl = COALESCE((
-                            SELECT SUM(b.result)
-                            FROM bets b
-                            WHERE b.user_id = ws.user_id
-                              AND b.week = ws.week
-                              AND b.status IN ('won', 'lost')
-                        ), 0.0)
-                    '''))
-                    conn.commit()
+                else:
+                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN settled_pnl REAL DEFAULT 0.0'))
+                
+                # Backfill values
+                conn.execute(text('''
+                    UPDATE weekly_stats
+                    SET settled_pnl = COALESCE((
+                        SELECT SUM(b.result)
+                        FROM bets b
+                        WHERE b.user_id = weekly_stats.user_id
+                          AND b.week = weekly_stats.week
+                          AND b.status IN ('won', 'lost')
+                    ), 0.0)
+                '''))
                 logging.info("settled_pnl column added and backfilled")
+            
+            logging.info("Schema migrations completed successfully")
+            
     except Exception as e:
         logging.error(f"Migration error: {e}")
         import traceback
@@ -183,8 +196,12 @@ def analytics():
 @require_login
 def account():
     from models import Bet, WeeklyStats
+    from sqlalchemy.orm import joinedload
+    
+    # Optimize queries by limiting and ordering properly
     bets = db.session.query(Bet).filter_by(user_id=current_user.id).order_by(Bet.created_at.desc()).limit(20).all()
-    weekly_stats = db.session.query(WeeklyStats).filter_by(user_id=current_user.id).all()
+    weekly_stats = db.session.query(WeeklyStats).filter_by(user_id=current_user.id).order_by(WeeklyStats.week.desc()).all()
+    
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/betting')
@@ -196,55 +213,53 @@ ODDS_DB_PATH = 'backend/data/databases/odds.db'
 @app.route('/api/matchups')
 def get_matchups():
     try:
-        # Get team ID to owner name mapping from league database
-        league_conn = sqlite3.connect(LEAGUE_DB_PATH)
-        league_conn.row_factory = sqlite3.Row
-        league_cursor = league_conn.cursor()
-        
-        league_cursor.execute("""
-            SELECT r.roster_id, u.display_name, u.username
-            FROM rosters r
-            LEFT JOIN users u ON r.owner_id = u.user_id
-        """)
-        
         team_mapping = {}
-        for row in league_cursor.fetchall():
-            owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
-            team_mapping[row['roster_id']] = owner_name
+        week = get_current_week()
         
-        league_conn.close()
+        # Get team ID to owner name mapping from league database
+        with sqlite3.connect(LEAGUE_DB_PATH) as league_conn:
+            league_conn.row_factory = sqlite3.Row
+            league_cursor = league_conn.cursor()
+            
+            league_cursor.execute("""
+                SELECT r.roster_id, u.display_name, u.username
+                FROM rosters r
+                LEFT JOIN users u ON r.owner_id = u.user_id
+            """)
+            
+            for row in league_cursor.fetchall():
+                owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
+                team_mapping[row['roster_id']] = owner_name
         
         # Get matchup odds
-        conn = sqlite3.connect(ODDS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        week = get_current_week()
-        cursor.execute("""
-            SELECT * FROM betting_odds_matchup_ml
-            WHERE week = ?
-            ORDER BY matchup
-        """, (week,))
-        
-        matchups = []
-        for row in cursor.fetchall():
-            team1_owner = team_mapping.get(row['team1_id'], f"Team {row['team1_id']}")
-            team2_owner = team_mapping.get(row['team2_id'], f"Team {row['team2_id']}")
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
             
-            matchups.append({
-                'matchup': f"{team1_owner} vs {team2_owner}",
-                'original_matchup': row['matchup'],
-                'team1_id': row['team1_id'],
-                'team1_name': team1_owner,
-                'team1_win_prob': row['team1_win_prob'],
-                'team1_ml': row['team1_ml'],
-                'team2_id': row['team2_id'],
-                'team2_name': team2_owner,
-                'team2_win_prob': row['team2_win_prob'],
-                'team2_ml': row['team2_ml']
-            })
+            cursor.execute("""
+                SELECT * FROM betting_odds_matchup_ml
+                WHERE week = ?
+                ORDER BY matchup
+            """, (week,))
+            
+            matchups = []
+            for row in cursor.fetchall():
+                team1_owner = team_mapping.get(row['team1_id'], f"Team {row['team1_id']}")
+                team2_owner = team_mapping.get(row['team2_id'], f"Team {row['team2_id']}")
+                
+                matchups.append({
+                    'matchup': f"{team1_owner} vs {team2_owner}",
+                    'original_matchup': row['matchup'],
+                    'team1_id': row['team1_id'],
+                    'team1_name': team1_owner,
+                    'team1_win_prob': row['team1_win_prob'],
+                    'team1_ml': row['team1_ml'],
+                    'team2_id': row['team2_id'],
+                    'team2_name': team2_owner,
+                    'team2_win_prob': row['team2_win_prob'],
+                    'team2_ml': row['team2_ml']
+                })
         
-        conn.close()
         return jsonify(matchups)
     except Exception as e:
         print(f"Error getting matchups: {e}")
@@ -255,27 +270,28 @@ def get_matchups():
 @app.route('/api/team_performance')
 def get_team_performance():
     try:
-        conn = sqlite3.connect(ODDS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
         week = get_current_week()
-        cursor.execute("""
-            SELECT * FROM betting_odds_team_ou
-            WHERE week = ?
-            ORDER BY owner
-        """, (week,))
         
-        teams = []
-        for row in cursor.fetchall():
-            teams.append({
-                'team_id': row['team_id'],
-                'owner': row['owner'],
-                'line': row['line'],
-                'over_prob': row['over_prob'],
-                'under_prob': row['under_prob']
-            })
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT * FROM betting_odds_team_ou
+                WHERE week = ?
+                ORDER BY owner
+            """, (week,))
+            
+            teams = []
+            for row in cursor.fetchall():
+                teams.append({
+                    'team_id': row['team_id'],
+                    'owner': row['owner'],
+                    'line': row['line'],
+                    'over_prob': row['over_prob'],
+                    'under_prob': row['under_prob']
+                })
         
-        conn.close()
         return jsonify(teams)
     except Exception as e:
         print(f"Error getting team performance: {e}")
@@ -286,26 +302,27 @@ def get_team_performance():
 @app.route('/api/highest_scorer')
 def get_highest_scorer():
     try:
-        conn = sqlite3.connect(ODDS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
         week = get_current_week()
-        cursor.execute("""
-            SELECT owner, probability, odds
-            FROM betting_odds_highest_scorer
-            WHERE week = ?
-            ORDER BY probability DESC
-        """, (week,))
         
-        teams = []
-        for row in cursor.fetchall():
-            teams.append({
-                'owner': row['owner'],
-                'win_prob': round(row['probability'] * 100, 1),
-                'odds': row['odds']
-            })
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT owner, probability, odds
+                FROM betting_odds_highest_scorer
+                WHERE week = ?
+                ORDER BY probability DESC
+            """, (week,))
+            
+            teams = []
+            for row in cursor.fetchall():
+                teams.append({
+                    'owner': row['owner'],
+                    'win_prob': round(row['probability'] * 100, 1),
+                    'odds': row['odds']
+                })
         
-        conn.close()
         return jsonify(teams)
     except Exception as e:
         print(f"Error getting highest scorer: {e}")
@@ -316,26 +333,27 @@ def get_highest_scorer():
 @app.route('/api/lowest_scorer')
 def get_lowest_scorer():
     try:
-        conn = sqlite3.connect(ODDS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
         week = get_current_week()
-        cursor.execute("""
-            SELECT owner, probability, odds
-            FROM betting_odds_lowest_scorer
-            WHERE week = ?
-            ORDER BY probability DESC
-        """, (week,))
         
-        teams = []
-        for row in cursor.fetchall():
-            teams.append({
-                'owner': row['owner'],
-                'win_prob': round(row['probability'] * 100, 1),
-                'odds': row['odds']
-            })
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT owner, probability, odds
+                FROM betting_odds_lowest_scorer
+                WHERE week = ?
+                ORDER BY probability DESC
+            """, (week,))
+            
+            teams = []
+            for row in cursor.fetchall():
+                teams.append({
+                    'owner': row['owner'],
+                    'win_prob': round(row['probability'] * 100, 1),
+                    'odds': row['odds']
+                })
         
-        conn.close()
         return jsonify(teams)
     except Exception as e:
         print(f"Error getting lowest scorer: {e}")
@@ -347,42 +365,42 @@ def get_lowest_scorer():
 @require_login
 def get_lineup(owner):
     try:
-        conn = sqlite3.connect(PROJECTIONS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        # Fetch lineup for the owner with proper slot ordering
         week = get_current_week()
-        cursor.execute("""
-            SELECT slot, player_name, position, mu
-            FROM team_lineups
-            WHERE owner = ? AND week = ? 
-                AND slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
-            ORDER BY 
-                CASE slot
-                    WHEN 'QB' THEN 1
-                    WHEN 'RB1' THEN 2
-                    WHEN 'RB2' THEN 3
-                    WHEN 'WR1' THEN 4
-                    WHEN 'WR2' THEN 5
-                    WHEN 'TE' THEN 6
-                    WHEN 'FLEX' THEN 7
-                    WHEN 'K' THEN 8
-                    WHEN 'DEF' THEN 9
-                    ELSE 10
-                END
-        """, (owner, week))
         
-        lineup = []
-        for row in cursor.fetchall():
-            lineup.append({
-                'slot': row['slot'],
-                'player_name': row['player_name'],
-                'position': row['position'],
-                'projected_points': round(row['mu'], 1)
-            })
+        with sqlite3.connect(PROJECTIONS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # Fetch lineup for the owner with proper slot ordering
+            cursor.execute("""
+                SELECT slot, player_name, position, mu
+                FROM team_lineups
+                WHERE owner = ? AND week = ? 
+                    AND slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
+                ORDER BY 
+                    CASE slot
+                        WHEN 'QB' THEN 1
+                        WHEN 'RB1' THEN 2
+                        WHEN 'RB2' THEN 3
+                        WHEN 'WR1' THEN 4
+                        WHEN 'WR2' THEN 5
+                        WHEN 'TE' THEN 6
+                        WHEN 'FLEX' THEN 7
+                        WHEN 'K' THEN 8
+                        WHEN 'DEF' THEN 9
+                        ELSE 10
+                    END
+            """, (owner, week))
+            
+            lineup = []
+            for row in cursor.fetchall():
+                lineup.append({
+                    'slot': row['slot'],
+                    'player_name': row['player_name'],
+                    'position': row['position'],
+                    'projected_points': round(row['mu'], 1)
+                })
         
-        conn.close()
         return jsonify(lineup)
     except Exception as e:
         print(f"Error getting lineup: {e}")
@@ -829,7 +847,8 @@ def serve_analytics_image(filename):
     if not safe_path or not os.path.exists(safe_path):
         return "Image not found", 404
     
-    return send_from_directory(images_dir, filename, max_age=3600)
+    # Cache images for 24 hours since they change infrequently
+    return send_from_directory(images_dir, filename, max_age=86400)
 
 @app.route('/api/session-check')
 def check_session():
@@ -1070,6 +1089,9 @@ def settle_bet():
             return jsonify({'success': False, 'error': 'Bet already settled'})
         
         user = db.session.query(User).filter_by(id=bet.user_id).first()
+        
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'})
         
         if won:
             payout = bet.amount + bet.potential_win

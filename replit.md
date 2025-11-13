@@ -4,6 +4,13 @@
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
 ## Recent Changes
+- **November 13, 2025 (Performance & UX Optimization)**:
+  - Fixed critical migration logic with dialect-aware schema migrations (PostgreSQL vs SQLite compatibility)
+  - Optimized image caching: increased cache duration from 1 hour to 24 hours for analytics images
+  - Added SQLite connection context managers to prevent resource leaks in high-traffic API endpoints
+  - Improved database query patterns with explicit ordering and limits
+  - Fixed template rendering issues in analytics.html for better JavaScript compatibility
+  - Added null safety checks for user queries in bet settlement endpoints
 - **November 13, 2025**: Updated analytics page to dynamically use current week for images instead of hardcoded week 10; optimized Account page with smaller fonts, removed emoji from title, improved table formatting with readable bet types
 - **November 12, 2025**: Updated analytics page to use `starting_status` column from projections_rosters table for starter/bench determination; optimized mobile layout with smaller fonts and tighter spacing
 - **November 8, 2025**: Integrated TNC branding with transparent logo in header, removed placeholder statistics from analytics dashboard for cleaner presentation
@@ -45,7 +52,9 @@ The platform is built around a Flask web server, serving HTML templates located 
 ### Technical Implementation
 - **Admin System**: `admin_required` decorator protects admin routes, navigation hidden for non-admins
 - **Timezone Handling**: All DateTime columns use `DateTime(timezone=True)` for PostgreSQL TIMESTAMPTZ
-- **Idempotent Migrations**: Schema migrations check column types before conversion, safe for multiple restarts
+- **Dialect-Aware Migrations**: Schema migrations auto-detect database dialect (PostgreSQL/SQLite) and apply appropriate DDL
+- **Resource Management**: Critical API endpoints use context managers for SQLite connections to prevent leaks
+- **Performance Optimization**: 24-hour browser cache for analytics images, optimized database queries with ordering
 - **Dynamic Week Tracking**: Current week determined via `get_current_week()` helper function
 - **Security**: Admin privileges must be manually set in database, no self-service admin escalation
 
