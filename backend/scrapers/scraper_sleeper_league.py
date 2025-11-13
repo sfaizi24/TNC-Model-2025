@@ -22,9 +22,10 @@ log = logging.getLogger(__name__)
 class SleeperLeagueScraper:
     """Scraper for Sleeper fantasy league data using their official API."""
     
-    def __init__(self):
+    def __init__(self, db_path: str = "league.db"):
         """Initialize the scraper."""
         self.base_url = "https://api.sleeper.app"
+        self.db_path = db_path  # Store database path
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -435,7 +436,7 @@ class SleeperLeagueScraper:
         # Save to database
         print("\n💾 Saving to database...")
         
-        with LeagueDB() as db:
+        with LeagueDB(self.db_path) as db:
             # Save league
             league_data = {
                 'league_id': data['league']['league_id'],
@@ -517,7 +518,7 @@ class SleeperLeagueScraper:
         if def_count > 0:
             print(f"  ✓ Included {def_count} team defenses")
         
-        with LeagueDB() as db:
+        with LeagueDB(self.db_path) as db:
             db.insert_nfl_players_batch(fantasy_players)
             print(f"  ✓ Saved {len(fantasy_players)} fantasy-relevant players")
         
@@ -551,7 +552,7 @@ class SleeperLeagueScraper:
                 }
                 all_stats.append(stat_record)
         
-        with LeagueDB() as db:
+        with LeagueDB(self.db_path) as db:
             db.insert_player_stats_batch(all_stats)
             print(f"  ✓ Saved {len(all_stats)} player stat records")
         
@@ -609,7 +610,7 @@ class SleeperLeagueScraper:
         
         # Save to database
         print("\n💾 Saving schedule to database...")
-        with LeagueDB() as db:
+        with LeagueDB(self.db_path) as db:
             db.insert_schedules_batch(schedules)
             print(f"  ✓ Saved {len(schedules)} schedule records")
         
