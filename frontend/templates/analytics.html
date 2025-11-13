@@ -67,6 +67,7 @@
         <option value="all">All Teams</option>
         <!-- Teams will be loaded dynamically -->
     </select>
+    <div id="teams-error" style="display: none; margin-top: 12px; padding: 12px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; color: #ef4444; font-size: 13px;"></div>
 </div>
 
 <div id="team-distribution" class="section">
@@ -85,10 +86,79 @@
 <script>
 const currentWeek = {{ current_week }};
 
+// Helper function for fetch with timeout
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+    }
+}
+
+// Show error message
+function showError(message, shouldRedirect = false) {
+    const errorDiv = document.getElementById('teams-error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    if (shouldRedirect) {
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+    }
+}
+
+// Hide error message
+function hideError() {
+    const errorDiv = document.getElementById('teams-error');
+    errorDiv.style.display = 'none';
+}
+
+// Check if user session is valid
+async function checkSession() {
+    try {
+        const response = await fetchWithTimeout('/api/session-check', {}, 5000);
+        if (response.status === 401) {
+            return false;
+        }
+        const data = await response.json();
+        return data.authenticated;
+    } catch (error) {
+        console.error('Session check failed:', error);
+        return false;
+    }
+}
+
 // Load teams on page load
 async function loadTeams() {
+    hideError();
+    
     try {
-        const response = await fetch('/api/teams');
+        const isAuthenticated = await checkSession();
+        if (!isAuthenticated) {
+            showError('Your session has expired. Redirecting to login...', true);
+            return;
+        }
+        
+        const response = await fetchWithTimeout('/api/teams', {}, 10000);
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                showError('Your session has expired. Redirecting to login...', true);
+                return;
+            }
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
         const data = await response.json();
         const select = document.getElementById('team-select');
         const existingAllOption = select.querySelector('option[value="all"]');
@@ -106,8 +176,18 @@ async function loadTeams() {
             option.textContent = team.label;
             select.appendChild(option);
         });
+        
+        hideError();
     } catch (error) {
         console.error('Error loading teams:', error);
+        
+        if (error.name === 'AbortError') {
+            showError('Request timed out. Please refresh the page and try again.');
+        } else if (error.message.includes('Failed to fetch')) {
+            showError('Unable to connect to server. Please check your connection and try again.');
+        } else {
+            showError('Failed to load teams. Please refresh the page and try again.');
+        }
     }
 }
 
@@ -125,9 +205,20 @@ document.getElementById('team-select').addEventListener('change', async function
         distributionImage.src = `/analytics-images/dist_Team_${selectedTeam}_week_${currentWeek}.png`;
         playersSection.style.display = 'block';
         
+        playersContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading players...</div>';
+        
         try {
             const teamParam = encodeURIComponent(selectedTeam);
-            const response = await fetch(`/api/team_players?team=${teamParam}`);
+            const response = await fetchWithTimeout(`/api/team_players?team=${teamParam}`, {}, 10000);
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    showError('Your session has expired. Redirecting to login...', true);
+                    return;
+                }
+                throw new Error(`Server error: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if ((data.starters && data.starters.length > 0) || (data.bench && data.bench.length > 0)) {
@@ -197,7 +288,15 @@ document.getElementById('team-select').addEventListener('change', async function
             }
         } catch (error) {
             console.error('Error loading players:', error);
-            playersContainer.innerHTML = '<p style="color: var(--text-danger); text-align: center; padding: 30px;">Error loading player data.</p>';
+            
+            let errorMessage = 'Error loading player data.';
+            if (error.name === 'AbortError') {
+                errorMessage = 'Request timed out. Please try again.';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = 'Unable to connect to server. Please check your connection.';
+            }
+            
+            playersContainer.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 30px;">${errorMessage}</p>`;
         }
     }
 });

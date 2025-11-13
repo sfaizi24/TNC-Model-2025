@@ -831,6 +831,12 @@ def serve_analytics_image(filename):
     
     return send_from_directory(images_dir, filename, max_age=3600)
 
+@app.route('/api/session-check')
+def check_session():
+    if current_user.is_authenticated:
+        return jsonify({'authenticated': True, 'username': current_user.username})
+    return jsonify({'authenticated': False}), 401
+
 @app.route('/api/teams')
 @require_login
 def get_teams():
