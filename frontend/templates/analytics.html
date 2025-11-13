@@ -124,17 +124,23 @@ function hideError() {
 }
 
 // Check if user session is valid
+// Returns: { authenticated: true/false, error: null/'timeout'/'network' }
 async function checkSession() {
     try {
         const response = await fetchWithTimeout('/api/session-check', {}, 5000);
         if (response.status === 401) {
-            return false;
+            return { authenticated: false, error: null };
         }
         const data = await response.json();
-        return data.authenticated;
+        return { authenticated: data.authenticated, error: null };
     } catch (error) {
         console.error('Session check failed:', error);
-        return false;
+        if (error.name === 'AbortError') {
+            return { authenticated: null, error: 'timeout' };
+        } else if (error.message.includes('Failed to fetch')) {
+            return { authenticated: null, error: 'network' };
+        }
+        return { authenticated: null, error: 'unknown' };
     }
 }
 
@@ -143,8 +149,22 @@ async function loadTeams() {
     hideError();
     
     try {
-        const isAuthenticated = await checkSession();
-        if (!isAuthenticated) {
+        const sessionResult = await checkSession();
+        
+        // Handle session check errors
+        if (sessionResult.error) {
+            if (sessionResult.error === 'timeout') {
+                showError('Session check timed out. Please refresh the page and try again.');
+            } else if (sessionResult.error === 'network') {
+                showError('Unable to connect to server. Please check your connection and refresh the page.');
+            } else {
+                showError('Error checking session. Please refresh the page and try again.');
+            }
+            return;
+        }
+        
+        // Handle expired session
+        if (!sessionResult.authenticated) {
             showError('Your session has expired. Redirecting to login...', true);
             return;
         }
