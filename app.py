@@ -362,8 +362,8 @@ def get_lowest_scorer():
         return jsonify([])
 
 @app.route('/api/lineup/<owner>')
-@require_login
 def get_lineup(owner):
+    """Public endpoint - anyone can view team lineups for research/preview"""
     try:
         week = get_current_week()
         
