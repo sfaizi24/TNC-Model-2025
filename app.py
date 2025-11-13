@@ -176,7 +176,8 @@ def about():
 
 @app.route('/analytics')
 def analytics():
-    return render_template('analytics.html', user=current_user if current_user.is_authenticated else None)
+    week = get_current_week()
+    return render_template('analytics.html', user=current_user if current_user.is_authenticated else None, current_week=week)
 
 @app.route('/account')
 @require_login

@@ -70,7 +70,7 @@
 </div>
 
 <div id="team-distribution" class="section">
-    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_10.png" alt="Team Distribution" class="edge-to-edge-image" decoding="async">
+    <img id="distribution-image" src="/static/images/simulation_distributions_overlay_week_{{ current_week }}.png" alt="Team Distribution" class="edge-to-edge-image" decoding="async">
 </div>
 
 <div id="team-players" class="section" style="display: none;">
@@ -79,10 +79,12 @@
 </div>
 
 <div class="section">
-    <img src="/static/images/simulation_boxplot_week_10.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
+    <img src="/static/images/simulation_boxplot_week_{{ current_week }}.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
 </div>
 
 <script>
+const currentWeek = {{ current_week }};
+
 // Load teams on page load
 async function loadTeams() {
     try {
@@ -117,10 +119,10 @@ document.getElementById('team-select').addEventListener('change', async function
     const playersContainer = document.getElementById('players-table-container');
     
     if (selectedTeam === 'all') {
-        distributionImage.src = '/static/images/simulation_distributions_overlay_week_10.png';
+        distributionImage.src = `/static/images/simulation_distributions_overlay_week_${currentWeek}.png`;
         playersSection.style.display = 'none';
     } else {
-        distributionImage.src = `/static/images/dist_Team_${selectedTeam}_week_10.png`;
+        distributionImage.src = `/static/images/dist_Team_${selectedTeam}_week_${currentWeek}.png`;
         playersSection.style.display = 'block';
         
         try {
