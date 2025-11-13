@@ -1428,13 +1428,17 @@ function selectHighestScorerTeam(idx) {
 
 
 // Place highest scorer bet
-async function placeHighestScorerBet() {
-    if (selectedHighestScorerTeam === null) {
-        alert('Please select a team');
+async function placeHighestScorerBet(idx) {
+    const amountInput = document.getElementById(`hs-amount-${idx}`);
+    const btn = document.getElementById(`hs-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`hs-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for highest scorer bet', idx);
         return;
     }
     
-    const amount = parseFloat(document.getElementById('hs-global-amount').value);
+    const amount = parseFloat(amountInput.value);
     
     if (!amount || amount <= 0) {
         alert('Please enter a valid bet amount');
@@ -1446,9 +1450,16 @@ async function placeHighestScorerBet() {
         return;
     }
     
-    const team = allHighestScorer[selectedHighestScorerTeam];
+    const team = allHighestScorer[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
     
     try {
+        btn.disabled = true;
+        btn.textContent = 'Placing...';
+        
         const response = await fetch('/api/place_bet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1466,20 +1477,24 @@ async function placeHighestScorerBet() {
             userBalance = result.new_balance;
             document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
             
-            document.getElementById('hs-global-amount').value = '';
-            const card = document.getElementById(`hs-card-${selectedHighestScorerTeam}`);
-            if (card) card.classList.remove('selected');
-            selectedHighestScorerTeam = null;
-            document.getElementById('hs-global-btn').disabled = true;
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
             
             loadActiveBets();
+            loadHighestScorer();
             alert('Bet placed successfully!');
         } else {
             alert(result.error || 'Failed to place bet');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
         }
     } catch (error) {
         console.error('Error placing bet:', error);
         alert('Failed to place bet');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
     }
 }
 
@@ -1602,13 +1617,17 @@ function selectLowestScorerTeam(idx) {
     if (card) card.classList.add('selected');
 }
 
-async function placeLowestScorerBet() {
-    if (selectedLowestScorerTeam === null) {
-        alert('Please select a team');
+async function placeLowestScorerBet(idx) {
+    const amountInput = document.getElementById(`ls-amount-${idx}`);
+    const btn = document.getElementById(`ls-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`ls-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for lowest scorer bet', idx);
         return;
     }
     
-    const amount = parseFloat(document.getElementById('ls-global-amount').value);
+    const amount = parseFloat(amountInput.value);
     
     if (!amount || amount <= 0) {
         alert('Please enter a valid bet amount');
@@ -1620,9 +1639,16 @@ async function placeLowestScorerBet() {
         return;
     }
     
-    const team = allLowestScorer[selectedLowestScorerTeam];
+    const team = allLowestScorer[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
     
     try {
+        btn.disabled = true;
+        btn.textContent = 'Placing...';
+        
         const response = await fetch('/api/place_bet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1640,20 +1666,24 @@ async function placeLowestScorerBet() {
             userBalance = result.new_balance;
             document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
             
-            document.getElementById('ls-global-amount').value = '';
-            const card = document.getElementById(`ls-card-${selectedLowestScorerTeam}`);
-            if (card) card.classList.remove('selected');
-            selectedLowestScorerTeam = null;
-            document.getElementById('ls-global-btn').disabled = true;
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
             
             loadActiveBets();
+            loadLowestScorer();
             alert('Bet placed successfully!');
         } else {
             alert(result.error || 'Failed to place bet');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
         }
     } catch (error) {
         console.error('Error placing bet:', error);
         alert('Failed to place bet');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
     }
 }
 
