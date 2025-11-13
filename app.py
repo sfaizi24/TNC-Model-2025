@@ -818,6 +818,19 @@ def remove_bet(bet_id):
 def serve_static(filename):
     return send_from_directory('frontend/static', filename)
 
+@app.route('/analytics-images/<path:filename>')
+def serve_analytics_image(filename):
+    from werkzeug.security import safe_join
+    import os
+    
+    images_dir = 'backend/data/images'
+    safe_path = safe_join(images_dir, filename)
+    
+    if not safe_path or not os.path.exists(safe_path):
+        return "Image not found", 404
+    
+    return send_from_directory(images_dir, filename, max_age=3600)
+
 @app.route('/api/teams')
 @require_login
 def get_teams():
@@ -827,7 +840,7 @@ def get_teams():
         cursor = conn.cursor()
         
         cursor.execute("""
-            SELECT u.username, u.display_name
+            SELECT r.roster_id, u.username, u.display_name
             FROM rosters r
             LEFT JOIN users u ON r.owner_id = u.user_id
             ORDER BY r.roster_id
@@ -835,9 +848,19 @@ def get_teams():
         
         teams = []
         for row in cursor.fetchall():
-            owner = row['username'] or row['display_name']
-            if owner:
-                teams.append(owner)
+            username = row['username']
+            display_name = row['display_name']
+            roster_id = row['roster_id']
+            
+            label = display_name or username or f"Team {roster_id}"
+            slug = username or display_name
+            
+            if slug:
+                teams.append({
+                    'label': label,
+                    'slug': slug,
+                    'roster_id': roster_id
+                })
         
         conn.close()
         return jsonify({'teams': teams})
