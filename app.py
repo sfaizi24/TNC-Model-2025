@@ -461,6 +461,26 @@ def place_bet():
         return jsonify({'success': False, 'error': 'Insufficient balance'})
     
     try:
+        # Get or create WeeklyStats once for all bet types (optimization)
+        weekly_stat = db.session.query(WeeklyStats).filter_by(
+            user_id=current_user.id,
+            week=week
+        ).first()
+        
+        if not weekly_stat:
+            weekly_stat = WeeklyStats(
+                user_id=current_user.id,
+                week=week,
+                starting_balance=current_user.account_balance,
+                ending_balance=current_user.account_balance,
+                pnl=0.0,
+                active_bets_amount=0.0,
+                settled_pnl=0.0,
+                bets_placed=0,
+                bets_won=0
+            )
+            db.session.add(weekly_stat)
+        
         # Handle highest scorer bets
         if bet_type == 'highest_scorer':
             owner = data.get('owner')
@@ -469,34 +489,13 @@ def place_bet():
             if not owner or not odds:
                 return jsonify({'success': False, 'error': 'Missing required data'})
             
-            # Calculate potential win
             odds_num = int(odds.replace('+', ''))
             if odds.startswith('+'):
                 potential_win = amount * (odds_num / 100)
             else:
                 potential_win = amount * (100 / abs(odds_num))
             
-            weekly_stat = db.session.query(WeeklyStats).filter_by(
-                user_id=current_user.id,
-                week=week
-            ).first()
-            
-            if not weekly_stat:
-                weekly_stat = WeeklyStats(
-                    user_id=current_user.id,
-                    week=week,
-                    starting_balance=current_user.account_balance,
-                    ending_balance=current_user.account_balance,
-                    pnl=0.0,
-                    active_bets_amount=0.0,
-                    settled_pnl=0.0,
-                    bets_placed=0,
-                    bets_won=0
-                )
-                db.session.add(weekly_stat)
-            
             current_user.account_balance -= amount
-            
             description = f"{owner}: Highest Scorer {odds}"
             
             bet = Bet(
@@ -530,34 +529,13 @@ def place_bet():
             if not owner or not odds:
                 return jsonify({'success': False, 'error': 'Missing required data'})
             
-            # Calculate potential win
             odds_num = int(odds.replace('+', ''))
             if odds.startswith('+'):
                 potential_win = amount * (odds_num / 100)
             else:
                 potential_win = amount * (100 / abs(odds_num))
             
-            weekly_stat = db.session.query(WeeklyStats).filter_by(
-                user_id=current_user.id,
-                week=week
-            ).first()
-            
-            if not weekly_stat:
-                weekly_stat = WeeklyStats(
-                    user_id=current_user.id,
-                    week=week,
-                    starting_balance=current_user.account_balance,
-                    ending_balance=current_user.account_balance,
-                    pnl=0.0,
-                    active_bets_amount=0.0,
-                    settled_pnl=0.0,
-                    bets_placed=0,
-                    bets_won=0
-                )
-                db.session.add(weekly_stat)
-            
             current_user.account_balance -= amount
-            
             description = f"{owner}: Lowest Scorer {odds}"
             
             bet = Bet(
@@ -586,7 +564,7 @@ def place_bet():
         # Handle team over/under bets
         if bet_type == 'team_ou':
             team_idx = data.get('team_idx')
-            choice = data.get('choice')  # 'over' or 'under'
+            choice = data.get('choice')
             
             conn = sqlite3.connect(ODDS_DB_PATH)
             conn.row_factory = sqlite3.Row
@@ -602,30 +580,8 @@ def place_bet():
             owner = team_data['owner']
             line = team_data['line']
             
-            # Even money bet - win equals bet amount
             potential_win = amount
-            
-            weekly_stat = db.session.query(WeeklyStats).filter_by(
-                user_id=current_user.id,
-                week=week
-            ).first()
-            
-            if not weekly_stat:
-                weekly_stat = WeeklyStats(
-                    user_id=current_user.id,
-                    week=week,
-                    starting_balance=current_user.account_balance,
-                    ending_balance=current_user.account_balance,
-                    pnl=0.0,
-                    active_bets_amount=0.0,
-                    settled_pnl=0.0,
-                    bets_placed=0,
-                    bets_won=0
-                )
-                db.session.add(weekly_stat)
-            
             current_user.account_balance -= amount
-            
             description = f"{owner} O/U {line:.1f}: {choice.capitalize()}"
             
             bet = Bet(
@@ -651,11 +607,10 @@ def place_bet():
             
             return jsonify({'success': True, 'new_balance': current_user.account_balance})
         
-        # Handle moneyline bets (original logic)
+        # Handle moneyline bets
         matchup_idx = data.get('matchup_idx')
         team = data.get('team')
         
-        # Get team owner mapping
         league_conn = sqlite3.connect(LEAGUE_DB_PATH)
         league_conn.row_factory = sqlite3.Row
         league_cursor = league_conn.cursor()
@@ -670,7 +625,6 @@ def place_bet():
             team_mapping[row['roster_id']] = owner_name
         league_conn.close()
         
-        # Get matchups
         conn = sqlite3.connect(ODDS_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -702,26 +656,7 @@ def place_bet():
         else:
             potential_win = amount * (100 / abs(odds_num))
         
-        weekly_stat = db.session.query(WeeklyStats).filter_by(
-            user_id=current_user.id, week=week
-        ).first()
-        
-        if not weekly_stat:
-            weekly_stat = WeeklyStats(
-                user_id=current_user.id,
-                week=week,
-                starting_balance=current_user.account_balance,
-                ending_balance=current_user.account_balance,
-                pnl=0.0,
-                active_bets_amount=0.0,
-                settled_pnl=0.0,
-                bets_placed=0,
-                bets_won=0
-            )
-            db.session.add(weekly_stat)
-        
         current_user.account_balance -= amount
-
         description = f"{matchup_display}: {team_name} {odds}"
 
         bet = Bet(
