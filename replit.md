@@ -4,6 +4,13 @@
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
 ## Recent Changes
+- **November 18, 2025 (Betting Speed Optimization)**:
+  - **Backend**: Optimized place_bet endpoint by reducing WeeklyStats queries from 4 to 1 per bet
+  - **Frontend**: Implemented non-blocking toast notification system with slide-in animations
+  - **UX**: Removed all blocking alert() and confirm() dialogs for uninterrupted betting flow
+  - **UI**: Added optimistic UI updates - balance and bet list update instantly on click with automatic rollback on errors
+  - **Speed**: Added quick bet amount buttons ($10, $25, $50, $100) to all bet types for rapid bet entry
+  - **Feedback**: Added success flash animations on cards and toast notifications with icons
 - **November 13, 2025 (Performance & UX Optimization)**:
   - Fixed critical migration logic with dialect-aware schema migrations (PostgreSQL vs SQLite compatibility)
   - Optimized image caching: increased cache duration from 1 hour to 24 hours for analytics images
