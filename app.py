@@ -245,18 +245,43 @@ def betting():
 @app.route('/leaderboard')
 def leaderboard():
     from models import Bet, WeeklyStats, User
-    from sqlalchemy import func, desc
+    from sqlalchemy import func, desc, case, distinct
     
     current_week = get_current_week()
+    selected_week = request.args.get('week', current_week, type=int)
     
-    # Weekly Top 3 and Bottom 1 by PNL
+    # Get available weeks for dropdown
+    available_weeks = db.session.query(distinct(WeeklyStats.week))\
+        .order_by(desc(WeeklyStats.week)).all()
+    available_weeks = [w[0] for w in available_weeks]
+    
+    # All-Time Top 3 and Bottom 2 (only users with at least 1 bet)
+    users_with_bets = db.session.query(Bet.user_id).group_by(Bet.user_id).subquery()
+    
+    alltime_top = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.total_pnl
+    ).join(users_with_bets, User.id == users_with_bets.c.user_id)\
+     .order_by(desc(User.total_pnl)).limit(3).all()
+    
+    alltime_bottom = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.total_pnl
+    ).join(users_with_bets, User.id == users_with_bets.c.user_id)\
+     .order_by(User.total_pnl.asc()).limit(2).all()
+    
+    # Weekly Top 3 and Bottom 2 (only users who placed a bet that week)
     weekly_top = db.session.query(
         User.id,
         User.first_name,
         User.last_name,
         WeeklyStats.settled_pnl
     ).join(WeeklyStats, User.id == WeeklyStats.user_id)\
-     .filter(WeeklyStats.week == current_week)\
+     .filter(WeeklyStats.week == selected_week, WeeklyStats.bets_placed > 0)\
      .order_by(desc(WeeklyStats.settled_pnl))\
      .limit(3).all()
     
@@ -266,77 +291,48 @@ def leaderboard():
         User.last_name,
         WeeklyStats.settled_pnl
     ).join(WeeklyStats, User.id == WeeklyStats.user_id)\
-     .filter(WeeklyStats.week == current_week)\
+     .filter(WeeklyStats.week == selected_week, WeeklyStats.bets_placed > 0)\
      .order_by(WeeklyStats.settled_pnl.asc())\
-     .limit(1).all()
+     .limit(2).all()
     
-    # All-Time Top 3 and Bottom 1 by Total PNL
-    alltime_top = db.session.query(
-        User.id,
-        User.first_name,
-        User.last_name,
-        User.total_pnl
-    ).order_by(desc(User.total_pnl)).limit(3).all()
-    
-    alltime_bottom = db.session.query(
-        User.id,
-        User.first_name,
-        User.last_name,
-        User.total_pnl
-    ).order_by(User.total_pnl.asc()).limit(1).all()
-    
-    # Best Bets - Highest odds that actually won
+    # Best Bets - Highest odds (biggest number, e.g., +800 > +200)
     best_odds_bet = db.session.query(Bet).filter(
         Bet.status == 'won'
     ).order_by(desc(Bet.odds)).first()
     
-    # Best Bets - Most money won on a single bet
-    biggest_win = db.session.query(Bet).filter(
-        Bet.status == 'won'
-    ).order_by(desc(Bet.result)).first()
+    # Biggest Bet Placed (amount at stake, regardless of outcome)
+    biggest_bet = db.session.query(Bet).order_by(desc(Bet.amount)).first()
     
-    # Most Popular Bets - Count by description for each bet type
-    popular_matchup = db.session.query(
-        Bet.description,
-        func.count(Bet.id).label('count')
-    ).filter(Bet.bet_type == 'matchup')\
-     .group_by(Bet.description)\
-     .order_by(desc('count'))\
-     .first()
+    # Most Popular Bets with win/loss status
+    def get_popular_bet_with_stats(bet_type):
+        result = db.session.query(
+            Bet.description,
+            func.count(Bet.id).label('count'),
+            func.sum(case((Bet.status == 'won', 1), else_=0)).label('wins'),
+            func.sum(case((Bet.status == 'lost', 1), else_=0)).label('losses'),
+            func.sum(case((Bet.status == 'pending', 1), else_=0)).label('pending')
+        ).filter(Bet.bet_type == bet_type)\
+         .group_by(Bet.description)\
+         .order_by(desc('count'))\
+         .first()
+        return result
     
-    popular_over_under = db.session.query(
-        Bet.description,
-        func.count(Bet.id).label('count')
-    ).filter(Bet.bet_type == 'team_ou')\
-     .group_by(Bet.description)\
-     .order_by(desc('count'))\
-     .first()
-    
-    popular_highest = db.session.query(
-        Bet.description,
-        func.count(Bet.id).label('count')
-    ).filter(Bet.bet_type == 'highest_scorer')\
-     .group_by(Bet.description)\
-     .order_by(desc('count'))\
-     .first()
-    
-    popular_lowest = db.session.query(
-        Bet.description,
-        func.count(Bet.id).label('count')
-    ).filter(Bet.bet_type == 'lowest_scorer')\
-     .group_by(Bet.description)\
-     .order_by(desc('count'))\
-     .first()
+    popular_matchup = get_popular_bet_with_stats('matchup')
+    popular_over_under = get_popular_bet_with_stats('team_ou')
+    popular_highest = get_popular_bet_with_stats('highest_scorer')
+    popular_lowest = get_popular_bet_with_stats('lowest_scorer')
     
     return render_template('leaderboard.html',
                          user=current_user if current_user.is_authenticated else None,
                          current_week=current_week,
+                         selected_week=selected_week,
+                         available_weeks=available_weeks,
                          weekly_top=weekly_top,
                          weekly_bottom=weekly_bottom,
                          alltime_top=alltime_top,
                          alltime_bottom=alltime_bottom,
                          best_odds_bet=best_odds_bet,
-                         biggest_win=biggest_win,
+                         biggest_bet=biggest_bet,
                          popular_matchup=popular_matchup,
                          popular_over_under=popular_over_under,
                          popular_highest=popular_highest,

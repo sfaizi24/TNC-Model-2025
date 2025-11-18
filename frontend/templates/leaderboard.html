@@ -42,11 +42,28 @@
         border-bottom: 1px solid var(--fanduel-light-gray);
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 8px;
     }
     
     .trophy {
         font-size: 20px;
+    }
+    
+    .week-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .week-selector select {
+        background: var(--fanduel-dark);
+        color: var(--text-primary);
+        border: 1px solid var(--fanduel-light-gray);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
     }
     
     .rankings-list {
@@ -83,6 +100,25 @@
     .rank-item.bottom {
         border-color: #ff4444;
         background: rgba(255, 68, 68, 0.05);
+    }
+    
+    .separator {
+        border-top: 2px dashed var(--fanduel-light-gray);
+        margin: 16px 0;
+        position: relative;
+    }
+    
+    .separator-label {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--fanduel-gray);
+        padding: 0 12px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
     }
     
     .rank-left {
@@ -154,7 +190,7 @@
         color: var(--text-primary);
         font-size: 14px;
         font-weight: 600;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
     }
     
     .bet-stats {
@@ -178,6 +214,28 @@
     .bet-stat-value {
         color: var(--text-primary);
         font-weight: 600;
+    }
+    
+    .status-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .status-won {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--success-green);
+    }
+    
+    .status-lost {
+        background: rgba(255, 68, 68, 0.2);
+        color: #ff4444;
+    }
+    
+    .status-pending {
+        background: rgba(210, 153, 34, 0.2);
+        color: var(--warning-yellow);
     }
     
     .no-data {
@@ -211,205 +269,287 @@
     <p class="page-subtitle">Top performers and betting insights</p>
 </div>
 
+<!-- ALL-TIME LEADERBOARD -->
+<div class="leaderboard-card" style="margin-bottom: 30px;">
+    <h2 class="card-title">
+        <span><span class="trophy">👑</span> All-Time Leaders</span>
+    </h2>
+    <div class="rankings-list">
+        {% if alltime_top %}
+            {% for leader in alltime_top %}
+            <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
+                <div class="rank-left">
+                    <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
+                    <span class="user-name">
+                        {% if leader[1] or leader[2] %}
+                            {{ leader[1] }} {{ leader[2] }}
+                        {% else %}
+                            User #{{ leader[0]|string|truncate(8, True, '') }}
+                        {% endif %}
+                    </span>
+                </div>
+                <span class="pnl-value {% if leader[3] >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if leader[3] >= 0 %}+{% endif %}${{ "%.2f"|format(leader[3]) }}
+                </span>
+            </div>
+            {% endfor %}
+            
+            {% if alltime_bottom %}
+                <div class="separator">
+                    <span class="separator-label">Bottom Performers</span>
+                </div>
+                {% for leader in alltime_bottom %}
+                <div class="rank-item bottom">
+                    <div class="rank-left">
+                        <span class="rank-number last">💀</span>
+                        <span class="user-name">
+                            {% if leader[1] or leader[2] %}
+                                {{ leader[1] }} {{ leader[2] }}
+                            {% else %}
+                                User #{{ leader[0]|string|truncate(8, True, '') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <span class="pnl-value negative">${{ "%.2f"|format(leader[3]) }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% else %}
+            <div class="no-data">No users with bets yet. Start betting to appear on the leaderboard!</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- WEEKLY LEADERBOARD -->
+<div class="leaderboard-card" style="margin-bottom: 30px;">
+    <h2 class="card-title">
+        <span><span class="trophy">🏆</span> Weekly Leaders</span>
+        <div class="week-selector">
+            <label for="week-select" style="color: var(--text-secondary); font-size: 14px; font-weight: normal;">Week:</label>
+            <select id="week-select" onchange="window.location.href='/leaderboard?week='+this.value">
+                {% for week in available_weeks %}
+                <option value="{{ week }}" {% if week == selected_week %}selected{% endif %}>{{ week }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </h2>
+    <div class="rankings-list">
+        {% if weekly_top %}
+            {% for leader in weekly_top %}
+            <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
+                <div class="rank-left">
+                    <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
+                    <span class="user-name">
+                        {% if leader[1] or leader[2] %}
+                            {{ leader[1] }} {{ leader[2] }}
+                        {% else %}
+                            User #{{ leader[0]|string|truncate(8, True, '') }}
+                        {% endif %}
+                    </span>
+                </div>
+                <span class="pnl-value {% if leader[3] >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if leader[3] >= 0 %}+{% endif %}${{ "%.2f"|format(leader[3]) }}
+                </span>
+            </div>
+            {% endfor %}
+            
+            {% if weekly_bottom %}
+                <div class="separator">
+                    <span class="separator-label">Bottom Performers</span>
+                </div>
+                {% for leader in weekly_bottom %}
+                <div class="rank-item bottom">
+                    <div class="rank-left">
+                        <span class="rank-number last">💀</span>
+                        <span class="user-name">
+                            {% if leader[1] or leader[2] %}
+                                {{ leader[1] }} {{ leader[2] }}
+                            {% else %}
+                                User #{{ leader[0]|string|truncate(8, True, '') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <span class="pnl-value negative">${{ "%.2f"|format(leader[3]) }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% else %}
+            <div class="no-data">No bets placed for week {{ selected_week }}. Be the first!</div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="leaderboard-grid">
+    <!-- BEST BETS -->
     <div class="leaderboard-card">
-        <h2 class="card-title"><span class="trophy">🏆</span> Week {{ current_week }} Leaders</h2>
-        <div class="rankings-list">
-            {% if weekly_top %}
-                {% for leader in weekly_top %}
-                <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
-                    <div class="rank-left">
-                        <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
-                        <span class="user-name">
-                            {% if leader[1] or leader[2] %}
-                                {{ leader[1] }} {{ leader[2] }}
-                            {% else %}
-                                User #{{ leader[0]|string|truncate(8, True, '') }}
-                            {% endif %}
-                        </span>
-                    </div>
-                    <span class="pnl-value {% if leader[3] >= 0 %}positive{% else %}negative{% endif %}">
-                        {% if leader[3] >= 0 %}+{% endif %}${{ "%.2f"|format(leader[3]) }}
-                    </span>
+        <h2 class="card-title"><span class="trophy">🔥</span> Best Bets</h2>
+        
+        {% if best_odds_bet %}
+        <div class="bet-detail">
+            <div class="bet-label">Highest Odds That Won</div>
+            <div class="bet-description">{{ best_odds_bet.description }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Odds:</span>
+                    <span class="bet-stat-value">{{ best_odds_bet.odds }}</span>
                 </div>
-                {% endfor %}
-                
-                {% if weekly_bottom %}
-                    {% for leader in weekly_bottom %}
-                    <div class="rank-item bottom">
-                        <div class="rank-left">
-                            <span class="rank-number last">💀</span>
-                            <span class="user-name">
-                                {% if leader[1] or leader[2] %}
-                                    {{ leader[1] }} {{ leader[2] }}
-                                {% else %}
-                                    User {{ leader[0][:8] }}
-                                {% endif %}
-                            </span>
-                        </div>
-                        <span class="pnl-value negative">${{ "%.2f"|format(leader[3]) }}</span>
-                    </div>
-                    {% endfor %}
-                {% endif %}
-            {% else %}
-                <div class="no-data">No weekly data yet. Start betting to appear on the leaderboard!</div>
-            {% endif %}
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Bet:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(best_odds_bet.amount) }}</span>
+                </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Won:</span>
+                    <span class="bet-stat-value pnl-value positive">${{ "%.2f"|format(best_odds_bet.result) }}</span>
+                </div>
+            </div>
         </div>
+        {% endif %}
+        
+        {% if biggest_bet %}
+        <div class="bet-detail">
+            <div class="bet-label">Biggest Bet Placed</div>
+            <div class="bet-description">{{ biggest_bet.description }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Amount:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(biggest_bet.amount) }}</span>
+                </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Odds:</span>
+                    <span class="bet-stat-value">{{ biggest_bet.odds }}</span>
+                </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Status:</span>
+                    <span class="status-badge status-{{ biggest_bet.status }}">{{ biggest_bet.status.capitalize() }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not best_odds_bet and not biggest_bet %}
+        <div class="no-data">No bets yet. Be the first!</div>
+        {% endif %}
     </div>
     
+    <!-- MOST POPULAR BETS -->
     <div class="leaderboard-card">
-        <h2 class="card-title"><span class="trophy">👑</span> All-Time Leaders</h2>
-        <div class="rankings-list">
-            {% if alltime_top %}
-                {% for leader in alltime_top %}
-                <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
-                    <div class="rank-left">
-                        <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
-                        <span class="user-name">
-                            {% if leader[1] or leader[2] %}
-                                {{ leader[1] }} {{ leader[2] }}
-                            {% else %}
-                                User #{{ leader[0]|string|truncate(8, True, '') }}
-                            {% endif %}
-                        </span>
-                    </div>
-                    <span class="pnl-value {% if leader[3] >= 0 %}positive{% else %}negative{% endif %}">
-                        {% if leader[3] >= 0 %}+{% endif %}${{ "%.2f"|format(leader[3]) }}
-                    </span>
+        <h2 class="card-title"><span class="trophy">📊</span> Most Popular Bets</h2>
+        
+        {% if popular_matchup %}
+        <div class="bet-detail">
+            <div class="bet-label">Most Popular Matchup</div>
+            <div class="bet-description">{{ popular_matchup[0] }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Times Bet:</span>
+                    <span class="bet-stat-value">{{ popular_matchup[1] }}</span>
                 </div>
-                {% endfor %}
-                
-                {% if alltime_bottom %}
-                    {% for leader in alltime_bottom %}
-                    <div class="rank-item bottom">
-                        <div class="rank-left">
-                            <span class="rank-number last">💀</span>
-                            <span class="user-name">
-                                {% if leader[1] or leader[2] %}
-                                    {{ leader[1] }} {{ leader[2] }}
-                                {% else %}
-                                    User {{ leader[0][:8] }}
-                                {% endif %}
-                            </span>
-                        </div>
-                        <span class="pnl-value negative">${{ "%.2f"|format(leader[3]) }}</span>
-                    </div>
-                    {% endfor %}
+                {% if popular_matchup[2] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-won">{{ popular_matchup[2] }} Won</span>
+                </div>
                 {% endif %}
-            {% else %}
-                <div class="no-data">No all-time data yet.</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<div class="leaderboard-card">
-    <h2 class="card-title"><span class="trophy">🔥</span> Best Bets</h2>
-    
-    {% if best_odds_bet %}
-    <div class="bet-detail">
-        <div class="bet-label">Highest Odds That Won</div>
-        <div class="bet-description">{{ best_odds_bet.description }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Odds:</span>
-                <span class="bet-stat-value">{{ best_odds_bet.odds }}</span>
-            </div>
-            <div class="bet-stat">
-                <span class="bet-stat-label">Bet:</span>
-                <span class="bet-stat-value">${{ "%.2f"|format(best_odds_bet.amount) }}</span>
-            </div>
-            <div class="bet-stat">
-                <span class="bet-stat-label">Won:</span>
-                <span class="bet-stat-value pnl-value positive">${{ "%.2f"|format(best_odds_bet.result) }}</span>
+                {% if popular_matchup[3] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-lost">{{ popular_matchup[3] }} Lost</span>
+                </div>
+                {% endif %}
+                {% if popular_matchup[4] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-pending">{{ popular_matchup[4] }} Pending</span>
+                </div>
+                {% endif %}
             </div>
         </div>
-    </div>
-    {% endif %}
-    
-    {% if biggest_win %}
-    <div class="bet-detail">
-        <div class="bet-label">Most Money Won</div>
-        <div class="bet-description">{{ biggest_win.description }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Odds:</span>
-                <span class="bet-stat-value">{{ biggest_win.odds }}</span>
-            </div>
-            <div class="bet-stat">
-                <span class="bet-stat-label">Bet:</span>
-                <span class="bet-stat-value">${{ "%.2f"|format(biggest_win.amount) }}</span>
-            </div>
-            <div class="bet-stat">
-                <span class="bet-stat-label">Won:</span>
-                <span class="bet-stat-value pnl-value positive">${{ "%.2f"|format(biggest_win.result) }}</span>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    {% if not best_odds_bet and not biggest_win %}
-    <div class="no-data">No winning bets yet. Be the first!</div>
-    {% endif %}
-</div>
-
-<div class="leaderboard-card">
-    <h2 class="card-title"><span class="trophy">📊</span> Most Popular Bets</h2>
-    
-    {% if popular_matchup %}
-    <div class="bet-detail">
-        <div class="bet-label">Most Popular Matchup Bet</div>
-        <div class="bet-description">{{ popular_matchup[0] }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Times Bet:</span>
-                <span class="bet-stat-value">{{ popular_matchup[1] }}</span>
+        {% endif %}
+        
+        {% if popular_over_under %}
+        <div class="bet-detail">
+            <div class="bet-label">Most Popular Over/Under</div>
+            <div class="bet-description">{{ popular_over_under[0] }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Times Bet:</span>
+                    <span class="bet-stat-value">{{ popular_over_under[1] }}</span>
+                </div>
+                {% if popular_over_under[2] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-won">{{ popular_over_under[2] }} Won</span>
+                </div>
+                {% endif %}
+                {% if popular_over_under[3] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-lost">{{ popular_over_under[3] }} Lost</span>
+                </div>
+                {% endif %}
+                {% if popular_over_under[4] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-pending">{{ popular_over_under[4] }} Pending</span>
+                </div>
+                {% endif %}
             </div>
         </div>
-    </div>
-    {% endif %}
-    
-    {% if popular_over_under %}
-    <div class="bet-detail">
-        <div class="bet-label">Most Popular Over/Under</div>
-        <div class="bet-description">{{ popular_over_under[0] }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Times Bet:</span>
-                <span class="bet-stat-value">{{ popular_over_under[1] }}</span>
+        {% endif %}
+        
+        {% if popular_highest %}
+        <div class="bet-detail">
+            <div class="bet-label">Most Popular Highest Scorer</div>
+            <div class="bet-description">{{ popular_highest[0] }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Times Bet:</span>
+                    <span class="bet-stat-value">{{ popular_highest[1] }}</span>
+                </div>
+                {% if popular_highest[2] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-won">{{ popular_highest[2] }} Won</span>
+                </div>
+                {% endif %}
+                {% if popular_highest[3] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-lost">{{ popular_highest[3] }} Lost</span>
+                </div>
+                {% endif %}
+                {% if popular_highest[4] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-pending">{{ popular_highest[4] }} Pending</span>
+                </div>
+                {% endif %}
             </div>
         </div>
-    </div>
-    {% endif %}
-    
-    {% if popular_highest %}
-    <div class="bet-detail">
-        <div class="bet-label">Most Popular Highest Scorer Bet</div>
-        <div class="bet-description">{{ popular_highest[0] }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Times Bet:</span>
-                <span class="bet-stat-value">{{ popular_highest[1] }}</span>
+        {% endif %}
+        
+        {% if popular_lowest %}
+        <div class="bet-detail">
+            <div class="bet-label">Most Popular Lowest Scorer</div>
+            <div class="bet-description">{{ popular_lowest[0] }}</div>
+            <div class="bet-stats">
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Times Bet:</span>
+                    <span class="bet-stat-value">{{ popular_lowest[1] }}</span>
+                </div>
+                {% if popular_lowest[2] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-won">{{ popular_lowest[2] }} Won</span>
+                </div>
+                {% endif %}
+                {% if popular_lowest[3] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-lost">{{ popular_lowest[3] }} Lost</span>
+                </div>
+                {% endif %}
+                {% if popular_lowest[4] %}
+                <div class="bet-stat">
+                    <span class="status-badge status-pending">{{ popular_lowest[4] }} Pending</span>
+                </div>
+                {% endif %}
             </div>
         </div>
+        {% endif %}
+        
+        {% if not popular_matchup and not popular_over_under and not popular_highest and not popular_lowest %}
+        <div class="no-data">No popular bets yet. Start betting to see trends!</div>
+        {% endif %}
     </div>
-    {% endif %}
-    
-    {% if popular_lowest %}
-    <div class="bet-detail">
-        <div class="bet-label">Most Popular Lowest Scorer Bet</div>
-        <div class="bet-description">{{ popular_lowest[0] }}</div>
-        <div class="bet-stats">
-            <div class="bet-stat">
-                <span class="bet-stat-label">Times Bet:</span>
-                <span class="bet-stat-value">{{ popular_lowest[1] }}</span>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    {% if not popular_matchup and not popular_over_under and not popular_highest and not popular_lowest %}
-    <div class="no-data">No popular bets yet. Start betting to see trends!</div>
-    {% endif %}
 </div>
 {% endblock %}
