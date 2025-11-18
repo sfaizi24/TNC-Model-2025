@@ -216,15 +216,15 @@
         <h2 class="card-title"><span class="trophy">🏆</span> Week {{ current_week }} Leaders</h2>
         <div class="rankings-list">
             {% if weekly_top %}
-                {% for i, leader in enumerate(weekly_top, 1) %}
-                <div class="rank-item {% if i == 1 %}top-1{% elif i == 2 %}top-2{% elif i == 3 %}top-3{% endif %}">
+                {% for leader in weekly_top %}
+                <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
                     <div class="rank-left">
-                        <span class="rank-number {% if i == 1 %}gold{% elif i == 2 %}silver{% elif i == 3 %}bronze{% endif %}">{{ i }}</span>
+                        <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
                         <span class="user-name">
                             {% if leader[1] or leader[2] %}
                                 {{ leader[1] }} {{ leader[2] }}
                             {% else %}
-                                User {{ leader[0][:8] }}
+                                User #{{ leader[0]|string|truncate(8, True, '') }}
                             {% endif %}
                         </span>
                     </div>
@@ -261,15 +261,15 @@
         <h2 class="card-title"><span class="trophy">👑</span> All-Time Leaders</h2>
         <div class="rankings-list">
             {% if alltime_top %}
-                {% for i, leader in enumerate(alltime_top, 1) %}
-                <div class="rank-item {% if i == 1 %}top-1{% elif i == 2 %}top-2{% elif i == 3 %}top-3{% endif %}">
+                {% for leader in alltime_top %}
+                <div class="rank-item {% if loop.index == 1 %}top-1{% elif loop.index == 2 %}top-2{% elif loop.index == 3 %}top-3{% endif %}">
                     <div class="rank-left">
-                        <span class="rank-number {% if i == 1 %}gold{% elif i == 2 %}silver{% elif i == 3 %}bronze{% endif %}">{{ i }}</span>
+                        <span class="rank-number {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
                         <span class="user-name">
                             {% if leader[1] or leader[2] %}
                                 {{ leader[1] }} {{ leader[2] }}
                             {% else %}
-                                User {{ leader[0][:8] }}
+                                User #{{ leader[0]|string|truncate(8, True, '') }}
                             {% endif %}
                         </span>
                     </div>
