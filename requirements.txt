@@ -34,3 +34,4 @@ oauthlib
 pyjwt
 sqlalchemy
 werkzeug
+flask-wtf

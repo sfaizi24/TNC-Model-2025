@@ -7,6 +7,7 @@ import sqlite3
 import json
 import ast
 from datetime import datetime, timezone, timedelta
+from flask_wtf.csrf import CSRFProtect
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -22,6 +23,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
     "pool_recycle": 300,
 }
+
+csrf = CSRFProtect(app)
 
 LEAGUE_DB_PATH = 'backend/data/databases/league.db'
 PROJECTIONS_DB_PATH = 'backend/data/databases/projections.db'

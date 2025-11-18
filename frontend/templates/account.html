@@ -341,6 +341,7 @@
             {% endif %}
         {% endwith %}
         <form method="POST" action="{{ url_for('update_profile') }}" class="profile-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="first_name" class="form-label">First Name</label>
                 <input 
