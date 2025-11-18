@@ -4,6 +4,15 @@
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
 ## Recent Changes
+- **November 18, 2025 (Leaderboard Enhancements)**:
+  - **Layout Reorganization**: Moved all-time leaderboard to top, weekly leaderboard below with week selector dropdown
+  - **Data Filtering**: All-time now shows only users with at least 1 bet placed; weekly shows only users who bet that specific week
+  - **Enhanced Rankings**: Both leaderboards now display top 3 performers AND bottom 2 (instead of bottom 1) with clear visual separator
+  - **Best Bets Improvements**: "Highest Odds" query now uses DESC ordering to show biggest winning odds; changed "Most Money Won" to "Biggest Bet Placed" showing amount at stake regardless of outcome
+  - **Popular Bets Analytics**: Added win/loss/pending status tracking for most popular bets across all bet types (matchup, over/under, highest scorer, lowest scorer)
+  - **Week Navigation**: Interactive week selector dropdown for filtering weekly stats dynamically via GET parameter
+  - **Query Optimization**: Consolidated queries using subqueries for user filtering, CASE statements for win/loss aggregation, eliminating N+1 patterns
+  - **Edge Case Handling**: Template gracefully handles missing data, users without names, and weeks with limited activity
 - **November 18, 2025 (Profile Editing Feature)**:
   - **Security**: Implemented CSRF protection using Flask-WTF for form-based endpoints
   - **User Profile**: Added ability for users to edit first name and last name on account page
