@@ -1118,13 +1118,15 @@ def unlock_period():
             print(f"[UNLOCK] Error: Betting period not found for week {week}")
             return jsonify({'success': False, 'error': 'Betting period not found'})
         
-        print(f"[UNLOCK] Found period: week={period.week}, is_locked={period.is_locked}, is_settled={period.is_settled}")
+        print(f"[UNLOCK] Found period: week={period.week}, is_locked={period.is_locked}, is_settled={period.is_settled}, lock_time={period.lock_time}")
         
         period.is_locked = False
+        new_lock_time = datetime.now(timezone.utc) + timedelta(days=7)
+        period.lock_time = new_lock_time
         
         db.session.commit()
         
-        print(f"[UNLOCK] Successfully unlocked week {week}")
+        print(f"[UNLOCK] Successfully unlocked week {week}, new lock_time set to {new_lock_time}")
         
         return jsonify({'success': True})
     except Exception as e:
