@@ -23,6 +23,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
     "pool_recycle": 300,
 }
+app.config["WTF_CSRF_CHECK_DEFAULT"] = False
 
 csrf = CSRFProtect(app)
 
@@ -210,6 +211,7 @@ def account():
 @app.route('/account/update-profile', methods=['POST'])
 @require_login
 def update_profile():
+    csrf.protect()
     try:
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
