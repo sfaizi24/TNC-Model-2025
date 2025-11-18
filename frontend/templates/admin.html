@@ -349,9 +349,14 @@
     });
     
     async function unlockPeriod(week) {
+        console.log('Unlock period called for week:', week);
+        
         if (!confirm(`Are you sure you want to unlock Week ${week}? Users will be able to place and remove bets again.`)) {
+            console.log('User cancelled unlock');
             return;
         }
+        
+        console.log('Sending unlock request...');
         
         try {
             const response = await fetch('/api/admin/unlock_period', {
@@ -360,16 +365,20 @@
                 body: JSON.stringify({ week: week })
             });
             
+            console.log('Response status:', response.status);
+            
             const result = await response.json();
+            console.log('Response data:', result);
             
             if (result.success) {
+                alert(`Week ${week} unlocked successfully!`);
                 loadBettingPeriods();
             } else {
                 alert('Error unlocking period: ' + result.error);
             }
         } catch (error) {
             console.error('Error unlocking period:', error);
-            alert('Error unlocking period');
+            alert('Error unlocking period: ' + error.message);
         }
     }
     

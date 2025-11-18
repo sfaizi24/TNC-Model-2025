@@ -1102,22 +1102,33 @@ def unlock_period():
     data = request.get_json()
     week = data.get('week')
     
+    print(f"[UNLOCK] Request received for week: {week}")
+    print(f"[UNLOCK] Request data: {data}")
+    print(f"[UNLOCK] Current user: {current_user.username if current_user.is_authenticated else 'Not authenticated'}")
+    print(f"[UNLOCK] Is admin: {getattr(current_user, 'is_admin', False)}")
+    
     if not week:
+        print("[UNLOCK] Error: Week not provided")
         return jsonify({'success': False, 'error': 'Week required'})
     
     try:
         period = db.session.query(BettingPeriod).filter_by(week=week).first()
         
         if not period:
+            print(f"[UNLOCK] Error: Betting period not found for week {week}")
             return jsonify({'success': False, 'error': 'Betting period not found'})
+        
+        print(f"[UNLOCK] Found period: week={period.week}, is_locked={period.is_locked}, is_settled={period.is_settled}")
         
         period.is_locked = False
         
         db.session.commit()
         
+        print(f"[UNLOCK] Successfully unlocked week {week}")
+        
         return jsonify({'success': True})
     except Exception as e:
-        print(f"Error unlocking period: {e}")
+        print(f"[UNLOCK] Error unlocking period: {e}")
         import traceback
         traceback.print_exc()
         db.session.rollback()
