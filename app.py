@@ -204,6 +204,35 @@ def account():
     
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
+@app.route('/account/update-profile', methods=['POST'])
+@require_login
+def update_profile():
+    try:
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        
+        if len(first_name) > 100:
+            flash('First name must be 100 characters or less.', 'error')
+            return redirect(url_for('account'))
+        
+        if len(last_name) > 100:
+            flash('Last name must be 100 characters or less.', 'error')
+            return redirect(url_for('account'))
+        
+        current_user.first_name = first_name if first_name else None
+        current_user.last_name = last_name if last_name else None
+        
+        db.session.commit()
+        
+        flash('Profile updated successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating profile: {e}")
+        flash('An error occurred while updating your profile. Please try again.', 'error')
+    
+    return redirect(url_for('account'))
+
 @app.route('/betting')
 def betting():
     return render_template('betting.html', user=current_user if current_user.is_authenticated else None)
