@@ -242,6 +242,106 @@ def update_profile():
 def betting():
     return render_template('betting.html', user=current_user if current_user.is_authenticated else None)
 
+@app.route('/leaderboard')
+def leaderboard():
+    from models import Bet, WeeklyStats, User
+    from sqlalchemy import func, desc
+    
+    current_week = get_current_week()
+    
+    # Weekly Top 3 and Bottom 1 by PNL
+    weekly_top = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        WeeklyStats.settled_pnl
+    ).join(WeeklyStats, User.id == WeeklyStats.user_id)\
+     .filter(WeeklyStats.week == current_week)\
+     .order_by(desc(WeeklyStats.settled_pnl))\
+     .limit(3).all()
+    
+    weekly_bottom = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        WeeklyStats.settled_pnl
+    ).join(WeeklyStats, User.id == WeeklyStats.user_id)\
+     .filter(WeeklyStats.week == current_week)\
+     .order_by(WeeklyStats.settled_pnl.asc())\
+     .limit(1).all()
+    
+    # All-Time Top 3 and Bottom 1 by Total PNL
+    alltime_top = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.total_pnl
+    ).order_by(desc(User.total_pnl)).limit(3).all()
+    
+    alltime_bottom = db.session.query(
+        User.id,
+        User.first_name,
+        User.last_name,
+        User.total_pnl
+    ).order_by(User.total_pnl.asc()).limit(1).all()
+    
+    # Best Bets - Highest odds that actually won
+    best_odds_bet = db.session.query(Bet).filter(
+        Bet.status == 'won'
+    ).order_by(desc(Bet.odds)).first()
+    
+    # Best Bets - Most money won on a single bet
+    biggest_win = db.session.query(Bet).filter(
+        Bet.status == 'won'
+    ).order_by(desc(Bet.result)).first()
+    
+    # Most Popular Bets - Count by description for each bet type
+    popular_matchup = db.session.query(
+        Bet.description,
+        func.count(Bet.id).label('count')
+    ).filter(Bet.bet_type == 'matchup')\
+     .group_by(Bet.description)\
+     .order_by(desc('count'))\
+     .first()
+    
+    popular_over_under = db.session.query(
+        Bet.description,
+        func.count(Bet.id).label('count')
+    ).filter(Bet.bet_type == 'team_ou')\
+     .group_by(Bet.description)\
+     .order_by(desc('count'))\
+     .first()
+    
+    popular_highest = db.session.query(
+        Bet.description,
+        func.count(Bet.id).label('count')
+    ).filter(Bet.bet_type == 'highest_scorer')\
+     .group_by(Bet.description)\
+     .order_by(desc('count'))\
+     .first()
+    
+    popular_lowest = db.session.query(
+        Bet.description,
+        func.count(Bet.id).label('count')
+    ).filter(Bet.bet_type == 'lowest_scorer')\
+     .group_by(Bet.description)\
+     .order_by(desc('count'))\
+     .first()
+    
+    return render_template('leaderboard.html',
+                         user=current_user if current_user.is_authenticated else None,
+                         current_week=current_week,
+                         weekly_top=weekly_top,
+                         weekly_bottom=weekly_bottom,
+                         alltime_top=alltime_top,
+                         alltime_bottom=alltime_bottom,
+                         best_odds_bet=best_odds_bet,
+                         biggest_win=biggest_win,
+                         popular_matchup=popular_matchup,
+                         popular_over_under=popular_over_under,
+                         popular_highest=popular_highest,
+                         popular_lowest=popular_lowest)
+
 ODDS_DB_PATH = 'backend/data/databases/odds.db'
 
 @app.route('/api/matchups')
