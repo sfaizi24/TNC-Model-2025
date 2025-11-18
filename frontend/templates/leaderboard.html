@@ -411,34 +411,34 @@
         </div>
         {% endif %}
         
-        {% if biggest_bet %}
+        {% if most_money_won %}
         <div class="bet-detail">
-            <div class="bet-label">Biggest Bet Placed</div>
-            <div class="bet-description">{{ biggest_bet[0] }}</div>
+            <div class="bet-label">Most Money Won</div>
+            <div class="bet-description">{{ most_money_won[0] }}</div>
             <div class="bet-stats">
                 <div class="bet-stat">
                     <span class="bet-stat-label">User:</span>
                     <span class="bet-stat-value">
-                        {% if biggest_bet[4] %}{{ biggest_bet[4] }}{% else %}Unknown{% endif %}
+                        {% if most_money_won[4] %}{{ most_money_won[4] }}{% else %}Unknown{% endif %}
                     </span>
                 </div>
                 <div class="bet-stat">
                     <span class="bet-stat-label">Odds:</span>
-                    <span class="bet-stat-value">{{ biggest_bet[1] }}</span>
+                    <span class="bet-stat-value">{{ most_money_won[1] }}</span>
                 </div>
                 <div class="bet-stat">
                     <span class="bet-stat-label">Bet:</span>
-                    <span class="bet-stat-value">${{ "%.2f"|format(biggest_bet[2]) }}</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(most_money_won[2]) }}</span>
                 </div>
                 <div class="bet-stat">
-                    <span class="bet-stat-label">Status:</span>
-                    <span class="status-badge status-{{ biggest_bet[3] }}">{{ biggest_bet[3].capitalize() }}</span>
+                    <span class="bet-stat-label">Won:</span>
+                    <span class="bet-stat-value pnl-value positive">${{ "%.2f"|format(most_money_won[3]) }}</span>
                 </div>
             </div>
         </div>
         {% endif %}
         
-        {% if not best_odds_bet and not biggest_bet %}
+        {% if not best_odds_bet and not most_money_won %}
         <div class="no-data">No bets yet. Be the first!</div>
         {% endif %}
     </div>
@@ -519,6 +519,10 @@
                     <span class="bet-stat-label">Times Bet:</span>
                     <span class="bet-stat-value">{{ popular_moneyline[1] }}</span>
                 </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Total Wagered:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(popular_moneyline[5]) }}</span>
+                </div>
                 {% if popular_moneyline[2] %}
                 <div class="bet-stat">
                     <span class="status-badge status-won">{{ popular_moneyline[2] }} Won</span>
@@ -546,6 +550,10 @@
                 <div class="bet-stat">
                     <span class="bet-stat-label">Times Bet:</span>
                     <span class="bet-stat-value">{{ popular_over_under[1] }}</span>
+                </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Total Wagered:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(popular_over_under[5]) }}</span>
                 </div>
                 {% if popular_over_under[2] %}
                 <div class="bet-stat">
@@ -575,6 +583,10 @@
                     <span class="bet-stat-label">Times Bet:</span>
                     <span class="bet-stat-value">{{ popular_highest[1] }}</span>
                 </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Total Wagered:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(popular_highest[5]) }}</span>
+                </div>
                 {% if popular_highest[2] %}
                 <div class="bet-stat">
                     <span class="status-badge status-won">{{ popular_highest[2] }} Won</span>
@@ -602,6 +614,10 @@
                 <div class="bet-stat">
                     <span class="bet-stat-label">Times Bet:</span>
                     <span class="bet-stat-value">{{ popular_lowest[1] }}</span>
+                </div>
+                <div class="bet-stat">
+                    <span class="bet-stat-label">Total Wagered:</span>
+                    <span class="bet-stat-value">${{ "%.2f"|format(popular_lowest[5]) }}</span>
                 </div>
                 {% if popular_lowest[2] %}
                 <div class="bet-stat">

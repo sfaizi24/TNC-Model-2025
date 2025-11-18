@@ -295,8 +295,8 @@ def leaderboard():
      .order_by(WeeklyStats.settled_pnl.asc())\
      .limit(2).all()
     
-    # Best Bets - Highest odds that won (biggest plus number = worst odds)
-    # Convert odds to numeric for proper sorting: +637 > +200 > -110
+    # Best Bets - Highest odds that won (best odds = highest number like +637)
+    # Convert odds to numeric for proper sorting: +637 > +200 > EVEN > -110
     from sqlalchemy import cast, Integer
     best_odds_bet = db.session.query(
         Bet.description,
@@ -309,19 +309,20 @@ def leaderboard():
      .filter(Bet.status == 'won')\
      .order_by(desc(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer))).first()
     
-    # Biggest Bet Placed (amount at stake)
-    biggest_bet = db.session.query(
+    # Most Money Won (biggest win result)
+    most_money_won = db.session.query(
         Bet.description,
         Bet.odds,
         Bet.amount,
-        Bet.status,
+        Bet.result,
         User.first_name,
         User.last_name
     ).join(User, Bet.user_id == User.id)\
-     .order_by(desc(Bet.amount)).first()
+     .filter(Bet.status == 'won')\
+     .order_by(desc(Bet.result)).first()
     
-    # Worst Bets - Worst odds that lost (biggest plus number that lost)
-    # Convert odds to numeric for proper sorting: +637 > +200 > -110
+    # Worst Bets - Worst odds that lost (worst odds = lowest number like -200)
+    # Convert odds to numeric for proper sorting: -200 < -110 < EVEN < +200
     worst_odds_bet = db.session.query(
         Bet.description,
         Bet.odds,
@@ -331,7 +332,7 @@ def leaderboard():
         User.last_name
     ).join(User, Bet.user_id == User.id)\
      .filter(Bet.status == 'lost')\
-     .order_by(desc(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer))).first()
+     .order_by(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer).asc()).first()
     
     # Most Money Lost on a single bet
     biggest_loss = db.session.query(
@@ -345,14 +346,15 @@ def leaderboard():
      .filter(Bet.status == 'lost')\
      .order_by(desc(Bet.amount)).first()
     
-    # Most Popular Bets with win/loss status
+    # Most Popular Bets with win/loss status and total money placed
     def get_popular_bet_with_stats(bet_type):
         result = db.session.query(
             Bet.description,
             func.count(Bet.id).label('count'),
             func.sum(case((Bet.status == 'won', 1), else_=0)).label('wins'),
             func.sum(case((Bet.status == 'lost', 1), else_=0)).label('losses'),
-            func.sum(case((Bet.status == 'pending', 1), else_=0)).label('pending')
+            func.sum(case((Bet.status == 'pending', 1), else_=0)).label('pending'),
+            func.sum(Bet.amount).label('total_wagered')
         ).filter(Bet.bet_type == bet_type)\
          .group_by(Bet.description)\
          .order_by(desc('count'))\
@@ -374,7 +376,7 @@ def leaderboard():
                          alltime_top=alltime_top,
                          alltime_bottom=alltime_bottom,
                          best_odds_bet=best_odds_bet,
-                         biggest_bet=biggest_bet,
+                         most_money_won=most_money_won,
                          worst_odds_bet=worst_odds_bet,
                          biggest_loss=biggest_loss,
                          popular_moneyline=popular_moneyline,
