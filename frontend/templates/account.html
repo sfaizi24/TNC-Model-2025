@@ -207,6 +207,81 @@
         font-weight: bold;
     }
     
+    .profile-form {
+        margin-top: 16px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-label {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--fanduel-dark);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: var(--fanduel-blue);
+    }
+    
+    .update-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .update-btn:hover {
+        background: #0066cc;
+        transform: translateY(-1px);
+    }
+    
+    .update-btn:active {
+        transform: translateY(0);
+    }
+    
+    .flash-message {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .flash-success {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--success-green);
+        border: 1px solid var(--success-green);
+    }
+    
+    .flash-error {
+        background: rgba(255, 68, 68, 0.2);
+        color: #ff4444;
+        border: 1px solid #ff4444;
+    }
+    
     @media (min-width: 768px) {
         .page-title {
             font-size: 28px;
@@ -252,6 +327,44 @@
             <span class="info-label">Member Since</span>
             <span class="info-value">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</span>
         </div>
+    </div>
+    
+    <div class="account-card">
+        <h3>Edit Profile</h3>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('update_profile') }}" class="profile-form">
+            <div class="form-group">
+                <label for="first_name" class="form-label">First Name</label>
+                <input 
+                    type="text" 
+                    id="first_name" 
+                    name="first_name" 
+                    class="form-input"
+                    value="{{ user.first_name or '' }}"
+                    maxlength="100"
+                >
+            </div>
+            <div class="form-group">
+                <label for="last_name" class="form-label">Last Name</label>
+                <input 
+                    type="text" 
+                    id="last_name" 
+                    name="last_name" 
+                    class="form-input"
+                    value="{{ user.last_name or '' }}"
+                    maxlength="100"
+                >
+            </div>
+            <button type="submit" class="update-btn">Update Profile</button>
+        </form>
     </div>
     
     <div class="account-card">
