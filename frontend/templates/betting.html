@@ -1228,14 +1228,127 @@ async function loadActiveBets() {
             }).join('');
         }
         
-        // Re-render all tabs with bet indicators
-        renderMatchups();
-        if (allTeams.length > 0) renderTeamPerformance();
-        if (allHighestScorer.length > 0) renderHighestScorer();
-        if (allLowestScorer.length > 0) renderLowestScorer();
+        // Update bet badges without re-rendering cards
+        updateBetBadges();
     } catch (error) {
         console.error('Error loading active bets:', error);
     }
+}
+
+// Update bet badges on existing cards without re-rendering
+function updateBetBadges() {
+    // Update matchup cards
+    const matchupHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('vs')) {
+            const matchupKey = bet.description.split(':')[0].trim();
+            matchupHasBet[matchupKey] = true;
+        }
+    });
+    
+    allMatchups.forEach((m, idx) => {
+        const matchupKey = `${m.team1_name} vs ${m.team2_name}`;
+        const card = document.querySelector(`#amount-${idx}`)?.closest('.matchup-card');
+        if (card) {
+            if (matchupHasBet[matchupKey]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update team performance cards
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('O/U')) {
+            const owner = bet.description.split(' O/U')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    allTeams.forEach((t, idx) => {
+        const card = document.querySelector(`#team-amount-${idx}`)?.closest('.matchup-card');
+        if (card) {
+            if (teamHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update highest scorer cards
+    const hsHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Highest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            hsHasBet[owner] = true;
+        }
+    });
+    
+    allHighestScorer.forEach((t, idx) => {
+        const card = document.getElementById(`hs-card-${idx}`);
+        if (card) {
+            if (hsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update lowest scorer cards
+    const lsHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Lowest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            lsHasBet[owner] = true;
+        }
+    });
+    
+    allLowestScorer.forEach((t, idx) => {
+        const card = document.getElementById(`ls-card-${idx}`);
+        if (card) {
+            if (lsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
 }
 
 // Remove bet (no confirmation, instant)
@@ -1727,7 +1840,6 @@ async function placeHighestScorerBet(idx) {
             
             showToast('Bet placed!');
             loadActiveBets();
-            loadHighestScorer();
         } else {
             userBalance = oldBalance;
             document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
@@ -1930,7 +2042,6 @@ async function placeLowestScorerBet(idx) {
             
             showToast('Bet placed!');
             loadActiveBets();
-            loadLowestScorer();
         } else {
             userBalance = oldBalance;
             document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
