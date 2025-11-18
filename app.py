@@ -6,7 +6,7 @@ import sys
 import sqlite3
 import json
 import ast
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 logging.basicConfig(level=logging.DEBUG)
 
