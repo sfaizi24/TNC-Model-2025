@@ -1104,7 +1104,7 @@ def unlock_period():
     
     print(f"[UNLOCK] Request received for week: {week}")
     print(f"[UNLOCK] Request data: {data}")
-    print(f"[UNLOCK] Current user: {current_user.username if current_user.is_authenticated else 'Not authenticated'}")
+    print(f"[UNLOCK] Current user: {current_user.email if current_user.is_authenticated else 'Not authenticated'}")
     print(f"[UNLOCK] Is admin: {getattr(current_user, 'is_admin', False)}")
     
     if not week:
