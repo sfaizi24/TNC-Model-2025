@@ -295,13 +295,55 @@ def leaderboard():
      .order_by(WeeklyStats.settled_pnl.asc())\
      .limit(2).all()
     
-    # Best Bets - Highest odds (biggest number, e.g., +800 > +200)
-    best_odds_bet = db.session.query(Bet).filter(
-        Bet.status == 'won'
-    ).order_by(desc(Bet.odds)).first()
+    # Best Bets - Highest odds that won (biggest plus number = worst odds)
+    # Convert odds to numeric for proper sorting: +637 > +200 > -110
+    from sqlalchemy import cast, Integer
+    best_odds_bet = db.session.query(
+        Bet.description,
+        Bet.odds,
+        Bet.amount,
+        Bet.result,
+        User.first_name,
+        User.last_name
+    ).join(User, Bet.user_id == User.id)\
+     .filter(Bet.status == 'won')\
+     .order_by(desc(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer))).first()
     
-    # Biggest Bet Placed (amount at stake, regardless of outcome)
-    biggest_bet = db.session.query(Bet).order_by(desc(Bet.amount)).first()
+    # Biggest Bet Placed (amount at stake)
+    biggest_bet = db.session.query(
+        Bet.description,
+        Bet.odds,
+        Bet.amount,
+        Bet.status,
+        User.first_name,
+        User.last_name
+    ).join(User, Bet.user_id == User.id)\
+     .order_by(desc(Bet.amount)).first()
+    
+    # Worst Bets - Worst odds that lost (biggest plus number that lost)
+    # Convert odds to numeric for proper sorting: +637 > +200 > -110
+    worst_odds_bet = db.session.query(
+        Bet.description,
+        Bet.odds,
+        Bet.amount,
+        Bet.result,
+        User.first_name,
+        User.last_name
+    ).join(User, Bet.user_id == User.id)\
+     .filter(Bet.status == 'lost')\
+     .order_by(desc(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer))).first()
+    
+    # Most Money Lost on a single bet
+    biggest_loss = db.session.query(
+        Bet.description,
+        Bet.odds,
+        Bet.amount,
+        Bet.result,
+        User.first_name,
+        User.last_name
+    ).join(User, Bet.user_id == User.id)\
+     .filter(Bet.status == 'lost')\
+     .order_by(desc(Bet.amount)).first()
     
     # Most Popular Bets with win/loss status
     def get_popular_bet_with_stats(bet_type):
@@ -317,7 +359,7 @@ def leaderboard():
          .first()
         return result
     
-    popular_matchup = get_popular_bet_with_stats('matchup')
+    popular_moneyline = get_popular_bet_with_stats('moneyline')
     popular_over_under = get_popular_bet_with_stats('team_ou')
     popular_highest = get_popular_bet_with_stats('highest_scorer')
     popular_lowest = get_popular_bet_with_stats('lowest_scorer')
@@ -333,7 +375,9 @@ def leaderboard():
                          alltime_bottom=alltime_bottom,
                          best_odds_bet=best_odds_bet,
                          biggest_bet=biggest_bet,
-                         popular_matchup=popular_matchup,
+                         worst_odds_bet=worst_odds_bet,
+                         biggest_loss=biggest_loss,
+                         popular_moneyline=popular_moneyline,
                          popular_over_under=popular_over_under,
                          popular_highest=popular_highest,
                          popular_lowest=popular_lowest)

@@ -79,6 +79,10 @@ externalPort = 3001
 localPort = 45177
 externalPort = 8000
 
+[[ports]]
+localPort = 46331
+externalPort = 8080
+
 [deployment]
 deploymentTarget = "gce"
 run = ["python", "app.py"]
