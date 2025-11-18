@@ -6,12 +6,13 @@ A comprehensive fantasy football analytics platform designed for an interactive 
 ## Recent Changes
 - **November 18, 2025 (Leaderboard Enhancements)**:
   - **Layout Reorganization**: Moved all-time leaderboard to top, weekly leaderboard below with week selector dropdown
-  - **Data Filtering**: All-time now shows only users with at least 1 bet placed; weekly shows only users who bet that specific week
+  - **Data Filtering**: All-time now shows only users with at least 1 bet placed; weekly shows only users who bet that specific week; leaderboards display only settled (non-pending) PnL
   - **Enhanced Rankings**: Both leaderboards now display top 3 performers AND bottom 2 (instead of bottom 1) with clear visual separator
-  - **Best Bets Improvements**: "Highest Odds" query now uses DESC ordering to show biggest winning odds; changed "Most Money Won" to "Biggest Bet Placed" showing amount at stake regardless of outcome
-  - **Popular Bets Analytics**: Added win/loss/pending status tracking for most popular bets across all bet types (matchup, over/under, highest scorer, lowest scorer)
+  - **Best Bets Improvements**: "Highest Odds That Won" uses numeric sorting to show biggest plus number (e.g., +135 > +112 > -110); changed "Most Money Won" to "Biggest Bet Placed" showing amount at stake regardless of outcome; all bet cards now show user first names
+  - **Worst Bets Section**: New section showing "Worst Odds That Lost" (biggest plus number that lost, e.g., +637) and "Most Money Lost" on a single bet
+  - **Popular Bets Analytics**: Added win/loss/pending status tracking for most popular bets across all bet types (moneyline, over/under, highest scorer, lowest scorer); fixed to show moneyline bets instead of generic matchup
   - **Week Navigation**: Interactive week selector dropdown for filtering weekly stats dynamically via GET parameter
-  - **Query Optimization**: Consolidated queries using subqueries for user filtering, CASE statements for win/loss aggregation, eliminating N+1 patterns
+  - **Query Optimization**: Consolidated queries using subqueries for user filtering, CASE statements for win/loss aggregation, numeric odds conversion using SQLAlchemy cast/replace functions, eliminating N+1 patterns
   - **Edge Case Handling**: Template gracefully handles missing data, users without names, and weeks with limited activity
 - **November 18, 2025 (Profile Editing Feature)**:
   - **Security**: Implemented CSRF protection using Flask-WTF for form-based endpoints
