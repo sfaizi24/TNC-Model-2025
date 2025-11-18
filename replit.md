@@ -4,6 +4,13 @@
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
 ## Recent Changes
+- **November 18, 2025 (Profile Editing Feature)**:
+  - **Security**: Implemented CSRF protection using Flask-WTF for form-based endpoints
+  - **User Profile**: Added ability for users to edit first name and last name on account page
+  - **Form UI**: Added profile edit form with styled input fields matching FanDuel theme
+  - **Validation**: Added input validation (100 character limit) and user-friendly error messages
+  - **CSRF Configuration**: Disabled default CSRF checks to preserve API endpoint functionality, explicitly protected profile update route
+  - **Feedback**: Success and error messages displayed via flash notifications with color-coded styling
 - **November 18, 2025 (Betting Speed Optimization)**:
   - **Backend**: Optimized place_bet endpoint by reducing WeeklyStats queries from 4 to 1 per bet
   - **Frontend**: Implemented non-blocking toast notification system with slide-in animations
@@ -64,6 +71,7 @@ The platform is built around a Flask web server, serving HTML templates located 
 - **Performance Optimization**: 24-hour browser cache for analytics images, optimized database queries with ordering
 - **Dynamic Week Tracking**: Current week determined via `get_current_week()` helper function
 - **Security**: Admin privileges must be manually set in database, no self-service admin escalation
+- **CSRF Protection**: Flask-WTF configured with `WTF_CSRF_CHECK_DEFAULT=False` to exempt API endpoints, form-based routes explicitly call `csrf.protect()` for security
 
 ## External Dependencies
 - **Python 3.11**
@@ -76,5 +84,6 @@ The platform is built around a Flask web server, serving HTML templates located 
 - **Flask-SQLAlchemy**: ORM for PostgreSQL (used for user database).
 - **Flask-Login**: Session management.
 - **Flask-Dance**: OAuth2/OpenID Connect integration.
+- **Flask-WTF**: CSRF protection for forms.
 - **PyJWT**: Token decoding.
 - **werkzeug.security**: Password hashing.
