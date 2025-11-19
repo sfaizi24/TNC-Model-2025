@@ -297,54 +297,62 @@ def leaderboard():
     
     # Best Bets - Highest odds that won (best odds = highest number like +637)
     # Convert odds to numeric for proper sorting: +637 > +200 > EVEN > -110
+    # Aggregate bets with same user_id, description, odds, week
     from sqlalchemy import cast, Integer
     best_odds_bet = db.session.query(
         Bet.description,
         Bet.odds,
-        Bet.amount,
-        Bet.result,
+        func.sum(Bet.amount).label('amount'),
+        func.sum(Bet.result).label('result'),
         User.first_name,
         User.last_name
     ).join(User, Bet.user_id == User.id)\
      .filter(Bet.status == 'won')\
+     .group_by(Bet.user_id, Bet.description, Bet.odds, Bet.week, User.first_name, User.last_name)\
      .order_by(desc(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer))).first()
     
     # Most Money Won (biggest win result)
+    # Aggregate bets with same user_id, description, odds, week
     most_money_won = db.session.query(
         Bet.description,
         Bet.odds,
-        Bet.amount,
-        Bet.result,
+        func.sum(Bet.amount).label('amount'),
+        func.sum(Bet.result).label('result'),
         User.first_name,
         User.last_name
     ).join(User, Bet.user_id == User.id)\
      .filter(Bet.status == 'won')\
-     .order_by(desc(Bet.result)).first()
+     .group_by(Bet.user_id, Bet.description, Bet.odds, Bet.week, User.first_name, User.last_name)\
+     .order_by(desc(func.sum(Bet.result))).first()
     
     # Worst Bets - Worst odds that lost (worst odds = lowest number like -200)
     # Convert odds to numeric for proper sorting: -200 < -110 < EVEN < +200
+    # Aggregate bets with same user_id, description, odds, week
     worst_odds_bet = db.session.query(
         Bet.description,
         Bet.odds,
-        Bet.amount,
+        func.sum(Bet.amount).label('amount'),
         Bet.result,
         User.first_name,
         User.last_name
     ).join(User, Bet.user_id == User.id)\
      .filter(Bet.status == 'lost')\
+     .group_by(Bet.user_id, Bet.description, Bet.odds, Bet.week, Bet.result, User.first_name, User.last_name)\
      .order_by(cast(func.replace(func.replace(Bet.odds, '+', ''), 'EVEN', '0'), Integer).asc()).first()
     
     # Most Money Lost on a single bet
+    # Aggregate bets with same user_id, description, odds, week
     biggest_loss = db.session.query(
         Bet.description,
         Bet.odds,
-        Bet.amount,
+        func.sum(Bet.amount).label('amount'),
         Bet.result,
         User.first_name,
         User.last_name
     ).join(User, Bet.user_id == User.id)\
      .filter(Bet.status == 'lost')\
-     .order_by(desc(Bet.amount)).first()
+     .group_by(Bet.user_id, Bet.description, Bet.odds, Bet.week, Bet.result, User.first_name, User.last_name)\
+     .order_by(desc(func.sum(Bet.amount))).first()
     
     # Most Popular Bets with win/loss status and total money placed
     def get_popular_bet_with_stats(bet_type):
