@@ -12,6 +12,7 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.String, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=True)
     email = db.Column(db.String, unique=True, nullable=True)
     first_name = db.Column(db.String, nullable=True)
     last_name = db.Column(db.String, nullable=True)

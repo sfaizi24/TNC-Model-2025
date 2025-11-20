@@ -128,6 +128,7 @@ def save_user(user_claims):
         user.account_balance = 1000.0
         user.total_pnl = 0.0
     
+    user.username = user_claims.get('username')
     user.email = user_claims.get('email')
     user.first_name = user_claims.get('first_name')
     user.last_name = user_claims.get('last_name')
