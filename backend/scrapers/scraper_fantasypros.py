@@ -33,7 +33,8 @@ class FantasyProsScraper:
         options.add_argument('--disable-dev-shm-usage')
         
         self.driver = webdriver.Chrome(options=options)
-        self.wait = WebDriverWait(self.driver, 10)
+        self.driver.set_page_load_timeout(30)  # 30 second page load timeout
+        self.wait = WebDriverWait(self.driver, 15)  # 15 second element wait timeout
         self.source = "fantasypros.com"
         self.db_path = db_path or "projections.db"
         
@@ -94,13 +95,25 @@ class FantasyProsScraper:
             List of player projections
         """
         print(f"\nScraping {position} from {url}...")
-        self.driver.get(url)
-        time.sleep(3)
         
         projections = []
         teams_found = 0
         
         try:
+            # Navigate to page with retry on timeout
+            max_retries = 2
+            for attempt in range(max_retries):
+                try:
+                    self.driver.get(url)
+                    time.sleep(3)
+                    break
+                except TimeoutException:
+                    if attempt < max_retries - 1:
+                        print(f"  ⚠️  Page load timeout, retrying ({attempt + 1}/{max_retries})...")
+                        time.sleep(2)
+                    else:
+                        raise
+            
             # Wait for table to load
             table = self.wait.until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "table.table, table#rank-data, table.rankings-table, table"))
@@ -235,12 +248,18 @@ class FantasyProsScraper:
                 except Exception as e:
                     continue
         
+        except TimeoutException as e:
+            print(f"  ✗ Timeout loading {position} page (may be slow or unavailable)")
+            return projections  # Return whatever we have so far
+        
         except Exception as e:
-            print(f"  ✗ Error scraping {position}: {e}")
+            print(f"  ✗ Error scraping {position}: {type(e).__name__}: {str(e)[:100]}")
+            return projections  # Return whatever we have so far
         
         team_percentage = (teams_found / len(projections) * 100) if projections else 0
         print(f"  ✓ Scraped {len(projections)} {position} projections")
-        print(f"  ✓ Team data found: {teams_found}/{len(projections)} ({team_percentage:.1f}%)")
+        if projections:
+            print(f"  ✓ Team data found: {teams_found}/{len(projections)} ({team_percentage:.1f}%)")
         return projections
     
     def _estimate_points_from_rank(self, rank: int, position: str) -> float:
@@ -290,13 +309,22 @@ class FantasyProsScraper:
         print(f"\nFetching FantasyPros consensus rankings for {week}...")
         
         all_projections = []
+        failed_positions = []
         
         for position, url in self.position_urls.items():
-            position_projs = self._scrape_position(position, url, week)
-            all_projections.extend(position_projs)
+            try:
+                position_projs = self._scrape_position(position, url, week)
+                all_projections.extend(position_projs)
+            except Exception as e:
+                print(f"  ✗ Failed to scrape {position}: {str(e)[:100]}")
+                failed_positions.append(position)
+            
             time.sleep(2)  # Be respectful with rate limiting
         
         print(f"\n✓ Total players scraped: {len(all_projections)}")
+        if failed_positions:
+            print(f"⚠️  Failed positions: {', '.join(failed_positions)}")
+        
         return all_projections
     
     def scrape_and_save(self, week: str = "Week 10"):

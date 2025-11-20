@@ -1,5 +1,6 @@
 # Database files
-*.db
+# Only ignore montecarlo.db (it's large and regenerated frequently)
+**/montecarlo.db
 *.db-journal
 
 # Python
