@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 class SleeperLeagueScraper:
     """Scraper for Sleeper fantasy league data using their official API."""
     
-    def __init__(self, db_path: str = "league.db"):
+    def __init__(self, db_path: str = "backend/data/databases/league.db"):
         """Initialize the scraper."""
         self.base_url = "https://api.sleeper.app"
         self.db_path = db_path  # Store database path

@@ -6,7 +6,7 @@ import os
 class LeagueDB:
     """SQLite database for Sleeper fantasy league data."""
     
-    def __init__(self, db_path: str = "league.db"):
+    def __init__(self, db_path: str = "backend/data/databases/league.db"):
         """Initialize database connection and create tables if they don't exist."""
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)

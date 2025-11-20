@@ -35,7 +35,7 @@ class FirstDownStudioScraper:
         self.driver = webdriver.Chrome(options=options)
         self.wait = WebDriverWait(self.driver, 10)
         self.source = "firstdown.studio"
-        self.db_path = db_path or "projections.db"
+        self.db_path = db_path or "backend/data/databases/projections.db"
     
     def scrape_week_projections(self, week: str = "Week 8", scoring: str = "PPR") -> List[Dict]:
         """

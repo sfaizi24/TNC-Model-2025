@@ -40,7 +40,7 @@ class ESPNScraper:
         self.wait = WebDriverWait(self.driver, 15)
         self.source = "espn.com"
         self.url = "https://fantasy.espn.com/football/players/projections"
-        self.db_path = db_path or "projections.db"
+        self.db_path = db_path or "backend/data/databases/projections.db"
     
     def _map_team_name(self, team_name: str) -> str:
         """

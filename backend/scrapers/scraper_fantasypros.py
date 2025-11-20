@@ -36,7 +36,7 @@ class FantasyProsScraper:
         self.driver.set_page_load_timeout(30)  # 30 second page load timeout
         self.wait = WebDriverWait(self.driver, 15)  # 15 second element wait timeout
         self.source = "fantasypros.com"
-        self.db_path = db_path or "projections.db"
+        self.db_path = db_path or "backend/data/databases/projections.db"
         
         # Position pages (PPR for skill positions, standard for others)
         self.position_urls = {

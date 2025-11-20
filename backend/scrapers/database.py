@@ -6,7 +6,7 @@ import os
 class ProjectionsDB:
     """Light and fast SQLite database for fantasy football projections."""
     
-    def __init__(self, db_path: str = "projections.db"):
+    def __init__(self, db_path: str = "backend/data/databases/projections.db"):
         """Initialize database connection and create tables if they don't exist."""
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)

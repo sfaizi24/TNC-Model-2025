@@ -28,7 +28,7 @@ class FanDuelScraper:
         self.headless = headless
         self.source = "fanduel.com"
         self.url = "https://www.fanduel.com/research/nfl/fantasy/ppr"
-        self.db_path = db_path or "projections.db"
+        self.db_path = db_path or "backend/data/databases/projections.db"
     
     def _parse_player_name(self, full_name: str) -> tuple[str, str]:
         """

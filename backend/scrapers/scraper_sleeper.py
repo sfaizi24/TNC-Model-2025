@@ -27,7 +27,7 @@ class SleeperScraper:
         """Initialize the scraper."""
         self.source = "sleeper.com"
         self.base_url = "https://api.sleeper.app"
-        self.db_path = db_path or "projections.db"
+        self.db_path = db_path or "backend/data/databases/projections.db"
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
