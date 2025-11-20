@@ -4,6 +4,14 @@
 A comprehensive fantasy football analytics platform designed for an interactive web dashboard. It integrates web scrapers for aggregating player projections from various sources (Sleeper, ESPN, FantasyPros, FanDuel, FirstDown), performs Monte Carlo simulations for advanced analytics and betting odds generation, and offers an interactive web dashboard built with Flask. The platform's core purpose is to provide sophisticated analytics and a betting interface for fantasy football enthusiasts, including features like lineup optimization and detailed team/player performance insights. The project aims to offer a robust, data-driven tool for fantasy football management and betting.
 
 ## Recent Changes
+- **November 20, 2025 (Username Integration & Database Cleanup)**:
+  - **Username Field**: Added username column to User model to store Replit usernames (e.g., "sfaizi24")
+  - **Authentication Fix**: Updated save_user() to extract and save username from JWT tokens during login
+  - **Session Check Fix**: Fixed /api/session-check endpoint to return username instead of crashing with AttributeError
+  - **Analytics Page**: Resolved "Error checking session" issue - page now loads correctly and displays proper authentication status
+  - **Database Consolidation**: Updated all scraper default paths to use backend/data/databases/ for projections.db, league.db, and users.db
+  - **Cleanup**: Removed orphaned database files (league.db, projections.db, users.db) from root directory that were created by standalone scraper runs
+  - **Migration**: Added username column to PostgreSQL database via ALTER TABLE statement
 - **November 18, 2025 (Leaderboard Enhancements)**:
   - **Layout Reorganization**: Moved all-time leaderboard to top, weekly leaderboard below with week selector dropdown
   - **Data Filtering**: All-time now shows only users with at least 1 bet placed; weekly shows only users who bet that specific week; leaderboards display only settled (non-pending) PnL
@@ -68,7 +76,7 @@ The platform is built around a Flask web server, serving HTML templates located 
 5. **Week Closure**: Admin marks week as settled and creates a new betting period for next week
 
 ### Database Models
-- **User**: Account information, balance, total P&L, is_admin flag (default: False)
+- **User**: Account information with username (Replit username like "sfaizi24"), email, first/last name, balance, total P&L, is_admin flag (default: False)
 - **Bet**: Individual bets with type, amount, odds, status (pending/won/lost), timezone-aware timestamps
 - **WeeklyStats**: Performance tracking with active_bets_amount and settled_pnl
 - **BettingPeriod**: Week management with UTC lock_time, is_locked, is_settled flags
