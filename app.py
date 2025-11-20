@@ -996,7 +996,9 @@ def check_session():
 @app.route('/api/teams')
 @require_login
 def get_teams():
+    print(f"[TEAMS REQUEST] User: {current_user.id} ({current_user.username})")
     try:
+        print(f"[TEAMS] Connecting to database: {LEAGUE_DB_PATH}")
         conn = sqlite3.connect(LEAGUE_DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -1008,8 +1010,11 @@ def get_teams():
             ORDER BY r.roster_id
         """)
         
+        raw_results = cursor.fetchall()
+        print(f"[TEAMS] Database returned {len(raw_results)} rows")
+        
         teams = []
-        for row in cursor.fetchall():
+        for row in raw_results:
             username = row['username']
             display_name = row['display_name']
             roster_id = row['roster_id']
@@ -1023,11 +1028,15 @@ def get_teams():
                     'slug': slug,
                     'roster_id': roster_id
                 })
+            else:
+                print(f"[TEAMS WARNING] Skipping roster_id {roster_id} - no slug (username={username}, display_name={display_name})")
         
         conn.close()
+        print(f"[TEAMS SUCCESS] Returning {len(teams)} teams to user {current_user.id}")
         return jsonify({'teams': teams})
     except Exception as e:
-        print(f"Error getting teams: {e}")
+        print(f"[TEAMS ERROR] User {current_user.id} - Exception: {type(e).__name__}: {str(e)}")
+        print(f"[TEAMS ERROR] Database path: {LEAGUE_DB_PATH}")
         import traceback
         traceback.print_exc()
         return jsonify({'teams': []})
@@ -1036,10 +1045,14 @@ def get_teams():
 @require_login
 def get_team_players():
     team_owner = request.args.get('team')
+    print(f"[TEAM_PLAYERS REQUEST] User: {current_user.id} ({current_user.username}), Team: {team_owner}")
+    
     if not team_owner:
+        print(f"[TEAM_PLAYERS ERROR] User {current_user.id} - Missing team parameter")
         return jsonify({'error': 'Team parameter required'}), 400
     
     try:
+        print(f"[TEAM_PLAYERS] Connecting to database: {LEAGUE_DB_PATH}")
         league_conn = sqlite3.connect(LEAGUE_DB_PATH)
         league_conn.row_factory = sqlite3.Row
         league_cursor = league_conn.cursor()
@@ -1053,6 +1066,7 @@ def get_team_players():
         
         roster = league_cursor.fetchone()
         if not roster:
+            print(f"[TEAM_PLAYERS ERROR] User {current_user.id} - Team '{team_owner}' not found in database")
             league_conn.close()
             return jsonify({'error': 'Team not found'}), 404
         
@@ -1100,10 +1114,12 @@ def get_team_players():
             -(x['mu'] if x['mu'] is not None else 0)
         ))
         
+        print(f"[TEAM_PLAYERS SUCCESS] User {current_user.id} - Team '{team_owner}' (roster_id={roster_id}): {len(starters)} starters, {len(bench)} bench")
         return jsonify({'starters': starters, 'bench': bench})
         
     except Exception as e:
-        print(f"Error getting team players: {e}")
+        print(f"[TEAM_PLAYERS ERROR] User {current_user.id} - Exception for team '{team_owner}': {type(e).__name__}: {str(e)}")
+        print(f"[TEAM_PLAYERS ERROR] Database path: {LEAGUE_DB_PATH}")
         import traceback
         traceback.print_exc()
         return jsonify({'starters': [], 'bench': []})
