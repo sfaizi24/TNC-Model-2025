@@ -631,17 +631,23 @@ def place_bet():
     amount = float(data.get('amount', 0))
     week = get_current_week()
     
+    print(f"[BET REQUEST] User: {current_user.id} ({current_user.username}), Type: {bet_type}, Amount: {amount}, Week: {week}, Balance: {current_user.account_balance}")
+    print(f"[BET REQUEST] Full data: {data}")
+    
     lock_time = check_betting_period_lock(week)
     if lock_time:
+        print(f"[BET REJECTED] User {current_user.id} - Betting locked at {lock_time}")
         return jsonify({
             'success': False,
             'error': f'Bets are locked as of {lock_time.strftime("%Y-%m-%d %I:%M %p UTC")}'
         })
     
     if amount <= 0:
+        print(f"[BET REJECTED] User {current_user.id} - Invalid amount: {amount}")
         return jsonify({'success': False, 'error': 'Invalid bet amount'})
     
     if current_user.account_balance < amount:
+        print(f"[BET REJECTED] User {current_user.id} - Insufficient balance: {current_user.account_balance} < {amount}")
         return jsonify({'success': False, 'error': 'Insufficient balance'})
     
     try:
@@ -671,6 +677,7 @@ def place_bet():
             odds = data.get('odds')
             
             if not owner or not odds:
+                print(f"[BET REJECTED] User {current_user.id} - Highest scorer missing data: owner={owner}, odds={odds}")
                 return jsonify({'success': False, 'error': 'Missing required data'})
             
             odds_num = int(odds.replace('+', ''))
@@ -702,6 +709,7 @@ def place_bet():
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
             db.session.commit()
+            print(f"[BET SUCCESS] User {current_user.id} placed highest scorer bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
             
             return jsonify({'success': True, 'new_balance': current_user.account_balance})
         
@@ -711,6 +719,7 @@ def place_bet():
             odds = data.get('odds')
             
             if not owner or not odds:
+                print(f"[BET REJECTED] User {current_user.id} - Lowest scorer missing data: owner={owner}, odds={odds}")
                 return jsonify({'success': False, 'error': 'Missing required data'})
             
             odds_num = int(odds.replace('+', ''))
@@ -742,6 +751,7 @@ def place_bet():
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
             db.session.commit()
+            print(f"[BET SUCCESS] User {current_user.id} placed lowest scorer bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
             
             return jsonify({'success': True, 'new_balance': current_user.account_balance})
         
@@ -758,6 +768,7 @@ def place_bet():
             conn.close()
             
             if team_idx >= len(teams):
+                print(f"[BET REJECTED] User {current_user.id} - Invalid team_idx: {team_idx} (max: {len(teams)-1})")
                 return jsonify({'success': False, 'error': 'Invalid team'})
             
             team_data = teams[team_idx]
@@ -788,6 +799,7 @@ def place_bet():
             weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
             
             db.session.commit()
+            print(f"[BET SUCCESS] User {current_user.id} placed team O/U bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
             
             return jsonify({'success': True, 'new_balance': current_user.account_balance})
         
@@ -817,6 +829,7 @@ def place_bet():
         conn.close()
         
         if matchup_idx >= len(matchups):
+            print(f"[BET REJECTED] User {current_user.id} - Invalid matchup_idx: {matchup_idx} (max: {len(matchups)-1})")
             return jsonify({'success': False, 'error': 'Invalid matchup'})
         
         matchup = matchups[matchup_idx]
@@ -832,6 +845,7 @@ def place_bet():
             team_name = team2_owner
             odds = matchup['team2_ml']
         else:
+            print(f"[BET REJECTED] User {current_user.id} - Invalid team selection: {team}")
             return jsonify({'success': False, 'error': 'Invalid team'})
         
         odds_num = int(odds)
@@ -863,14 +877,18 @@ def place_bet():
         weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
         
         db.session.commit()
+        print(f"[BET SUCCESS] User {current_user.id} placed moneyline bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
         
         return jsonify({'success': True, 'new_balance': current_user.account_balance})
     
     except Exception as e:
-        print(f"Error placing bet: {e}")
+        print(f"[BET ERROR] User {current_user.id} - Exception occurred: {type(e).__name__}: {str(e)}")
+        print(f"[BET ERROR] Request data was: {data}")
+        print(f"[BET ERROR] User balance: {current_user.account_balance}, Bet amount: {amount}")
         import traceback
         traceback.print_exc()
         db.session.rollback()
+        print(f"[BET ERROR] Database rolled back for user {current_user.id}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/my_bets')
