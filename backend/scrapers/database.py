@@ -92,6 +92,10 @@ class ProjectionsDB:
         """Insert or update a single projection."""
         cursor = self.conn.cursor()
         
+        # Standardize position and team before insert
+        std_position = self._standardize_position(position)
+        std_team = self._standardize_team(team)
+        
         cursor.execute("""
             INSERT INTO projections 
             (source_website, week, player_first_name, player_last_name, position, team, projected_points, updated_at)
@@ -101,9 +105,36 @@ class ProjectionsDB:
                 team = excluded.team,
                 projected_points = excluded.projected_points,
                 updated_at = CURRENT_TIMESTAMP
-        """, (source, week, first_name, last_name, position, team, projected_points))
+        """, (source, week, first_name, last_name, std_position, std_team, projected_points))
         
         self.conn.commit()
+    
+    def _standardize_position(self, position: str) -> str:
+        """Standardize position names to prevent duplicates."""
+        if not position:
+            return position
+        pos = position.upper().strip()
+        # D/ST, DEF -> DST
+        if pos in ('D/ST', 'DEF'):
+            return 'DST'
+        # FB -> RB
+        if pos == 'FB':
+            return 'RB'
+        return pos
+    
+    def _standardize_team(self, team: str) -> str:
+        """Standardize team abbreviations."""
+        if not team:
+            return team
+        team = team.upper().strip()
+        # Common variations
+        if team == 'WSH':
+            return 'WAS'
+        if team == 'JAC':
+            return 'JAX'
+        if team == 'LA':
+            return 'LAR'
+        return team
     
     def insert_projections_batch(self, projections: List[Dict]):
         """Insert multiple projections efficiently."""
@@ -111,7 +142,9 @@ class ProjectionsDB:
         
         data = [
             (p['source'], p['week'], p['first_name'], p['last_name'], 
-             p['position'], p.get('team'), p['projected_points'])
+             self._standardize_position(p['position']), 
+             self._standardize_team(p.get('team')), 
+             p['projected_points'])
             for p in projections
         ]
         

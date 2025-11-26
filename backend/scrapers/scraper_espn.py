@@ -212,13 +212,16 @@ class ESPNScraper:
                             # Parse name
                             first_name, last_name = self._parse_player_name(player_name, position)
                             
+                            # Standardize position (D/ST -> DST)
+                            std_position = 'DST' if position == 'D/ST' else position
+                            
                             if first_name or last_name:
                                 projection = {
                                     'source': self.source,
                                     'week': week,
                                     'first_name': first_name,
                                     'last_name': last_name,
-                                    'position': position,
+                                    'position': std_position,
                                     'team': team_abbr,
                                     'projected_points': round(projected_points, 1)
                                 }
