@@ -819,11 +819,20 @@ def place_bet():
         league_conn = sqlite3.connect(LEAGUE_DB_PATH)
         league_conn.row_factory = sqlite3.Row
         league_cursor = league_conn.cursor()
+        
+        # First get the league_id for the current week's matchups to avoid duplicate roster_id issues
+        league_cursor.execute("""
+            SELECT DISTINCT league_id FROM matchups WHERE week = ?
+        """, (week,))
+        league_row = league_cursor.fetchone()
+        current_league_id = league_row['league_id'] if league_row else None
+        
         league_cursor.execute("""
             SELECT r.roster_id, u.display_name, u.username
             FROM rosters r
             LEFT JOIN users u ON r.owner_id = u.user_id
-        """)
+            WHERE r.league_id = ?
+        """, (current_league_id,))
         team_mapping = {}
         for row in league_cursor.fetchall():
             owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
