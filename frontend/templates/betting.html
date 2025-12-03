@@ -1166,6 +1166,23 @@ async function placeBet(matchupIdx) {
             })
         });
         
+        // Check if redirected to login (session expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            if (card) card.classList.remove('has-bet');
+            showToast('Session expired. Please log out and log back in.', 'error');
+            return;
+        }
+        
+        if (!response.ok && (response.status === 401 || response.status === 302)) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            if (card) card.classList.remove('has-bet');
+            showToast('Please log in to place bets', 'error');
+            return;
+        }
+        
         const result = await response.json();
         
         if (result.success) {
@@ -1191,7 +1208,7 @@ async function placeBet(matchupIdx) {
         userBalance = oldBalance;
         document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
         if (card) card.classList.remove('has-bet');
-        showToast('Failed to place bet', 'error');
+        showToast('Failed to place bet. Please try logging out and back in.', 'error');
     }
 }
 
@@ -1199,6 +1216,22 @@ async function placeBet(matchupIdx) {
 async function loadActiveBets() {
     try {
         const response = await fetch('/api/my_bets');
+        
+        // Check if redirected to login (authentication expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            console.log('Session expired, user needs to re-login');
+            return;
+        }
+        
+        // Check for non-OK response
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 302) {
+                console.log('Authentication required');
+                return;
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         activeBetsData = await response.json();
         
         const compactContainer = document.getElementById('activeBetsCompact');
@@ -2347,6 +2380,25 @@ async function placeFirstSeedBet(idx) {
             })
         });
         
+        // Check if redirected to login (session expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            showToast('Session expired. Please log out and log back in.', 'error');
+            return;
+        }
+        
+        if (!response.ok && (response.status === 401 || response.status === 302)) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            showToast('Please log in to place bets', 'error');
+            return;
+        }
+        
         const result = await response.json();
         
         if (result.success) {
@@ -2371,7 +2423,7 @@ async function placeFirstSeedBet(idx) {
         console.error('Error placing bet:', error);
         userBalance = oldBalance;
         document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
-        showToast('Failed to place bet', 'error');
+        showToast('Failed to place bet. Please try logging out and back in.', 'error');
         btn.disabled = false;
         btn.textContent = 'Place Bet';
     }
@@ -2578,6 +2630,25 @@ async function placeAmmadPlayoffBet(idx) {
             })
         });
         
+        // Check if redirected to login (session expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            showToast('Session expired. Please log out and log back in.', 'error');
+            return;
+        }
+        
+        if (!response.ok && (response.status === 401 || response.status === 302)) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            showToast('Please log in to place bets', 'error');
+            return;
+        }
+        
         const result = await response.json();
         
         if (result.success) {
@@ -2602,7 +2673,7 @@ async function placeAmmadPlayoffBet(idx) {
         console.error('Error placing bet:', error);
         userBalance = oldBalance;
         document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
-        showToast('Failed to place bet', 'error');
+        showToast('Failed to place bet. Please try logging out and back in.', 'error');
         btn.disabled = false;
         btn.textContent = 'Place Bet';
     }
