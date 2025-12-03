@@ -554,6 +554,68 @@ def get_lowest_scorer():
         traceback.print_exc()
         return jsonify([])
 
+@app.route('/api/first_place')
+def get_first_place():
+    try:
+        week = get_current_week()
+        
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT owner, probability, american_odds
+                FROM betting_odds_first_place
+                WHERE week = ?
+                ORDER BY probability DESC
+            """, (week,))
+            
+            teams = []
+            for row in cursor.fetchall():
+                teams.append({
+                    'owner': row['owner'],
+                    'win_prob': round(row['probability'] * 100, 1),
+                    'odds': row['american_odds']
+                })
+        
+        return jsonify(teams)
+    except Exception as e:
+        print(f"Error getting first place: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
+@app.route('/api/ammad_playoff')
+def get_ammad_playoff():
+    try:
+        week = get_current_week()
+        
+        with sqlite3.connect(ODDS_DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT owner, probability, american_odds
+                FROM betting_odds_make_playoffs
+                WHERE week = ?
+                ORDER BY probability DESC
+            """, (week,))
+            
+            teams = []
+            for row in cursor.fetchall():
+                teams.append({
+                    'owner': row['owner'],
+                    'win_prob': round(row['probability'] * 100, 1),
+                    'odds': row['american_odds']
+                })
+        
+        return jsonify(teams)
+    except Exception as e:
+        print(f"Error getting ammad playoff: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify([])
+
 @app.route('/api/lineup/<owner>')
 def get_lineup(owner):
     """Public endpoint - anyone can view team lineups for research/preview"""
@@ -761,6 +823,90 @@ def place_bet():
             
             db.session.commit()
             print(f"[BET SUCCESS] User {current_user.id} placed lowest scorer bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
+            
+            return jsonify({'success': True, 'new_balance': current_user.account_balance})
+        
+        # Handle first seed bets
+        if bet_type == 'first_seed':
+            owner = data.get('owner')
+            odds = data.get('odds')
+            
+            if not owner or not odds:
+                print(f"[BET REJECTED] User {current_user.id} - First seed missing data: owner={owner}, odds={odds}")
+                return jsonify({'success': False, 'error': 'Missing required data'})
+            
+            odds_num = int(odds.replace('+', ''))
+            if odds.startswith('+'):
+                potential_win = amount * (odds_num / 100)
+            else:
+                potential_win = amount * (100 / abs(odds_num))
+            
+            current_user.account_balance -= amount
+            description = f"{owner}: #1 Seed {odds}"
+            
+            bet = Bet(
+                user_id=current_user.id,
+                bet_type='first_seed',
+                description=description,
+                week=week,
+                amount=amount,
+                odds=odds,
+                potential_win=potential_win,
+                status='pending',
+                created_at=datetime.now(timezone.utc)
+            )
+            
+            db.session.add(bet)
+            
+            weekly_stat.bets_placed += 1
+            weekly_stat.active_bets_amount += amount
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            
+            db.session.commit()
+            print(f"[BET SUCCESS] User {current_user.id} placed first seed bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
+            
+            return jsonify({'success': True, 'new_balance': current_user.account_balance})
+        
+        # Handle ammad playoff bets
+        if bet_type == 'ammad_playoff':
+            owner = data.get('owner')
+            odds = data.get('odds')
+            
+            if not owner or not odds:
+                print(f"[BET REJECTED] User {current_user.id} - Ammad playoff missing data: owner={owner}, odds={odds}")
+                return jsonify({'success': False, 'error': 'Missing required data'})
+            
+            odds_num = int(odds.replace('+', ''))
+            if odds.startswith('+'):
+                potential_win = amount * (odds_num / 100)
+            else:
+                potential_win = amount * (100 / abs(odds_num))
+            
+            current_user.account_balance -= amount
+            description = f"{owner}: Ammad Playoff {odds}"
+            
+            bet = Bet(
+                user_id=current_user.id,
+                bet_type='ammad_playoff',
+                description=description,
+                week=week,
+                amount=amount,
+                odds=odds,
+                potential_win=potential_win,
+                status='pending',
+                created_at=datetime.now(timezone.utc)
+            )
+            
+            db.session.add(bet)
+            
+            weekly_stat.bets_placed += 1
+            weekly_stat.active_bets_amount += amount
+            weekly_stat.ending_balance = current_user.account_balance
+            weekly_stat.pnl = weekly_stat.ending_balance - weekly_stat.starting_balance
+            
+            db.session.commit()
+            print(f"[BET SUCCESS] User {current_user.id} placed ammad playoff bet: {description}, Amount: ${amount}, New balance: ${current_user.account_balance}")
             
             return jsonify({'success': True, 'new_balance': current_user.account_balance})
         

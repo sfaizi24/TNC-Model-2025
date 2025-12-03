@@ -806,6 +806,8 @@
     <button class="betting-tab" data-tab="team-performance">Over/Unders</button>
     <button class="betting-tab" data-tab="highest-scorer">Highest Scorer</button>
     <button class="betting-tab" data-tab="lowest-scorer">Lowest Scorer</button>
+    <button class="betting-tab" data-tab="first-seed">#1 Seed Odds</button>
+    <button class="betting-tab" data-tab="ammad-playoff">Ammad Playoff Odds</button>
 </div>
 
 <div id="matchups-moneyline" class="betting-content active">
@@ -836,6 +838,18 @@
 <div id="lowest-scorer" class="betting-content">
     <div class="matchups-grid" id="lowestScorerGrid">
         <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading lowest scorer bets...</p>
+    </div>
+</div>
+
+<div id="first-seed" class="betting-content">
+    <div class="matchups-grid" id="firstSeedGrid">
+        <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading #1 seed odds...</p>
+    </div>
+</div>
+
+<div id="ammad-playoff" class="betting-content">
+    <div class="matchups-grid" id="ammadPlayoffGrid">
+        <p style="text-align: center; color: var(--text-secondary); padding: 40px;">Loading Ammad playoff odds...</p>
     </div>
 </div>
 
@@ -1207,6 +1221,14 @@ async function loadActiveBets() {
                 // Lowest scorer bet - format: "Owner: Lowest Scorer +595"
                 const owner = bet.description.split(':')[0].trim();
                 betInfo = `${owner} Lowest Scorer $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('#1 Seed')) {
+                // First seed bet - format: "Owner: #1 Seed +139"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} #1 Seed $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Ammad Playoff')) {
+                // Ammad playoff bet - format: "Owner: Ammad Playoff +8206"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} Ammad Playoff $${bet.amount.toFixed(0)}`;
             } else {
                 // Moneyline bet - format: "Owner1 vs Owner2: Team Odds"
                 const parts = bet.description.split(':');
@@ -1335,6 +1357,62 @@ function updateBetBadges() {
         const card = document.getElementById(`ls-card-${idx}`);
         if (card) {
             if (lsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update first seed cards
+    const fsHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('#1 Seed')) {
+            const owner = bet.description.split(':')[0].trim();
+            fsHasBet[owner] = true;
+        }
+    });
+    
+    allFirstSeed.forEach((t, idx) => {
+        const card = document.getElementById(`fs-card-${idx}`);
+        if (card) {
+            if (fsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update ammad playoff cards
+    const apHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Ammad Playoff')) {
+            const owner = bet.description.split(':')[0].trim();
+            apHasBet[owner] = true;
+        }
+    });
+    
+    allAmmadPlayoff.forEach((t, idx) => {
+        const card = document.getElementById(`ap-card-${idx}`);
+        if (card) {
+            if (apHasBet[t.owner]) {
                 card.classList.add('has-bet');
                 if (!card.querySelector('.bet-placed-badge')) {
                     const badge = document.createElement('div');
@@ -1697,6 +1775,14 @@ let selectedHighestScorerTeam = null;
 // Store lowest scorer data globally
 let allLowestScorer = [];
 let selectedLowestScorerTeam = null;
+
+// Store first seed data globally
+let allFirstSeed = [];
+let selectedFirstSeedTeam = null;
+
+// Store ammad playoff data globally
+let allAmmadPlayoff = [];
+let selectedAmmadPlayoffTeam = null;
 
 // Load highest scorer
 async function loadHighestScorer() {
@@ -2105,6 +2191,468 @@ function renderLowestScorerLineup(idx, lineup) {
     `;
 }
 
+// Load first seed
+async function loadFirstSeed() {
+    try {
+        const response = await fetch('/api/first_place');
+        allFirstSeed = await response.json();
+        renderFirstSeed();
+    } catch (error) {
+        console.error('Error loading first seed:', error);
+    }
+}
+
+// Render first seed bets
+function renderFirstSeed() {
+    const grid = document.getElementById('firstSeedGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('#1 Seed')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const teams = allFirstSeed.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="fs-card-${idx}" onclick="selectFirstSeedTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
+                </div>
+                <div class="potential-win" id="fs-potential-win-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickFSBetAmount(${idx}, 10, '${t.odds}')">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickFSBetAmount(${idx}, 25, '${t.odds}')">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickFSBetAmount(${idx}, 50, '${t.odds}')">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickFSBetAmount(${idx}, 100, '${t.odds}')">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="fs-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateFirstSeedPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="fs-btn-${idx}" onclick="isAuthenticated ? placeFirstSeedBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick="toggleFirstSeedLineup(event, ${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="fs-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="fs-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = teams;
+}
+
+function selectFirstSeedTeam(idx) {
+    if (selectedFirstSeedTeam !== null) {
+        const prevCard = document.getElementById(`fs-card-${selectedFirstSeedTeam}`);
+        if (prevCard) prevCard.classList.remove('selected');
+    }
+    
+    selectedFirstSeedTeam = idx;
+    const card = document.getElementById(`fs-card-${idx}`);
+    if (card) card.classList.add('selected');
+}
+
+function setQuickFSBetAmount(idx, amount, odds) {
+    const input = document.getElementById(`fs-amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updateFirstSeedPotentialWin(idx, odds);
+    }
+}
+
+function updateFirstSeedPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`fs-amount-${idx}`);
+    const potentialDiv = document.getElementById(`fs-potential-win-${idx}`);
+    const btn = document.getElementById(`fs-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    }
+}
+
+async function placeFirstSeedBet(idx) {
+    const amountInput = document.getElementById(`fs-amount-${idx}`);
+    const btn = document.getElementById(`fs-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`fs-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for first seed bet', idx);
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const team = allFirstSeed[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    btn.disabled = true;
+    btn.textContent = 'Placing...';
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'first_seed',
+                owner: team.owner,
+                odds: team.odds,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to place bet', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to place bet', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
+    }
+}
+
+async function toggleFirstSeedLineup(event, idx, owner) {
+    event.stopPropagation();
+    
+    const container = document.getElementById(`fs-lineups-${idx}`);
+    const arrow = document.getElementById(`fs-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderFirstSeedLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderFirstSeedLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderFirstSeedLineup(idx, lineup) {
+    const container = document.getElementById(`fs-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Load ammad playoff
+async function loadAmmadPlayoff() {
+    try {
+        const response = await fetch('/api/ammad_playoff');
+        allAmmadPlayoff = await response.json();
+        renderAmmadPlayoff();
+    } catch (error) {
+        console.error('Error loading ammad playoff:', error);
+    }
+}
+
+// Render ammad playoff bets
+function renderAmmadPlayoff() {
+    const grid = document.getElementById('ammadPlayoffGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Ammad Playoff')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const teams = allAmmadPlayoff.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ap-card-${idx}" onclick="selectAmmadPlayoffTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
+                </div>
+                <div class="potential-win" id="ap-potential-win-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickAPBetAmount(${idx}, 10, '${t.odds}')">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickAPBetAmount(${idx}, 25, '${t.odds}')">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickAPBetAmount(${idx}, 50, '${t.odds}')">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickAPBetAmount(${idx}, 100, '${t.odds}')">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="ap-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateAmmadPlayoffPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="ap-btn-${idx}" onclick="isAuthenticated ? placeAmmadPlayoffBet(${idx}) : window.location.href='/auth/replit_auth'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick="toggleAmmadPlayoffLineup(event, ${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="ap-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="ap-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = teams;
+}
+
+function selectAmmadPlayoffTeam(idx) {
+    if (selectedAmmadPlayoffTeam !== null) {
+        const prevCard = document.getElementById(`ap-card-${selectedAmmadPlayoffTeam}`);
+        if (prevCard) prevCard.classList.remove('selected');
+    }
+    
+    selectedAmmadPlayoffTeam = idx;
+    const card = document.getElementById(`ap-card-${idx}`);
+    if (card) card.classList.add('selected');
+}
+
+function setQuickAPBetAmount(idx, amount, odds) {
+    const input = document.getElementById(`ap-amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updateAmmadPlayoffPotentialWin(idx, odds);
+    }
+}
+
+function updateAmmadPlayoffPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`ap-amount-${idx}`);
+    const potentialDiv = document.getElementById(`ap-potential-win-${idx}`);
+    const btn = document.getElementById(`ap-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    }
+}
+
+async function placeAmmadPlayoffBet(idx) {
+    const amountInput = document.getElementById(`ap-amount-${idx}`);
+    const btn = document.getElementById(`ap-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`ap-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for ammad playoff bet', idx);
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const team = allAmmadPlayoff[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    btn.disabled = true;
+    btn.textContent = 'Placing...';
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'ammad_playoff',
+                owner: team.owner,
+                odds: team.odds,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to place bet', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to place bet', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
+    }
+}
+
+async function toggleAmmadPlayoffLineup(event, idx, owner) {
+    event.stopPropagation();
+    
+    const container = document.getElementById(`ap-lineups-${idx}`);
+    const arrow = document.getElementById(`ap-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderAmmadPlayoffLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderAmmadPlayoffLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderAmmadPlayoffLineup(idx, lineup) {
+    const container = document.getElementById(`ap-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
 // Initialize - load bets first, then matchups and team performance
 async function initialize() {
     if (isAuthenticated) {
@@ -2114,6 +2662,8 @@ async function initialize() {
     await loadTeamPerformance();
     await loadHighestScorer();
     await loadLowestScorer();
+    await loadFirstSeed();
+    await loadAmmadPlayoff();
 }
 
 initialize();
