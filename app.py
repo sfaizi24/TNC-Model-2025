@@ -672,6 +672,8 @@ def get_current_week():
     if period:
         return period.week
     
+    # Log warning when no active betting period found - this helps debug production issues
+    print("[WARNING] No active (unsettled) betting period found in database. Defaulting to week 10. Please create a new betting period via /admin.")
     return 10
 
 def check_betting_period_lock(week):
