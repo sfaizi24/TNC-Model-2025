@@ -3,7 +3,7 @@ import re
 import sys
 import os
 import requests
-from database import ProjectionsDB
+from .database import ProjectionsDB
 from typing import List, Dict, Optional
 import logging
 

@@ -3,7 +3,7 @@ import re
 import sys
 import os
 from playwright.sync_api import sync_playwright
-from database import ProjectionsDB
+from .database import ProjectionsDB
 from typing import List, Dict, Optional
 import logging
 

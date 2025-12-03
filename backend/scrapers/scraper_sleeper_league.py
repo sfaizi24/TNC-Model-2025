@@ -2,7 +2,7 @@ import time
 import sys
 import os
 import requests
-from database_league import LeagueDB
+from .database_league import LeagueDB
 from typing import List, Dict, Optional
 import logging
 import json

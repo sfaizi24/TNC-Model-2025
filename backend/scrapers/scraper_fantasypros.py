@@ -6,8 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from database import ProjectionsDB
+from selenium.common.exceptions import TimeoutException, WebDriverException
+from .database import ProjectionsDB
 from typing import List, Dict
 
 # Fix encoding issues on Windows
@@ -16,7 +16,6 @@ if os.name == 'nt':
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
     except AttributeError:
-        # In Jupyter or other environments where reconfigure is not available
         pass
 
 
@@ -27,18 +26,21 @@ class FantasyProsScraper:
         """Initialize the scraper with Chrome options."""
         options = webdriver.ChromeOptions()
         if headless:
-            options.add_argument('--headless')
+            options.add_argument('--headless=new')
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--window-size=1920,1080')
+        # Disable images for faster loading
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        options.add_experimental_option("prefs", prefs)
         
         self.driver = webdriver.Chrome(options=options)
-        self.driver.set_page_load_timeout(30)  # 30 second page load timeout
-        self.wait = WebDriverWait(self.driver, 15)  # 15 second element wait timeout
+        self.driver.set_page_load_timeout(20)  # 20 second timeout
         self.source = "fantasypros.com"
         self.db_path = db_path or "backend/data/databases/projections.db"
         
-        # Position pages (PPR for skill positions, standard for others)
+        # Position URLs - PPR for skill positions
         self.position_urls = {
             'QB': 'https://www.fantasypros.com/nfl/rankings/qb.php',
             'RB': 'https://www.fantasypros.com/nfl/rankings/ppr-rb.php',
@@ -48,188 +50,106 @@ class FantasyProsScraper:
             'DST': 'https://www.fantasypros.com/nfl/rankings/dst.php',
         }
     
-    def _parse_player_name(self, full_name: str, position: str) -> tuple[str, str]:
-        """
-        Parse player name into first and last name.
-        
-        Args:
-            full_name: Full player name (e.g., "Patrick Mahomes II")
-            position: Player position (for special handling of DST)
-        
-        Returns:
-            Tuple of (first_name, last_name)
-        """
-        if not full_name:
-            return "", ""
-        
-        # Clean injury designations and team info in parentheses
-        full_name = re.sub(r'\s*\([^)]*\)\s*', '', full_name).strip()
-        
-        # Remove injury designations stuck to end of names (Q, IR, O, etc.)
-        full_name = re.sub(r'(Q|O|D|IR|PUP|SSPD|COV|IA)$', '', full_name).strip()
-        
-        # DST names are team names
-        if position == 'DST':
-            return full_name, "Defense"
-        
-        name_parts = full_name.split()
-        if len(name_parts) == 0:
-            return "", ""
-        elif len(name_parts) == 1:
-            return name_parts[0], ""
-        else:
-            first_name = name_parts[0]
-            last_name = " ".join(name_parts[1:])
-            return first_name, last_name
-    
     def _scrape_position(self, position: str, url: str, week: str) -> List[Dict]:
-        """
-        Scrape rankings for a specific position.
-        
-        Args:
-            position: Position abbreviation (QB, RB, WR, TE, K, DST)
-            url: URL to scrape
-            week: Week identifier (e.g., "Week 9")
-        
-        Returns:
-            List of player projections
-        """
-        print(f"\nScraping {position} from {url}...")
-        
+        """Scrape rankings for a specific position."""
+        print(f"\n  [{position}] Loading {url}")
         projections = []
-        teams_found = 0
+        max_retries = 2
         
-        try:
-            # Navigate to page with retry on timeout
-            max_retries = 2
-            for attempt in range(max_retries):
-                try:
-                    self.driver.get(url)
-                    time.sleep(3)
-                    break
-                except TimeoutException:
-                    if attempt < max_retries - 1:
-                        print(f"  ⚠️  Page load timeout, retrying ({attempt + 1}/{max_retries})...")
-                        time.sleep(2)
-                    else:
-                        raise
-            
-            # Wait for table to load
-            table = self.wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "table.table, table#rank-data, table.rankings-table, table"))
-            )
-            
-            # Get all rows
-            rows = table.find_elements(By.TAG_NAME, "tr")
-            print(f"  Found {len(rows)} rows")
-            
-            # Check header to find team column
-            header_row = rows[0] if rows else None
-            team_col_idx = None
-            if header_row:
-                header_cells = header_row.find_elements(By.TAG_NAME, "th")
-                for idx, cell in enumerate(header_cells):
-                    if 'TEAM' in cell.text.upper() or cell.text.strip().upper() == 'OPP':
-                        team_col_idx = idx
-                        print(f"  Found team column at index {idx}")
+        for attempt in range(max_retries + 1):
+            try:
+                # Load page
+                print(f"    → Loading page (attempt {attempt + 1})...", end=" ", flush=True)
+                self.driver.get(url)
+                print("OK")
+                
+                # Quick wait for table
+                print(f"    → Waiting for table...", end=" ", flush=True)
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr"))
+                )
+                print("OK")
+                
+                # Scroll to load all players
+                print(f"    → Scrolling to load all players...", end=" ", flush=True)
+                last_count = 0
+                for _ in range(15):  # Max 15 scrolls
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    time.sleep(0.3)
+                    rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody tr")
+                    if len(rows) == last_count:
                         break
-            
-            for row_idx, row in enumerate(rows[1:], 1):  # Skip header
-                try:
-                    cells = row.find_elements(By.TAG_NAME, "td")
-                    if len(cells) < 3:
-                        continue
-                    
-                    # FantasyPros structure:
-                    # Cell 0: Rank
-                    # Cell 2: Player Name (with team)
-                    # Cell 3: Sometimes team column
-                    # Cell 8 or later: PROJ. FPTS
-                    
-                    rank_text = cells[0].text.strip()
-                    if not rank_text or not rank_text[0].isdigit():
-                        continue
-                    
-                    # Extract player name from cell 2
-                    player_name_raw = cells[2].text.strip() if len(cells) > 2 else ""
-                    if not player_name_raw:
-                        continue
-                    
-                    # Clean injury designations and status tags stuck to names
-                    # Examples: "Breece HallQ", "Carson WentzIR", "Alvin KamaraO"
-                    player_name = player_name_raw
-                    player_name = re.sub(r'(Q|O|D|IR|PUP|SSPD|COV)$', '', player_name).strip()
-                    
-                    # Debug: Print only if raw name differs from cleaned (injury designation removed)
-                    if player_name_raw != player_name:
-                        print(f"\n  DEBUG: Cleaned '{player_name_raw}' → '{player_name}'")
-                    
-                    # Strategy 1: Extract team from player name (format: "Name (TEAM)")
-                    team = None
-                    team_match = re.search(r'\(([A-Z]{2,3})\)', player_name)
-                    if team_match:
-                        team = team_match.group(1)
-                        # Remove team from player name
-                        player_name = re.sub(r'\s*\([A-Z]{2,3}\)', '', player_name).strip()
-                    
-                    # Strategy 2: Check for dedicated team column
-                    if not team and team_col_idx is not None and len(cells) > team_col_idx:
-                        team_text = cells[team_col_idx].text.strip()
-                        # Extract just the team code (might be "KC" or "KC vs DEN" format)
-                        team_match = re.search(r'\b([A-Z]{2,3})\b', team_text)
+                    last_count = len(rows)
+                print(f"found {last_count} rows")
+                
+                # Scroll back to top
+                self.driver.execute_script("window.scrollTo(0, 0);")
+                
+                # Get all rows
+                print(f"    → Parsing players...", flush=True)
+                rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody tr")
+                
+                for row in rows:
+                    try:
+                        cells = row.find_elements(By.TAG_NAME, "td")
+                        if len(cells) < 4:
+                            continue
+                        
+                        # Get rank
+                        rank_text = cells[0].text.strip()
+                        if not rank_text or not rank_text[0].isdigit():
+                            continue
+                        
+                        # Find player cell (the one with parentheses for team)
+                        player_cell_text = ""
+                        for i in range(1, min(4, len(cells))):
+                            txt = cells[i].text.strip()
+                            if '(' in txt and ')' in txt:
+                                player_cell_text = txt
+                                break
+                        
+                        if not player_cell_text:
+                            player_cell_text = cells[2].text.strip() if len(cells) > 2 else ""
+                        
+                        if not player_cell_text:
+                            continue
+                        
+                        # Extract team
+                        team = None
+                        team_match = re.search(r'\(([A-Z]{2,3})\)', player_cell_text)
                         if team_match:
                             team = team_match.group(1)
-                    
-                    # Strategy 3: Check cell 3 for team (common layout)
-                    if not team and len(cells) > 3:
-                        cell3_text = cells[3].text.strip()
-                        # Look for 2-3 uppercase letters
-                        if re.match(r'^[A-Z]{2,3}$', cell3_text):
-                            team = cell3_text
-                        # Or matchup format like "KC vs DEN" or "@KC"
-                        elif re.search(r'\b([A-Z]{2,3})\b', cell3_text):
-                            team_match = re.search(r'\b([A-Z]{2,3})\b', cell3_text)
-                            if team_match:
-                                team = team_match.group(1)
-                    
-                    # Strategy 4: Look in the player cell for more formats
-                    if not team:
-                        # Try to find team anywhere in player cell (e.g., "Name - TEAM")
-                        full_cell_text = cells[2].text
-                        team_patterns = [
-                            r'\s+-\s+([A-Z]{2,3})\b',  # "Name - KC"
-                            r'\s+([A-Z]{2,3})\s+\w{2}$',  # "Name KC RB"
-                            r'^([A-Z]{2,3})\s+-',  # "KC - Name"
-                        ]
-                        for pattern in team_patterns:
-                            match = re.search(pattern, full_cell_text)
-                            if match:
-                                team = match.group(1)
-                                break
-                    
-                    if team:
-                        teams_found += 1
-                    
-                    # Extract projected points from cell 8 or search for it
-                    projected_points = None
-                    for i in range(8, len(cells)):
-                        proj_text = cells[i].text.strip()
-                        try:
-                            projected_points = float(proj_text)
-                            break
-                        except ValueError:
+                        
+                        # Clean player name
+                        player_name = re.sub(r'\s*\([^)]*\)\s*', '', player_cell_text).strip()
+                        player_name = re.sub(r'\s*(Q|O|D|IR|PUP|SSPD|COV|OUT)$', '', player_name).strip()
+                        
+                        if not player_name:
                             continue
-                    
-                    # If no projected points found, estimate from rank
-                    if projected_points is None:
-                        rank = int(rank_text)
-                        projected_points = self._estimate_points_from_rank(rank, position)
-                    
-                    # Parse name
-                    first_name, last_name = self._parse_player_name(player_name, position)
-                    
-                    if first_name or last_name:
-                        projection = {
+                        
+                        # Get PROJ. FPTS from last cell
+                        try:
+                            projected_points = float(cells[-1].text.strip())
+                        except ValueError:
+                            try:
+                                projected_points = float(cells[-2].text.strip())
+                            except ValueError:
+                                continue
+                        
+                        if projected_points < 0.1 or projected_points > 60:
+                            continue
+                        
+                        # Parse name
+                        if position == 'DST':
+                            first_name, last_name = player_name, "Defense"
+                        else:
+                            parts = player_name.split()
+                            if not parts:
+                                continue
+                            first_name = parts[0]
+                            last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+                        
+                        projections.append({
                             'source': self.source,
                             'week': week,
                             'first_name': first_name,
@@ -237,97 +157,63 @@ class FantasyProsScraper:
                             'position': position,
                             'team': team,
                             'projected_points': round(projected_points, 1)
-                        }
+                        })
                         
-                        projections.append(projection)
-                        
-                        if projected_points >= 10:  # Only print notable projections
-                            team_str = f" ({team})" if team else ""
-                            print(f"  {first_name} {last_name}{team_str}: {projected_points:.1f} pts")
+                        team_str = f" ({team})" if team else ""
+                        print(f"      {len(projections):3}. {first_name} {last_name}{team_str}: {projected_points:.1f}")
+                    
+                    except Exception:
+                        continue
                 
-                except Exception as e:
-                    continue
+                print(f"    ✓ {position}: {len(projections)} players scraped")
+                return projections
+                
+            except TimeoutException:
+                print(f"TIMEOUT")
+                if attempt < max_retries:
+                    print(f"    ⚠ Retrying...")
+                    time.sleep(1)
+                else:
+                    print(f"    ✗ Failed after {max_retries + 1} attempts")
+                    
+            except WebDriverException as e:
+                print(f"ERROR: {str(e)[:50]}")
+                if attempt < max_retries:
+                    print(f"    ⚠ Retrying...")
+                    time.sleep(1)
+                else:
+                    print(f"    ✗ Failed after {max_retries + 1} attempts")
+                    
+            except Exception as e:
+                print(f"ERROR: {str(e)[:50]}")
+                if attempt < max_retries:
+                    print(f"    ⚠ Retrying...")
+                    time.sleep(1)
+                else:
+                    print(f"    ✗ Failed: {str(e)[:80]}")
         
-        except TimeoutException as e:
-            print(f"  ✗ Timeout loading {position} page (may be slow or unavailable)")
-            return projections  # Return whatever we have so far
-        
-        except Exception as e:
-            print(f"  ✗ Error scraping {position}: {type(e).__name__}: {str(e)[:100]}")
-            return projections  # Return whatever we have so far
-        
-        team_percentage = (teams_found / len(projections) * 100) if projections else 0
-        print(f"  ✓ Scraped {len(projections)} {position} projections")
-        if projections:
-            print(f"  ✓ Team data found: {teams_found}/{len(projections)} ({team_percentage:.1f}%)")
         return projections
     
-    def _estimate_points_from_rank(self, rank: int, position: str) -> float:
-        """
-        Estimate projected points based on rank and position.
-        This is a fallback when actual projections aren't available.
-        """
-        # Base points by position (for rank 1)
-        base_points = {
-            'QB': 25.0,
-            'RB': 20.0,
-            'WR': 18.0,
-            'TE': 14.0,
-            'K': 10.0,
-            'DST': 10.0,
-        }
-        
-        # Decay factor (how much points drop per rank)
-        decay = {
-            'QB': 0.5,
-            'RB': 0.4,
-            'WR': 0.35,
-            'TE': 0.3,
-            'K': 0.2,
-            'DST': 0.25,
-        }
-        
-        base = base_points.get(position, 15.0)
-        decay_rate = decay.get(position, 0.3)
-        
-        # Calculate estimated points with diminishing returns
-        estimated = base - (decay_rate * (rank - 1))
-        
-        # Set minimum at 1.0 point
-        return max(1.0, estimated)
-    
-    def scrape_week_projections(self, week: str = "Week 10") -> List[Dict]:
-        """
-        Scrape projections for all positions.
-        
-        Args:
-            week: Week string (e.g., "Week 10") - FantasyPros always shows current week
-        
-        Returns:
-            List of projection dictionaries
-        """
-        print(f"\nFetching FantasyPros consensus rankings for {week}...")
+    def scrape_week_projections(self, week: str = "Week 14") -> List[Dict]:
+        """Scrape projections for all positions."""
+        print(f"\n{'='*60}")
+        print(f"FANTASYPROS SCRAPER - {week}")
+        print(f"{'='*60}")
         
         all_projections = []
-        failed_positions = []
         
         for position, url in self.position_urls.items():
-            try:
-                position_projs = self._scrape_position(position, url, week)
-                all_projections.extend(position_projs)
-            except Exception as e:
-                print(f"  ✗ Failed to scrape {position}: {str(e)[:100]}")
-                failed_positions.append(position)
-            
-            time.sleep(2)  # Be respectful with rate limiting
+            position_projs = self._scrape_position(position, url, week)
+            all_projections.extend(position_projs)
+            time.sleep(0.5)
         
-        print(f"\n✓ Total players scraped: {len(all_projections)}")
-        if failed_positions:
-            print(f"⚠️  Failed positions: {', '.join(failed_positions)}")
+        print(f"\n{'='*60}")
+        print(f"Total: {len(all_projections)} players scraped")
+        print(f"{'='*60}")
         
         return all_projections
     
-    def scrape_and_save(self, week: str = "Week 10"):
+    def scrape_and_save(self, week: str = "Week 14"):
         """Scrape projections and save to database."""
         projections = self.scrape_week_projections(week)
         
@@ -341,19 +227,18 @@ class FantasyProsScraper:
     
     def close(self):
         """Close the browser."""
-        self.driver.quit()
+        try:
+            self.driver.quit()
+        except:
+            pass
     
     def __enter__(self):
-        """Context manager entry."""
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
         self.close()
 
 
 if __name__ == "__main__":
-    # Example usage
     with FantasyProsScraper(headless=False) as scraper:
-        scraper.scrape_and_save(week="Week 10")
-
+        scraper.scrape_and_save(week="Week 14")

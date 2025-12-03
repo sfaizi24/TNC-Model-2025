@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-from database import ProjectionsDB
+from .database import ProjectionsDB
 from typing import List, Dict
 import logging
 
@@ -100,6 +100,11 @@ class ESPNScraper:
         """
         Scrape projections for a specific position.
         
+        ESPN uses THREE separate tables:
+        - Table 0 (fixed-left): Player names with team/position
+        - Table 1 (scrollable): Stats (passing, rushing, receiving)
+        - Table 2 (fixed-right): FPTS column only
+        
         Args:
             position_filter: Position to filter (QB, RB, WR, TE, K, D/ST)
             week: Week string
@@ -110,138 +115,266 @@ class ESPNScraper:
         projections = []
         
         try:
-            # Click the position filter (they're <label> elements)
-            print(f"\n  Filtering to {position_filter}...")
-            position_labels = self.driver.find_elements(By.XPATH, 
-                f"//label[@class='control control--radio picker-option' and text()='{position_filter}']")
+            # ESPN's position filters are VERY flaky
+            # APPROACH: Reload page fresh, go to Sortable, try filter multiple ways
+            print(f"\n  [{position_filter}] Loading fresh page and applying filter...", flush=True)
             
-            if position_labels:
-                # Use JavaScript click to avoid click interception
-                self.driver.execute_script("arguments[0].click();", position_labels[0])
-                time.sleep(3)  # Wait for table to reload
-                print(f"    ✓ Filtered to {position_filter}")
-            else:
-                print(f"    ⚠ Could not find {position_filter} filter")
+            # Step 1: Reload page to get a fresh state
+            self.driver.get(self.url)
+            time.sleep(3)
             
-            # Wait for table to fully load
-            time.sleep(2)
+            # Step 2: Click Sortable Projections first
+            try:
+                sortable_btn = self.driver.find_element(By.XPATH, 
+                    "//button[contains(.,'Sortable Projections')]")
+                self.driver.execute_script("arguments[0].click();", sortable_btn)
+                print(f"    → Switched to Sortable Projections", flush=True)
+                time.sleep(2)
+            except:
+                pass
             
-            # ESPN has 3 tables: Players (table 0), Stats (table 1), FPTS (table 2)
+            # Step 3: Click the position filter with multiple attempts and verification
+            filter_worked = False
+            expected_pos = position_filter if position_filter != 'D/ST' else 'DST'
+            
+            click_script = f"""
+                const elements = document.querySelectorAll('*');
+                for (const el of elements) {{
+                    if (el.innerText?.trim() === '{position_filter}' && 
+                        el.children.length === 0 && 
+                        !el.closest('table') &&
+                        el.offsetParent !== null) {{
+                        const rect = el.getBoundingClientRect();
+                        if (rect.top < 600 && rect.top > 50) {{
+                            el.click();
+                            return true;
+                        }}
+                    }}
+                }}
+                return false;
+            """
+            
+            verify_script = f"""
+                const leftTable = document.querySelector('table.Table--fixed-left');
+                if (!leftTable) return null;
+                const rows = leftTable.querySelectorAll('tbody tr');
+                const positions = [];
+                for (let i = 0; i < Math.min(5, rows.length); i++) {{
+                    const cell = rows[i].querySelector('td');
+                    if (cell) {{
+                        const text = cell.innerText.replace(/\\n/g, ' ').toUpperCase();
+                        const posMatch = text.match(/\\b(QB|RB|WR|TE|K|DST|D\\/ST|DEF)\\b/);
+                        if (posMatch) positions.push(posMatch[1]);
+                    }}
+                }}
+                return positions;
+            """
+            
+            # Try up to 5 attempts to get the filter working
+            for attempt in range(5):
+                print(f"    → Filter attempt {attempt + 1}/5...", flush=True)
+                
+                # Try clicking the filter
+                try:
+                    self.driver.execute_script(click_script)
+                except:
+                    pass
+                
+                # Also try XPath
+                try:
+                    xpath = f"//*[normalize-space(text())='{position_filter}' and not(ancestor::table)]"
+                    elements = self.driver.find_elements(By.XPATH, xpath)
+                    for elem in elements:
+                        try:
+                            rect = self.driver.execute_script(
+                                "var r = arguments[0].getBoundingClientRect(); return {top: r.top};", elem)
+                            if rect and rect.get('top', 1000) < 600:
+                                self.driver.execute_script("arguments[0].click();", elem)
+                                break
+                        except:
+                            continue
+                except:
+                    pass
+                
+                time.sleep(2)
+                
+                # Verify the filter worked
+                try:
+                    detected = self.driver.execute_script(verify_script)
+                    if detected:
+                        expected_variants = [expected_pos]
+                        if expected_pos == 'DST':
+                            expected_variants = ['DST', 'D/ST', 'DEF']
+                        
+                        matches = sum(1 for p in detected if p in expected_variants)
+                        if matches >= 2 or (matches >= 1 and len(detected) <= 2):
+                            print(f"    ✓ Filter verified: {detected[:3]}", flush=True)
+                            filter_worked = True
+                            break
+                        else:
+                            print(f"    ✗ Wrong positions: {detected[:3]}", flush=True)
+                except:
+                    pass
+                
+                # If filter didn't work, try the Full -> Sortable dance
+                if attempt == 2:
+                    print(f"    → Trying Full Projections workaround...", flush=True)
+                    try:
+                        full_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Full Projections')]")
+                        self.driver.execute_script("arguments[0].click();", full_btn)
+                        time.sleep(1.5)
+                        self.driver.execute_script(click_script)
+                        time.sleep(1)
+                        sortable_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Sortable Projections')]")
+                        self.driver.execute_script("arguments[0].click();", sortable_btn)
+                        time.sleep(2)
+                    except:
+                        pass
+            
+            if not filter_worked:
+                print(f"    ⚠ Could not filter to {position_filter} after 5 attempts - SKIPPING", flush=True)
+                return []
+            
+            # ESPN uses 3 tables: left-fixed (player), middle (stats), right-fixed (FPTS)
+            # Find tables by their class names
             tables = self.driver.find_elements(By.TAG_NAME, "table")
             
-            if len(tables) < 3:
-                print(f"    Expected 3 tables, found {len(tables)}")
+            if len(tables) < 2:
+                print(f"    No tables found", flush=True)
                 return projections
             
-            players_table = tables[0]
-            fpts_table = tables[2]  # This has the FPTS column!
+            print(f"    Found {len(tables)} tables", flush=True)
             
-            player_rows = players_table.find_elements(By.CSS_SELECTOR, "tbody tr")
-            fpts_rows = fpts_table.find_elements(By.CSS_SELECTOR, "tbody tr")
+            # Identify tables by class
+            left_table = None   # Player names
+            right_table = None  # FPTS values
             
-            print(f"    Found {len(player_rows)} players")
+            for table in tables:
+                table_class = table.get_attribute('class') or ''
+                if 'fixed-left' in table_class:
+                    left_table = table
+                elif 'fixed-right' in table_class:
+                    right_table = table
             
-            # Parse both tables simultaneously (same row index = same player)
-            for idx in range(min(len(player_rows), len(fpts_rows))):
+            # Fallback: first table is players, last table might have FPTS
+            if not left_table:
+                left_table = tables[0]
+            if not right_table and len(tables) >= 3:
+                right_table = tables[-1]
+            
+            if not left_table:
+                print(f"    Could not find player table", flush=True)
+                return projections
+            
+            # Get player rows from left table
+            player_rows = left_table.find_elements(By.CSS_SELECTOR, "tbody tr")
+            print(f"    Found {len(player_rows)} player rows", flush=True)
+            
+            # Get FPTS rows from right table (if exists)
+            fpts_rows = []
+            if right_table:
+                fpts_rows = right_table.find_elements(By.CSS_SELECTOR, "tbody tr")
+                print(f"    Found {len(fpts_rows)} FPTS rows", flush=True)
+            
+            # Scrape each player
+            for idx, player_row in enumerate(player_rows):
                 try:
-                    # Get player info from table 0
-                    player_row = player_rows[idx]
-                    player_cells = player_row.find_elements(By.TAG_NAME, "td")
+                    # Get player info from left table
+                    player_cell = player_row.find_element(By.CSS_SELECTOR, "td")
+                    cell_text = player_cell.text.strip()
                     
-                    if len(player_cells) < 2:
+                    if not cell_text:
                         continue
                     
-                    player_cell_text = player_cells[1].text.strip()
+                    # Parse: "Josh Allen\nBuf QB" or "Josh Allen Buf QB"
+                    lines = cell_text.replace('\n', ' ').split()
                     
-                    if not player_cell_text:
-                        continue
+                    # Find player name (words before team abbreviation)
+                    player_name_parts = []
+                    team_abbr = None
+                    detected_position = None
                     
-                    # Parse player info
-                    # Format: "PlayerName\nTeam\nPosition" (3 lines)
-                    # OR:     "PlayerName\nInjuryStatus\nTeam\nPosition" (4 lines with injury)
-                    player_lines = player_cell_text.split('\n')
-                    player_name = player_lines[0].strip() if len(player_lines) > 0 else ""
+                    for word in lines:
+                        word_upper = word.upper().strip()
+                        # Check if this is a team abbreviation (2-4 letters, specific known teams)
+                        if word_upper in ['ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 
+                                         'DAL', 'DEN', 'DET', 'GB', 'HOU', 'IND', 'JAX', 'KC', 
+                                         'LAC', 'LAR', 'LV', 'MIA', 'MIN', 'NE', 'NO', 'NYG', 
+                                         'NYJ', 'PHI', 'PIT', 'SEA', 'SF', 'TB', 'TEN', 'WAS', 'WSH', 'FA']:
+                            team_abbr = word_upper
+                            if team_abbr == 'WSH':
+                                team_abbr = 'WAS'
+                        # Check if this is a position
+                        elif word_upper in ['QB', 'RB', 'WR', 'TE', 'K', 'DST', 'D/ST', 'DEF']:
+                            detected_position = word_upper
+                        # Otherwise it's part of the player name
+                        elif len(word) > 1:  # Skip single characters
+                            player_name_parts.append(word)
+                    
+                    player_name = ' '.join(player_name_parts)
                     
                     if not player_name:
                         continue
                     
-                    # Determine format based on number of lines
-                    team_abbr = None
-                    position = position_filter
+                    # Get FPTS from right table
+                    projected_points = None
                     
-                    if len(player_lines) == 4:
-                        # Format with injury: Name\nInjury\nTeam\nPosition
-                        injury_status = player_lines[1].strip()
-                        team_abbr = player_lines[2].strip().upper()
-                        position = player_lines[3].strip()
-                    elif len(player_lines) == 3:
-                        # Normal format: Name\nTeam\nPosition
-                        potential_team = player_lines[1].strip().upper()
-                        
-                        # Check if this is actually an injury designation
-                        if potential_team in ['Q', 'O', 'IR', 'D', 'SSPD', 'PUP', 'COV']:
-                            # It's an injury status, no team available
-                            team_abbr = None
-                        else:
-                            team_abbr = potential_team
-                        
-                        position = player_lines[2].strip()
-                    elif len(player_lines) == 2:
-                        # Just Name\nPosition (no team)
-                        position = player_lines[1].strip()
-                        team_abbr = None
+                    if fpts_rows and idx < len(fpts_rows):
+                        try:
+                            fpts_cells = fpts_rows[idx].find_elements(By.TAG_NAME, "td")
+                            # The right-fixed table typically has just 1 cell with FPTS
+                            # or FPTS is the last cell
+                            if fpts_cells:
+                                fpts_text = fpts_cells[-1].text.strip()
+                                if fpts_text and fpts_text not in ['-', '--', 'N/A', '']:
+                                    projected_points = float(fpts_text)
+                        except (ValueError, IndexError) as e:
+                            pass
                     
-                    # Get projected points from table 2 (FPTS table), same row index
-                    fpts_row = fpts_rows[idx]
-                    fpts_cells = fpts_row.find_elements(By.TAG_NAME, "td")
-                    
-                    if len(fpts_cells) < 1:
+                    # Skip if no valid FPTS
+                    if projected_points is None:
                         continue
                     
-                    # FPTS is in the only cell of table 2
-                    proj_text = fpts_cells[0].text.strip()
+                    # Validate reasonable range (0-60 for weekly projections)
+                    if not (0 <= projected_points <= 60):
+                        continue
                     
-                    # Handle missing values (--, -, N/A, etc.) as 0.0
-                    if not proj_text or proj_text in ['-', '--', 'N/A', '']:
-                        proj_text = "0.0"
+                    # IMPORTANT: Verify the player's actual position matches what we're scraping
+                    # This prevents saving wrong data if the filter click didn't work
+                    expected_pos = 'DST' if position_filter == 'D/ST' else position_filter
+                    if detected_position:
+                        actual_pos = 'DST' if detected_position in ['D/ST', 'DST', 'DEF'] else detected_position
+                        if actual_pos != expected_pos:
+                            # Position mismatch - skip this player
+                            continue
                     
-                    try:
-                        projected_points = float(proj_text)
+                    # Parse name
+                    first_name, last_name = self._parse_player_name(player_name, position_filter)
+                    
+                    if first_name or last_name:
+                        projection = {
+                            'source': self.source,
+                            'week': week,
+                            'first_name': first_name,
+                            'last_name': last_name,
+                            'position': expected_pos,
+                            'team': team_abbr,
+                            'projected_points': round(projected_points, 1)
+                        }
+                        projections.append(projection)
                         
-                        if projected_points >= 0.1:
-                            # Parse name
-                            first_name, last_name = self._parse_player_name(player_name, position)
-                            
-                            # Standardize position (D/ST -> DST)
-                            std_position = 'DST' if position == 'D/ST' else position
-                            
-                            if first_name or last_name:
-                                projection = {
-                                    'source': self.source,
-                                    'week': week,
-                                    'first_name': first_name,
-                                    'last_name': last_name,
-                                    'position': std_position,
-                                    'team': team_abbr,
-                                    'projected_points': round(projected_points, 1)
-                                }
-                                
-                                projections.append(projection)
-                                
-                                if projected_points >= 10:
-                                    team_str = f" ({team_abbr})" if team_abbr else ""
-                                    print(f"      {first_name} {last_name}{team_str}: {projected_points:.1f} pts")
-                    
-                    except ValueError:
-                        # If can't convert to float, skip
-                        pass
+                        team_str = f" ({team_abbr})" if team_abbr else ""
+                        print(f"      {len(projections):3}. {first_name} {last_name}{team_str}: {projected_points:.1f} pts", flush=True)
                 
                 except Exception as e:
                     continue
         
         except Exception as e:
-            print(f"    ✗ Error scraping {position_filter}: {e}")
+            print(f"    ✗ Error scraping {position_filter}: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
         
+        print(f"    ✓ Total {len(projections)} {position_filter} projections", flush=True)
         return projections
     
     def scrape_week_projections(self, week: str = "Week 8", season: str = "2024") -> List[Dict]:

@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from database import ProjectionsDB
+from .database import ProjectionsDB
 from typing import List, Dict
 
 # Fix encoding issues on Windows
