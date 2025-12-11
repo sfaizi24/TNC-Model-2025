@@ -115,26 +115,16 @@ class ESPNScraper:
         projections = []
         
         try:
-            # ESPN's position filters are VERY flaky
-            # APPROACH: Reload page fresh, go to Sortable, try filter multiple ways
+            # ESPN's position filters work best when:
+            # 1. Go to Full Projections first
+            # 2. Click the position filter
+            # 3. Then switch to Sortable Projections to see the FPTS column
             print(f"\n  [{position_filter}] Loading fresh page and applying filter...", flush=True)
             
             # Step 1: Reload page to get a fresh state
             self.driver.get(self.url)
             time.sleep(3)
             
-            # Step 2: Click Sortable Projections first
-            try:
-                sortable_btn = self.driver.find_element(By.XPATH, 
-                    "//button[contains(.,'Sortable Projections')]")
-                self.driver.execute_script("arguments[0].click();", sortable_btn)
-                print(f"    → Switched to Sortable Projections", flush=True)
-                time.sleep(2)
-            except:
-                pass
-            
-            # Step 3: Click the position filter with multiple attempts and verification
-            filter_worked = False
             expected_pos = position_filter if position_filter != 'D/ST' else 'DST'
             
             click_script = f"""
@@ -170,33 +160,49 @@ class ESPNScraper:
                 return positions;
             """
             
+            filter_worked = False
+            
             # Try up to 5 attempts to get the filter working
             for attempt in range(5):
                 print(f"    → Filter attempt {attempt + 1}/5...", flush=True)
                 
-                # Try clicking the filter
+                # BEST APPROACH: Full Projections → Click Position → Sortable Projections
+                # This is what works manually on the ESPN site
                 try:
+                    # Step 1: Click Full Projections
+                    full_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Full Projections')]")
+                    self.driver.execute_script("arguments[0].click();", full_btn)
+                    time.sleep(2)
+                    
+                    # Step 2: Click the position filter in Full Projections view
                     self.driver.execute_script(click_script)
-                except:
-                    pass
-                
-                # Also try XPath
-                try:
-                    xpath = f"//*[normalize-space(text())='{position_filter}' and not(ancestor::table)]"
-                    elements = self.driver.find_elements(By.XPATH, xpath)
-                    for elem in elements:
-                        try:
-                            rect = self.driver.execute_script(
-                                "var r = arguments[0].getBoundingClientRect(); return {top: r.top};", elem)
-                            if rect and rect.get('top', 1000) < 600:
-                                self.driver.execute_script("arguments[0].click();", elem)
-                                break
-                        except:
-                            continue
-                except:
-                    pass
-                
-                time.sleep(2)
+                    time.sleep(1.5)
+                    
+                    # Also try XPath approach for position filter
+                    try:
+                        xpath = f"//*[normalize-space(text())='{position_filter}' and not(ancestor::table)]"
+                        elements = self.driver.find_elements(By.XPATH, xpath)
+                        for elem in elements:
+                            try:
+                                rect = self.driver.execute_script(
+                                    "var r = arguments[0].getBoundingClientRect(); return {top: r.top};", elem)
+                                if rect and rect.get('top', 1000) < 600:
+                                    self.driver.execute_script("arguments[0].click();", elem)
+                                    break
+                            except:
+                                continue
+                    except:
+                        pass
+                    
+                    time.sleep(1.5)
+                    
+                    # Step 3: Switch to Sortable Projections (keeps the filter!)
+                    sortable_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Sortable Projections')]")
+                    self.driver.execute_script("arguments[0].click();", sortable_btn)
+                    print(f"    → Switched to Sortable Projections", flush=True)
+                    time.sleep(3)
+                except Exception as e:
+                    print(f"    → Full Projections approach failed: {e}", flush=True)
                 
                 # Verify the filter worked
                 try:
@@ -205,6 +211,8 @@ class ESPNScraper:
                         expected_variants = [expected_pos]
                         if expected_pos == 'DST':
                             expected_variants = ['DST', 'D/ST', 'DEF']
+                        if expected_pos == 'K':
+                            expected_variants = ['K', 'PK']
                         
                         matches = sum(1 for p in detected if p in expected_variants)
                         if matches >= 2 or (matches >= 1 and len(detected) <= 2):
@@ -215,21 +223,6 @@ class ESPNScraper:
                             print(f"    ✗ Wrong positions: {detected[:3]}", flush=True)
                 except:
                     pass
-                
-                # If filter didn't work, try the Full -> Sortable dance
-                if attempt == 2:
-                    print(f"    → Trying Full Projections workaround...", flush=True)
-                    try:
-                        full_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Full Projections')]")
-                        self.driver.execute_script("arguments[0].click();", full_btn)
-                        time.sleep(1.5)
-                        self.driver.execute_script(click_script)
-                        time.sleep(1)
-                        sortable_btn = self.driver.find_element(By.XPATH, "//button[contains(.,'Sortable Projections')]")
-                        self.driver.execute_script("arguments[0].click();", sortable_btn)
-                        time.sleep(2)
-                    except:
-                        pass
             
             if not filter_worked:
                 print(f"    ⚠ Could not filter to {position_filter} after 5 attempts - SKIPPING", flush=True)
@@ -339,14 +332,9 @@ class ESPNScraper:
                     if not (0 <= projected_points <= 60):
                         continue
                     
-                    # IMPORTANT: Verify the player's actual position matches what we're scraping
-                    # This prevents saving wrong data if the filter click didn't work
+                    # Use the position we filtered for since we already verified the filter worked
+                    # (Don't skip players just because we couldn't parse their position from the cell text)
                     expected_pos = 'DST' if position_filter == 'D/ST' else position_filter
-                    if detected_position:
-                        actual_pos = 'DST' if detected_position in ['D/ST', 'DST', 'DEF'] else detected_position
-                        if actual_pos != expected_pos:
-                            # Position mismatch - skip this player
-                            continue
                     
                     # Parse name
                     first_name, last_name = self._parse_player_name(player_name, position_filter)
