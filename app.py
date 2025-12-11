@@ -193,7 +193,23 @@ def about():
 
 @app.route('/analytics')
 def analytics():
+    import os
+    import re
+    
+    images_dir = 'backend/data/images'
     week = get_current_week()
+    
+    available_weeks = set()
+    if os.path.exists(images_dir):
+        for filename in os.listdir(images_dir):
+            match = re.search(r'simulation_distributions_overlay_week_(\d+)\.png', filename)
+            if match:
+                available_weeks.add(int(match.group(1)))
+    
+    if available_weeks:
+        if week not in available_weeks:
+            week = max(available_weeks)
+    
     return render_template('analytics.html', user=current_user if current_user.is_authenticated else None, current_week=week)
 
 @app.route('/account')
