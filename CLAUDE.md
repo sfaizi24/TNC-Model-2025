@@ -53,7 +53,7 @@ Production uses Neon PostgreSQL (connection via `DATABASE_URL` in `.env`).
 - **Scrapers are fragile** — they break when source sites change layout. Expect failures and be ready to debug/adapt selectors.
 - **Player name matching is brittle** — injury indicators get stripped from names; mismatches cause silent data loss.
 - **Monte Carlo uses lognormal** (not normal) distribution. Position baseline variances: QB=7, RB=9, WR=10, TE=8, K=4, DST=7.
-- **No tests exist yet** — verify changes manually or use `/verify`.
+- **Tests**: `python -m pytest` — 52 tests, all in-memory SQLite, runs in <1s. CI runs lint + tests on every push/PR.
 - **`.env` required** — needs `SECRET_KEY`, `DATABASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `ADMIN_EMAILS`. Local dev also needs `OAUTHLIB_INSECURE_TRANSPORT=1` and `OAUTHLIB_RELAX_TOKEN_SCOPE=1`.
 
 ## Code Quality Philosophy

@@ -1,11 +1,13 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
+
 from database import db
 
 
 def utc_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # User Model - ID is String (Google user ID or legacy Replit ID)
@@ -24,9 +26,7 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
-    updated_at = db.Column(
-        db.DateTime(timezone=True), default=utc_now, onupdate=utc_now
-    )
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 
 # Betting tables
@@ -78,6 +78,4 @@ class BettingPeriod(db.Model):
     is_locked = db.Column(db.Boolean, default=False)
     is_settled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime(timezone=True), default=utc_now)
-    updated_at = db.Column(
-        db.DateTime(timezone=True), default=utc_now, onupdate=utc_now
-    )
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now)

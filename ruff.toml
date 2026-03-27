@@ -1,5 +1,10 @@
 target-version = "py313"
 line-length = 120
+exclude = [
+    "backend/",
+    "database_summary.py",
+    "migrate_simulations_to_montecarlo.py",
+]
 
 [lint]
 select = [

@@ -1,0 +1,773 @@
+    .page-header {
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .balance-display {
+        background: var(--fanduel-dark);
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+        text-align: right;
+    }
+    
+    .balance-label {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    .balance-amount {
+        color: var(--success-green);
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .prize-info {
+        background: var(--fanduel-dark);
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .prize-row {
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+    
+    .prize-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .prize-label {
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+    
+    .prize-amount {
+        color: var(--fanduel-blue);
+        font-weight: 600;
+    }
+    
+    .betting-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid var(--fanduel-light-gray);
+        overflow-x: auto;
+        padding-bottom: 0;
+    }
+    
+    .betting-tab {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .betting-tab.active {
+        color: var(--fanduel-blue);
+        border-bottom-color: var(--fanduel-blue);
+    }
+    
+    .betting-content {
+        display: none;
+    }
+    
+    .betting-content.active {
+        display: block;
+    }
+    
+    .matchups-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+    
+    .matchup-card {
+        background: var(--fanduel-gray);
+        border-radius: 6px;
+        padding: 8px;
+        border: 1px solid var(--fanduel-light-gray);
+        position: relative;
+    }
+    
+    .matchup-card.has-bet {
+        border: 2px solid var(--success-green);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.15);
+    }
+    
+    .bet-placed-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--success-green);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    
+    .matchup-title {
+        display: none;
+    }
+    
+    .team-line {
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .teams-container {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .team-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .team-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 12px;
+        text-align: center;
+    }
+    
+    .win-prob {
+        color: var(--text-secondary);
+        font-size: 10px;
+        text-align: center;
+    }
+    
+    .odds-button {
+        width: 100%;
+        padding: 6px 8px;
+        background: var(--fanduel-dark);
+        border: 2px solid var(--fanduel-light-gray);
+        border-radius: 4px;
+        color: var(--fanduel-blue);
+        font-weight: bold;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .odds-button:hover {
+        border-color: var(--fanduel-blue);
+        background: rgba(20, 147, 255, 0.1);
+    }
+    
+    .odds-button.selected {
+        border-color: var(--fanduel-blue);
+        background: var(--fanduel-blue);
+        color: white;
+    }
+    
+    .positive-odds {
+        color: var(--success-green);
+    }
+    
+    .odds-button.selected.positive-odds {
+        color: white;
+    }
+    
+    .vs-text {
+        color: var(--text-secondary);
+        font-weight: bold;
+        font-size: 11px;
+    }
+    
+    .bet-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border-top: 1px solid var(--fanduel-light-gray);
+        padding-top: 6px;
+    }
+    
+    .bet-input-group {
+        flex: 1;
+    }
+    
+    .bet-input-label {
+        display: none;
+    }
+    
+    .bet-amount-input {
+        width: 100%;
+        padding: 8px;
+        background: var(--fanduel-dark);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 4px;
+        color: var(--text-primary);
+        font-size: 12px;
+    }
+    
+    .potential-win {
+        color: var(--success-green);
+        font-size: 10px;
+        text-align: center;
+        min-height: 15px;
+        margin-bottom: 3px;
+    }
+    
+    .show-teams-btn {
+        width: 100%;
+        padding: 6px;
+        margin-top: 6px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        font-size: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+    
+    .show-teams-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dropdown-arrow {
+        font-size: 10px;
+        transition: transform 0.2s;
+    }
+    
+    .lineups-container {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .lineup-grid {
+        display: grid;
+        grid-template-columns: 1fr 1px 1fr;
+        gap: 16px;
+    }
+    
+    .lineup-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .lineup-divider {
+        background: rgba(255, 255, 255, 0.1);
+        width: 1px;
+    }
+    
+    .lineup-player {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 4px;
+    }
+    
+    .player-name {
+        color: var(--text-primary);
+        font-size: 11px;
+        flex: 1;
+    }
+    
+    .player-stats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+    }
+    
+    .player-position {
+        color: var(--text-secondary);
+        font-weight: 500;
+        min-width: 30px;
+        text-align: right;
+    }
+    
+    .player-points {
+        color: var(--primary-color);
+        font-weight: 600;
+        min-width: 30px;
+        text-align: right;
+    }
+    
+    .single-lineup {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .lineup-loading {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 12px;
+        font-size: 12px;
+    }
+    
+    .btn-place-bet {
+        flex: 1;
+        padding: 8px 12px;
+        background: var(--fanduel-blue);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .btn-place-bet:hover:not(:disabled) {
+        background: #0D7FE8;
+    }
+    
+    .btn-place-bet:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .active-bets-compact {
+        margin-bottom: 12px;
+    }
+    
+    .compact-bet-item {
+        background: var(--fanduel-gray);
+        border-radius: 4px;
+        padding: 6px 10px;
+        border: 1px solid var(--fanduel-light-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .compact-bet-info {
+        color: var(--text-primary);
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    .compact-bet-remove {
+        background: transparent;
+        border: 1px solid var(--text-secondary);
+        color: var(--text-secondary);
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .compact-bet-remove:hover {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .active-bets-section {
+        background: var(--fanduel-gray);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .section-title {
+        color: var(--text-primary);
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .bet-item {
+        background: var(--fanduel-dark);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border: 1px solid var(--fanduel-light-gray);
+    }
+    
+    .bet-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .bet-description {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 15px;
+    }
+    
+    .bet-amount-display {
+        color: var(--fanduel-blue);
+        font-weight: bold;
+    }
+    
+    .bet-details {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+    
+    .bet-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-remove-bet {
+        flex: 1;
+        padding: 8px;
+        background: var(--error-red);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-remove-bet:hover {
+        background: #C82333;
+    }
+    
+    .no-bets {
+        text-align: center;
+        color: var(--text-secondary);
+        padding: 30px;
+        font-style: italic;
+    }
+    
+    .coming-soon {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+    
+    .coming-soon h3 {
+        color: var(--fanduel-blue);
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    .hs-team-row {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+        background: var(--fanduel-dark);
+        border-radius: 4px;
+        margin-bottom: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        align-items: center;
+    }
+    
+    .hs-owner {
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+    }
+    
+    .hs-stats {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hs-win-prob {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .hs-odds {
+        color: var(--success-green);
+        font-size: 13px;
+        font-weight: 700;
+        transition: color 0.3s ease;
+    }
+    
+    .matchup-card.selected .hs-team-row {
+        background: var(--fanduel-blue);
+    }
+    
+    .matchup-card.selected .hs-odds {
+        color: white;
+    }
+    
+    .matchup-card.selected .hs-win-prob {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .matchup-card.selected .hs-owner {
+        color: white;
+    }
+    
+    .matchup-card .potential-win {
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
+    
+    @media (max-width: 767px) {
+        .page-header {
+            gap: 10px;
+        }
+        
+        .prize-info {
+            padding: 10px 12px;
+        }
+        
+        .prize-row {
+            font-size: 10px;
+            margin-bottom: 6px;
+        }
+        
+        .prize-amount {
+            font-size: 10px;
+        }
+        
+        .balance-display {
+            padding: 10px 12px;
+        }
+        
+        .balance-label {
+            font-size: 10px;
+        }
+        
+        .balance-amount {
+            font-size: 18px;
+        }
+        
+        .hs-team-row {
+            gap: 3px;
+            padding: 6px;
+        }
+        
+        .hs-owner {
+            font-size: 11px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        
+        .hs-stats {
+            gap: 6px;
+        }
+        
+        .hs-win-prob {
+            font-size: 9px;
+        }
+        
+        .hs-odds {
+            font-size: 11px;
+        }
+        
+        .matchup-card {
+            padding: 10px;
+        }
+        
+        .matchup-title {
+            font-size: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .team-name {
+            font-size: 13px;
+        }
+        
+        .win-prob {
+            font-size: 10px;
+        }
+        
+        .odds-button {
+            font-size: 14px;
+            padding: 7px 10px;
+        }
+        
+        .bet-amount-input {
+            font-size: 14px;
+            padding: 9px;
+        }
+        
+        .potential-win {
+            font-size: 11px;
+        }
+        
+        .btn-place-bet {
+            font-size: 13px;
+            padding: 9px 14px;
+        }
+        
+        .vs-text {
+            font-size: 11px;
+        }
+        
+        .teams-container {
+            gap: 10px;
+        }
+        
+        .team-section {
+            gap: 6px;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .page-title {
+            font-size: 42px;
+        }
+        
+        .matchups-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 1200px) {
+        .matchups-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .toast {
+        background: var(--fanduel-dark);
+        border: 2px solid var(--success-green);
+        border-radius: 8px;
+        padding: 15px 20px;
+        min-width: 250px;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .toast.error {
+        border-color: var(--error-red);
+    }
+    
+    .toast-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    
+    .toast.success .toast-icon {
+        color: var(--success-green);
+    }
+    
+    .toast.error .toast-icon {
+        color: var(--error-red);
+    }
+    
+    .toast-message {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+    
+    .toast.removing {
+        animation: slideOut 0.3s ease-in forwards;
+    }
+    
+    @keyframes successFlash {
+        0% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 20px 10px rgba(40, 167, 69, 0.3);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+    
+    .matchup-card.success-flash {
+        animation: successFlash 0.6s ease-out;
+    }
+    
+    .quick-bet-buttons {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+    
+    .quick-bet-btn {
+        flex: 1;
+        padding: 6px 4px;
+        background: var(--fanduel-dark);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 4px;
+        color: var(--text-primary);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .quick-bet-btn:hover {
+        background: var(--fanduel-blue);
+        color: white;
+        border-color: var(--fanduel-blue);
+    }

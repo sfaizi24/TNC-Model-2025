@@ -10,7 +10,7 @@ def run_schema_migrations():
         def column_exists(inspector, table_name, column_name):
             if table_name not in inspector.get_table_names():
                 return False
-            columns = [col['name'] for col in inspector.get_columns(table_name)]
+            columns = [col["name"] for col in inspector.get_columns(table_name)]
             return column_name in columns
 
         dialect = db.engine.dialect.name
@@ -19,35 +19,39 @@ def run_schema_migrations():
         with db.engine.begin() as conn:
             inspector = inspect(db.engine)
 
-            if dialect == 'postgresql':
+            if dialect == "postgresql":
                 logging.info("PostgreSQL detected: migrating datetime columns to timezone-aware")
                 datetime_migrations = [
-                    ('users', 'created_at'),
-                    ('users', 'updated_at'),
-                    ('bets', 'created_at'),
-                    ('bets', 'settled_at'),
-                    ('weekly_stats', 'created_at'),
-                    ('betting_periods', 'lock_time'),
-                    ('betting_periods', 'created_at'),
-                    ('betting_periods', 'updated_at'),
+                    ("users", "created_at"),
+                    ("users", "updated_at"),
+                    ("bets", "created_at"),
+                    ("bets", "settled_at"),
+                    ("weekly_stats", "created_at"),
+                    ("betting_periods", "lock_time"),
+                    ("betting_periods", "created_at"),
+                    ("betting_periods", "updated_at"),
                 ]
 
                 for table, column in datetime_migrations:
                     if column_exists(inspector, table, column):
                         try:
-                            result = conn.execute(text(f'''
+                            result = conn.execute(
+                                text(f"""
                                 SELECT data_type
                                 FROM information_schema.columns
                                 WHERE table_name = '{table}'
                                 AND column_name = '{column}'
-                            ''')).first()
+                            """)
+                            ).first()
 
-                            if result and result[0] == 'timestamp without time zone':
-                                conn.execute(text(f'''
+                            if result and result[0] == "timestamp without time zone":
+                                conn.execute(
+                                    text(f"""
                                     ALTER TABLE {table}
                                     ALTER COLUMN {column} TYPE TIMESTAMP WITH TIME ZONE
                                     USING {column} AT TIME ZONE 'UTC'
-                                '''))
+                                """)
+                                )
                                 logging.info(f"Converted {table}.{column} to TIMESTAMPTZ")
                         except Exception as col_error:
                             logging.error(f"Error converting {table}.{column}: {col_error}")
@@ -56,22 +60,25 @@ def run_schema_migrations():
 
             inspector = inspect(db.engine)
 
-            if not column_exists(inspector, 'users', 'is_admin'):
+            if not column_exists(inspector, "users", "is_admin"):
                 logging.info("Adding is_admin column to users")
-                if dialect == 'postgresql':
-                    conn.execute(text('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE'))
+                if dialect == "postgresql":
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE"))
                 else:
-                    conn.execute(text('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0'))
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0"))
                 logging.info("is_admin column added")
 
-            if not column_exists(inspector, 'weekly_stats', 'active_bets_amount'):
+            if not column_exists(inspector, "weekly_stats", "active_bets_amount"):
                 logging.info("Adding active_bets_amount column to weekly_stats")
-                if dialect == 'postgresql':
-                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN active_bets_amount DOUBLE PRECISION DEFAULT 0.0'))
+                if dialect == "postgresql":
+                    conn.execute(
+                        text("ALTER TABLE weekly_stats ADD COLUMN active_bets_amount DOUBLE PRECISION DEFAULT 0.0")
+                    )
                 else:
-                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN active_bets_amount REAL DEFAULT 0.0'))
+                    conn.execute(text("ALTER TABLE weekly_stats ADD COLUMN active_bets_amount REAL DEFAULT 0.0"))
 
-                conn.execute(text('''
+                conn.execute(
+                    text("""
                     UPDATE weekly_stats
                     SET active_bets_amount = COALESCE((
                         SELECT SUM(b.amount)
@@ -80,17 +87,19 @@ def run_schema_migrations():
                           AND b.week = weekly_stats.week
                           AND b.status = 'pending'
                     ), 0.0)
-                '''))
+                """)
+                )
                 logging.info("active_bets_amount column added and backfilled")
 
-            if not column_exists(inspector, 'weekly_stats', 'settled_pnl'):
+            if not column_exists(inspector, "weekly_stats", "settled_pnl"):
                 logging.info("Adding settled_pnl column to weekly_stats")
-                if dialect == 'postgresql':
-                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN settled_pnl DOUBLE PRECISION DEFAULT 0.0'))
+                if dialect == "postgresql":
+                    conn.execute(text("ALTER TABLE weekly_stats ADD COLUMN settled_pnl DOUBLE PRECISION DEFAULT 0.0"))
                 else:
-                    conn.execute(text('ALTER TABLE weekly_stats ADD COLUMN settled_pnl REAL DEFAULT 0.0'))
+                    conn.execute(text("ALTER TABLE weekly_stats ADD COLUMN settled_pnl REAL DEFAULT 0.0"))
 
-                conn.execute(text('''
+                conn.execute(
+                    text("""
                     UPDATE weekly_stats
                     SET settled_pnl = COALESCE((
                         SELECT SUM(b.result)
@@ -99,10 +108,11 @@ def run_schema_migrations():
                           AND b.week = weekly_stats.week
                           AND b.status IN ('won', 'lost')
                     ), 0.0)
-                '''))
+                """)
+                )
                 logging.info("settled_pnl column added and backfilled")
 
-            if 'flask_dance_oauth' in inspector.get_table_names():
+            if "flask_dance_oauth" in inspector.get_table_names():
                 conn.execute(text("DROP TABLE flask_dance_oauth"))
                 logging.info("Dropped legacy flask_dance_oauth table")
 
@@ -111,4 +121,5 @@ def run_schema_migrations():
     except Exception as e:
         logging.error(f"Migration error: {e}")
         import traceback
+
         traceback.print_exc()

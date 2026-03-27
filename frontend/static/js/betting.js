@@ -1,0 +1,1318 @@
+let selectedBets = {};
+let userBalance = window.userBalance;
+let isAuthenticated = window.isAuthenticated;
+
+// Toast notification system
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? '✓' : '⚠';
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-message">${message}</div>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+// Flash success animation on card
+function flashSuccess(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) {
+        card.classList.add('success-flash');
+        setTimeout(() => {
+            card.classList.remove('success-flash');
+        }, 600);
+    }
+}
+
+// Quick bet amount setter
+function setQuickBetAmount(idx, amount) {
+    const input = document.getElementById(`amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updatePotentialWin(idx);
+    }
+}
+
+function setQuickTeamBetAmount(idx, amount) {
+    const input = document.getElementById(`team-amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updateTeamPotentialWin(idx);
+    }
+}
+
+function setQuickHSBetAmount(idx, amount, odds) {
+    const input = document.getElementById(`hs-amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updateHighestScorerPotentialWin(idx, odds);
+    }
+}
+
+function setQuickLSBetAmount(idx, amount, odds) {
+    const input = document.getElementById(`ls-amount-${idx}`);
+    if (input) {
+        input.value = amount;
+        updateLowestScorerPotentialWin(idx, odds);
+    }
+}
+
+// Tab switching
+document.querySelectorAll('.betting-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        
+        document.querySelectorAll('.betting-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.betting-content').forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+    });
+});
+
+// Store matchups globally
+let allMatchups = [];
+let activeBetsData = [];
+
+// Load matchups
+async function loadMatchups() {
+    try {
+        const response = await fetch('/api/matchups');
+        allMatchups = await response.json();
+        renderMatchups();
+    } catch (error) {
+        console.error('Error loading matchups:', error);
+    }
+}
+
+// Render matchups with bet indicators
+function renderMatchups() {
+    const grid = document.getElementById('matchupsGrid');
+    
+    // Create a map of matchup descriptions to bet status
+    const betMap = {};
+    activeBetsData.forEach(bet => {
+        const matchupFromBet = bet.description.split(':')[0].trim();
+        betMap[matchupFromBet] = true;
+    });
+    
+    grid.innerHTML = allMatchups.map((m, idx) => {
+        const hasBet = betMap[m.matchup] || betMap[m.original_matchup] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="matchup-title">${m.matchup}</div>
+                <div class="teams-container">
+                    <div class="team-section">
+                        <div class="team-name">${m.team1_name}</div>
+                        <div class="win-prob">${(m.team1_win_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button ${m.team1_ml.startsWith('+') ? 'positive-odds' : ''}" 
+                                onclick="selectOdds(${idx}, 'team1')" 
+                                id="odds-${idx}-team1">
+                            ${m.team1_ml}
+                        </button>
+                    </div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-section">
+                        <div class="team-name">${m.team2_name}</div>
+                        <div class="win-prob">${(m.team2_win_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button ${m.team2_ml.startsWith('+') ? 'positive-odds' : ''}" 
+                                onclick="selectOdds(${idx}, 'team2')" 
+                                id="odds-${idx}-team2">
+                            ${m.team2_ml}
+                        </button>
+                    </div>
+                </div>
+                <div class="potential-win" id="potential-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickBetAmount(${idx}, 10)">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickBetAmount(${idx}, 25)">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickBetAmount(${idx}, 50)">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickBetAmount(${idx}, 100)">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updatePotentialWin(${idx})">
+                    </div>
+                    <button class="btn-place-bet" id="btn-${idx}" onclick="isAuthenticated ? placeBet(${idx}) : window.location.href='/auth/google'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick='toggleLineups(event, ${idx}, ${JSON.stringify(m.team1_name)}, ${JSON.stringify(m.team2_name)})'>
+                    Show Teams <span class="dropdown-arrow" id="arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="lineups-${idx}" style="display: none;">
+                    <div class="lineup-grid">
+                        <div class="lineup-column">
+                            <div class="lineup-loading">Loading...</div>
+                        </div>
+                        <div class="lineup-divider"></div>
+                        <div class="lineup-column">
+                            <div class="lineup-loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select odds
+function selectOdds(matchupIdx, team) {
+    const otherTeam = team === 'team1' ? 'team2' : 'team1';
+    const btn1 = document.getElementById(`odds-${matchupIdx}-${team}`);
+    const btn2 = document.getElementById(`odds-${matchupIdx}-${otherTeam}`);
+    
+    btn1.classList.add('selected');
+    btn2.classList.remove('selected');
+    
+    selectedBets[matchupIdx] = { team, odds: btn1.textContent.trim() };
+    updatePotentialWin(matchupIdx);
+}
+
+// Calculate potential win
+function calculatePotentialWin(amount, odds) {
+    const oddsNum = parseInt(odds);
+    if (oddsNum > 0) {
+        return amount * (oddsNum / 100);
+    } else {
+        return amount * (100 / Math.abs(oddsNum));
+    }
+}
+
+// Update potential win display
+function updatePotentialWin(matchupIdx) {
+    const amountInput = document.getElementById(`amount-${matchupIdx}`);
+    const potentialDiv = document.getElementById(`potential-${matchupIdx}`);
+    const btn = document.getElementById(`btn-${matchupIdx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    const selected = selectedBets[matchupIdx];
+    
+    if (selected && amount > 0) {
+        const win = calculatePotentialWin(amount, selected.odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else if (!selected && amount > 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Select a Team';
+        btn.disabled = true;
+    } else if (selected && amount === 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Place Bet';
+        btn.disabled = true;
+    }
+}
+
+// Update potential win for highest scorer
+function updateHighestScorerPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`hs-amount-${idx}`);
+    const potentialDiv = document.getElementById(`hs-potential-win-${idx}`);
+    const btn = document.getElementById(`hs-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    }
+}
+
+// Update potential win for lowest scorer
+function updateLowestScorerPotentialWin(idx, odds) {
+    const amountInput = document.getElementById(`ls-amount-${idx}`);
+    const potentialDiv = document.getElementById(`ls-potential-win-${idx}`);
+    const btn = document.getElementById(`ls-btn-${idx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    
+    if (amount > 0) {
+        const win = calculatePotentialWin(amount, odds);
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    }
+}
+
+// Place bet with optimistic UI
+async function placeBet(matchupIdx) {
+    const selected = selectedBets[matchupIdx];
+    const amount = parseFloat(document.getElementById(`amount-${matchupIdx}`).value);
+    
+    if (!selected || !amount || amount <= 0) {
+        showToast('Please select a team and enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    const card = document.getElementById(`amount-${matchupIdx}`)?.closest('.matchup-card');
+    if (card) card.classList.add('has-bet');
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                matchup_idx: matchupIdx,
+                team: selected.team,
+                amount: amount
+            })
+        });
+        
+        // Check if redirected to login (session expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            if (card) card.classList.remove('has-bet');
+            showToast('Session expired. Please log out and log back in.', 'error');
+            return;
+        }
+        
+        if (!response.ok && (response.status === 401 || response.status === 302)) {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            if (card) card.classList.remove('has-bet');
+            showToast('Please log in to place bets', 'error');
+            return;
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            document.getElementById(`amount-${matchupIdx}`).value = '';
+            document.getElementById(`odds-${matchupIdx}-team1`).classList.remove('selected');
+            document.getElementById(`odds-${matchupIdx}-team2`).classList.remove('selected');
+            delete selectedBets[matchupIdx];
+            updatePotentialWin(matchupIdx);
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            if (card) card.classList.remove('has-bet');
+            showToast(result.error || 'Failed to place bet', 'error');
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        if (card) card.classList.remove('has-bet');
+        showToast('Failed to place bet. Please try logging out and back in.', 'error');
+    }
+}
+
+// Load active bets
+async function loadActiveBets() {
+    try {
+        const response = await fetch('/api/my_bets');
+        
+        // Check if redirected to login (authentication expired)
+        if (response.redirected || response.url.includes('/auth/')) {
+            console.log('Session expired, user needs to re-login');
+            return;
+        }
+        
+        // Check for non-OK response
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 302) {
+                console.log('Authentication required');
+                return;
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        activeBetsData = await response.json();
+        
+        const compactContainer = document.getElementById('activeBetsCompact');
+        
+        if (activeBetsData.length === 0) {
+            compactContainer.innerHTML = '';
+        } else {
+            // Render compact bets at top
+            compactContainer.innerHTML = activeBetsData.map(bet => {
+            let betInfo = '';
+            
+            if (bet.description.includes('O/U')) {
+                // Team performance bet - format: "Owner O/U 113.3: Over"
+                betInfo = `${bet.description.replace(':', '')} $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Highest Scorer')) {
+                // Highest scorer bet - format: "Owner: Highest Scorer +637"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} Highest Scorer $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Lowest Scorer')) {
+                // Lowest scorer bet - format: "Owner: Lowest Scorer +595"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} Lowest Scorer $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('#1 Seed')) {
+                // First seed bet - format: "Owner: #1 Seed +139"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} #1 Seed $${bet.amount.toFixed(0)}`;
+            } else if (bet.description.includes('Ammad Playoff')) {
+                // Ammad playoff bet - format: "Owner: Ammad Playoff +8206"
+                const owner = bet.description.split(':')[0].trim();
+                betInfo = `${owner} Ammad Playoff $${bet.amount.toFixed(0)}`;
+            } else {
+                // Moneyline bet - format: "Owner1 vs Owner2: Team Odds"
+                const parts = bet.description.split(':');
+                if (parts.length < 2) {
+                    return '';
+                }
+                const teamAndOdds = parts[1].trim();
+                const lastSpaceIdx = teamAndOdds.lastIndexOf(' ');
+                const teamName = lastSpaceIdx > 0 ? teamAndOdds.substring(0, lastSpaceIdx) : teamAndOdds;
+                betInfo = `${teamName} Moneyline $${bet.amount.toFixed(0)}`;
+            }
+            
+            return `
+                <div class="compact-bet-item">
+                    <div class="compact-bet-info">${betInfo}</div>
+                    <button class="compact-bet-remove" onclick="removeBet(${bet.id})">Remove</button>
+                </div>
+            `;
+            }).join('');
+        }
+        
+        // Update bet badges without re-rendering cards
+        updateBetBadges();
+    } catch (error) {
+        console.error('Error loading active bets:', error);
+    }
+}
+
+// Update bet badges on existing cards without re-rendering
+function updateBetBadges() {
+    // Update matchup cards
+    const matchupHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('vs')) {
+            const matchupKey = bet.description.split(':')[0].trim();
+            matchupHasBet[matchupKey] = true;
+        }
+    });
+    
+    allMatchups.forEach((m, idx) => {
+        const matchupKey = `${m.team1_name} vs ${m.team2_name}`;
+        const card = document.querySelector(`#amount-${idx}`)?.closest('.matchup-card');
+        if (card) {
+            if (matchupHasBet[matchupKey]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update team performance cards
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('O/U')) {
+            const owner = bet.description.split(' O/U')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    allTeams.forEach((t, idx) => {
+        const card = document.querySelector(`#team-amount-${idx}`)?.closest('.matchup-card');
+        if (card) {
+            if (teamHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update highest scorer cards
+    const hsHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Highest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            hsHasBet[owner] = true;
+        }
+    });
+    
+    allHighestScorer.forEach((t, idx) => {
+        const card = document.getElementById(`hs-card-${idx}`);
+        if (card) {
+            if (hsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+    
+    // Update lowest scorer cards
+    const lsHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Lowest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            lsHasBet[owner] = true;
+        }
+    });
+    
+    allLowestScorer.forEach((t, idx) => {
+        const card = document.getElementById(`ls-card-${idx}`);
+        if (card) {
+            if (lsHasBet[t.owner]) {
+                card.classList.add('has-bet');
+                if (!card.querySelector('.bet-placed-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'bet-placed-badge';
+                    badge.textContent = 'Bet Placed';
+                    card.insertBefore(badge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('has-bet');
+                const badge = card.querySelector('.bet-placed-badge');
+                if (badge) badge.remove();
+            }
+        }
+    });
+}
+
+// Remove bet (no confirmation, instant)
+async function removeBet(betId) {
+    const bet = activeBetsData.find(b => b.id === betId);
+    if (!bet) return;
+    
+    const oldBalance = userBalance;
+    userBalance += bet.amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    activeBetsData = activeBetsData.filter(b => b.id !== betId);
+    const compactContainer = document.getElementById('activeBetsCompact');
+    if (activeBetsData.length === 0) {
+        compactContainer.innerHTML = '';
+    }
+    
+    try {
+        const response = await fetch(`/api/remove_bet/${betId}`, { method: 'DELETE' });
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast('Bet removed');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to remove bet', 'error');
+            loadActiveBets();
+        }
+    } catch (error) {
+        console.error('Error removing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to remove bet', 'error');
+        loadActiveBets();
+    }
+}
+
+// Store team performance data globally
+let allTeams = [];
+let selectedTeamBets = {};
+
+// Load team performance
+async function loadTeamPerformance() {
+    try {
+        const response = await fetch('/api/team_performance');
+        allTeams = await response.json();
+        renderTeamPerformance();
+    } catch (error) {
+        console.error('Error loading team performance:', error);
+    }
+}
+
+// Render team performance bets
+function renderTeamPerformance() {
+    const grid = document.getElementById('teamPerformanceGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('O/U')) {
+            const owner = bet.description.split(' O/U')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    grid.innerHTML = allTeams.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="team-line">${t.owner} to score ${t.line.toFixed(1)} points</div>
+                <div class="teams-container">
+                    <div class="team-section">
+                        <div class="win-prob">${(t.under_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button" 
+                                onclick="selectTeamOdds(${idx}, 'under')" 
+                                id="team-odds-${idx}-under">
+                            Under
+                        </button>
+                    </div>
+                    <div class="vs-text">OR</div>
+                    <div class="team-section">
+                        <div class="win-prob">${(t.over_prob * 100).toFixed(1)}% win</div>
+                        <button class="odds-button" 
+                                onclick="selectTeamOdds(${idx}, 'over')" 
+                                id="team-odds-${idx}-over">
+                            Over
+                        </button>
+                    </div>
+                </div>
+                <div class="potential-win" id="team-potential-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickTeamBetAmount(${idx}, 10)">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickTeamBetAmount(${idx}, 25)">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickTeamBetAmount(${idx}, 50)">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickTeamBetAmount(${idx}, 100)">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="team-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateTeamPotentialWin(${idx})">
+                    </div>
+                    <button class="btn-place-bet" id="team-btn-${idx}" onclick="isAuthenticated ? placeTeamBet(${idx}) : window.location.href='/auth/google'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick='toggleTeamLineup(event, ${idx}, ${JSON.stringify(t.owner)})'>
+                    Show Team <span class="dropdown-arrow" id="team-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="team-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select team odds
+function selectTeamOdds(teamIdx, choice) {
+    const otherChoice = choice === 'over' ? 'under' : 'over';
+    const btn1 = document.getElementById(`team-odds-${teamIdx}-${choice}`);
+    const btn2 = document.getElementById(`team-odds-${teamIdx}-${otherChoice}`);
+    
+    btn1.classList.add('selected');
+    btn2.classList.remove('selected');
+    
+    selectedTeamBets[teamIdx] = { choice };
+    updateTeamPotentialWin(teamIdx);
+}
+
+// Update potential win for team bets (even money, no odds)
+function updateTeamPotentialWin(teamIdx) {
+    const amountInput = document.getElementById(`team-amount-${teamIdx}`);
+    const potentialDiv = document.getElementById(`team-potential-${teamIdx}`);
+    const btn = document.getElementById(`team-btn-${teamIdx}`);
+    
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value) || 0;
+    const selected = selectedTeamBets[teamIdx];
+    
+    // Even money bet - win amount equals bet amount
+    if (selected && amount > 0) {
+        const win = amount;
+        const total = amount + win;
+        potentialDiv.textContent = `Win: $${win.toFixed(2)} | Total: $${total.toFixed(2)}`;
+        btn.textContent = 'Place Bet';
+        btn.disabled = false;
+    } else if (!selected && amount > 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Select Over/Under';
+        btn.disabled = true;
+    } else if (selected && amount === 0) {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Enter Bet Amount';
+        btn.disabled = true;
+    } else {
+        potentialDiv.textContent = '';
+        btn.textContent = 'Place Bet';
+        btn.disabled = true;
+    }
+}
+
+// Place team performance bet with optimistic UI
+async function placeTeamBet(teamIdx) {
+    const selected = selectedTeamBets[teamIdx];
+    const amount = parseFloat(document.getElementById(`team-amount-${teamIdx}`).value);
+    
+    if (!selected || !amount || amount <= 0) {
+        showToast('Please select over/under and enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'team_ou',
+                team_idx: teamIdx,
+                choice: selected.choice,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            document.getElementById(`team-amount-${teamIdx}`).value = '';
+            document.getElementById(`team-potential-${teamIdx}`).textContent = '';
+            document.getElementById(`team-btn-${teamIdx}`).disabled = true;
+            document.getElementById(`team-btn-${teamIdx}`).textContent = 'Place Bet';
+            
+            const btn1 = document.getElementById(`team-odds-${teamIdx}-over`);
+            const btn2 = document.getElementById(`team-odds-${teamIdx}-under`);
+            btn1.classList.remove('selected');
+            btn2.classList.remove('selected');
+            
+            delete selectedTeamBets[teamIdx];
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to place bet', 'error');
+        }
+    } catch (error) {
+        console.error('Error placing team bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to place bet', 'error');
+    }
+}
+
+// Toggle lineup display
+const lineupCache = {};
+
+async function toggleLineups(event, idx, team1Owner, team2Owner) {
+    event.stopPropagation();
+    const container = document.getElementById(`lineups-${idx}`);
+    const arrow = document.getElementById(`arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineups if not cached
+        if (!lineupCache[`${team1Owner}-${team2Owner}`]) {
+            try {
+                const [lineup1, lineup2] = await Promise.all([
+                    fetch(`/api/lineup/${encodeURIComponent(team1Owner)}`).then(r => r.json()),
+                    fetch(`/api/lineup/${encodeURIComponent(team2Owner)}`).then(r => r.json())
+                ]);
+                
+                lineupCache[`${team1Owner}-${team2Owner}`] = { lineup1, lineup2 };
+                renderLineups(idx, lineup1, lineup2);
+            } catch (error) {
+                console.error('Error fetching lineups:', error);
+            }
+        } else {
+            const cached = lineupCache[`${team1Owner}-${team2Owner}`];
+            renderLineups(idx, cached.lineup1, cached.lineup2);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderLineups(idx, lineup1, lineup2) {
+    const container = document.getElementById(`lineups-${idx}`);
+    const grid = container.querySelector('.lineup-grid');
+    
+    const renderTeamLineup = (lineup) => {
+        return lineup.map(player => `
+            <div class="lineup-player">
+                <div class="player-name">${player.player_name}</div>
+                <div class="player-stats">
+                    <span class="player-position">${player.position}</span>
+                    <span class="player-points">${player.projected_points}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+    
+    grid.innerHTML = `
+        <div class="lineup-column">
+            ${renderTeamLineup(lineup1)}
+        </div>
+        <div class="lineup-divider"></div>
+        <div class="lineup-column">
+            ${renderTeamLineup(lineup2)}
+        </div>
+    `;
+}
+
+async function toggleTeamLineup(event, idx, owner) {
+    event.stopPropagation();
+    const container = document.getElementById(`team-lineups-${idx}`);
+    const arrow = document.getElementById(`team-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineup if not cached
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderTeamLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderTeamLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderTeamLineup(idx, lineup) {
+    const container = document.getElementById(`team-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Store highest scorer data globally
+let allHighestScorer = [];
+let selectedHighestScorerTeam = null;
+
+// Store lowest scorer data globally
+let allLowestScorer = [];
+let selectedLowestScorerTeam = null;
+
+// Load highest scorer
+async function loadHighestScorer() {
+    try {
+        const response = await fetch('/api/highest_scorer');
+        allHighestScorer = await response.json();
+        renderHighestScorer();
+    } catch (error) {
+        console.error('Error loading highest scorer:', error);
+    }
+}
+
+// Render highest scorer bets
+function renderHighestScorer() {
+    const grid = document.getElementById('highestScorerGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Highest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const teams = allHighestScorer.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="hs-card-${idx}" onclick="selectHighestScorerTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
+                </div>
+                <div class="potential-win" id="hs-potential-win-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickHSBetAmount(${idx}, 10, '${t.odds}')">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickHSBetAmount(${idx}, 25, '${t.odds}')">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickHSBetAmount(${idx}, 50, '${t.odds}')">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickHSBetAmount(${idx}, 100, '${t.odds}')">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="hs-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateHighestScorerPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="hs-btn-${idx}" onclick="isAuthenticated ? placeHighestScorerBet(${idx}) : window.location.href='/auth/google'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick="toggleHighestScorerLineup(event, ${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="hs-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="hs-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = teams;
+}
+
+// Select highest scorer team
+function selectHighestScorerTeam(idx) {
+    // Remove selection from all cards
+    allHighestScorer.forEach((_, i) => {
+        const card = document.getElementById(`hs-card-${i}`);
+        if (card) card.classList.remove('selected');
+    });
+    
+    // Select this card
+    const card = document.getElementById(`hs-card-${idx}`);
+    card.classList.add('selected');
+    selectedHighestScorerTeam = idx;
+}
+
+
+// Place highest scorer bet with optimistic UI
+async function placeHighestScorerBet(idx) {
+    const amountInput = document.getElementById(`hs-amount-${idx}`);
+    const btn = document.getElementById(`hs-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`hs-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for highest scorer bet', idx);
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const team = allHighestScorer[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    btn.disabled = true;
+    btn.textContent = 'Placing...';
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'highest_scorer',
+                owner: team.owner,
+                odds: team.odds,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to place bet', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to place bet', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
+    }
+}
+
+async function toggleHighestScorerLineup(event, idx, owner) {
+    event.stopPropagation(); // Prevent card selection when clicking show team
+    
+    const container = document.getElementById(`hs-lineups-${idx}`);
+    const arrow = document.getElementById(`hs-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineup if not cached
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderHighestScorerLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderHighestScorerLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderHighestScorerLineup(idx, lineup) {
+    const container = document.getElementById(`hs-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Load lowest scorer
+async function loadLowestScorer() {
+    try {
+        const response = await fetch('/api/lowest_scorer');
+        allLowestScorer = await response.json();
+        renderLowestScorer();
+    } catch (error) {
+        console.error('Error loading lowest scorer:', error);
+    }
+}
+
+// Render lowest scorer bets
+function renderLowestScorer() {
+    const grid = document.getElementById('lowestScorerGrid');
+    
+    // Check which teams have active bets
+    const teamHasBet = {};
+    activeBetsData.forEach(bet => {
+        if (bet.description.includes('Lowest Scorer')) {
+            const owner = bet.description.split(':')[0].trim();
+            teamHasBet[owner] = true;
+        }
+    });
+    
+    const teams = allLowestScorer.map((t, idx) => {
+        const hasBet = teamHasBet[t.owner] || false;
+        return `
+            <div class="matchup-card ${hasBet ? 'has-bet' : ''}" id="ls-card-${idx}" onclick="selectLowestScorerTeam(${idx})" style="cursor: pointer;">
+                ${hasBet ? '<div class="bet-placed-badge">Bet Placed</div>' : ''}
+                <div class="hs-team-row">
+                    <div class="hs-owner">${t.owner}</div>
+                    <div class="hs-stats">
+                        <div class="hs-win-prob">${t.win_prob}% Win</div>
+                        <div class="hs-odds ${t.odds.startsWith('+') ? 'positive-odds' : ''}">${t.odds}</div>
+                    </div>
+                </div>
+                <div class="potential-win" id="ls-potential-win-${idx}"></div>
+                <div class="quick-bet-buttons">
+                    <button class="quick-bet-btn" onclick="setQuickLSBetAmount(${idx}, 10, '${t.odds}')">$10</button>
+                    <button class="quick-bet-btn" onclick="setQuickLSBetAmount(${idx}, 25, '${t.odds}')">$25</button>
+                    <button class="quick-bet-btn" onclick="setQuickLSBetAmount(${idx}, 50, '${t.odds}')">$50</button>
+                    <button class="quick-bet-btn" onclick="setQuickLSBetAmount(${idx}, 100, '${t.odds}')">$100</button>
+                </div>
+                <div class="bet-controls">
+                    <div class="bet-input-group">
+                        <input type="number" class="bet-amount-input" id="ls-amount-${idx}" 
+                               placeholder="Bet $" min="0" step="0.01"
+                               oninput="updateLowestScorerPotentialWin(${idx}, '${t.odds}')">
+                    </div>
+                    <button class="btn-place-bet" id="ls-btn-${idx}" onclick="isAuthenticated ? placeLowestScorerBet(${idx}) : window.location.href='/auth/google'" ${isAuthenticated ? 'disabled' : ''}>
+                        ${isAuthenticated ? 'Place Bet' : 'Login'}
+                    </button>
+                </div>
+                <button class="show-teams-btn" onclick="toggleLowestScorerLineup(event, ${idx}, '${t.owner}')">
+                    Show Team <span class="dropdown-arrow" id="ls-arrow-${idx}">▼</span>
+                </button>
+                <div class="lineups-container" id="ls-lineups-${idx}" style="display: none;">
+                    <div class="lineup-loading">Loading...</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = teams;
+}
+
+function selectLowestScorerTeam(idx) {
+    // Deselect previous team
+    if (selectedLowestScorerTeam !== null) {
+        const prevCard = document.getElementById(`ls-card-${selectedLowestScorerTeam}`);
+        if (prevCard) prevCard.classList.remove('selected');
+    }
+    
+    // Select new team
+    selectedLowestScorerTeam = idx;
+    const card = document.getElementById(`ls-card-${idx}`);
+    if (card) card.classList.add('selected');
+}
+
+async function placeLowestScorerBet(idx) {
+    const amountInput = document.getElementById(`ls-amount-${idx}`);
+    const btn = document.getElementById(`ls-btn-${idx}`);
+    const potentialWinDiv = document.getElementById(`ls-potential-win-${idx}`);
+    
+    if (!amountInput || !btn) {
+        console.error('DOM elements not found for lowest scorer bet', idx);
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid bet amount', 'error');
+        return;
+    }
+    
+    if (amount > userBalance) {
+        showToast('Insufficient balance', 'error');
+        return;
+    }
+    
+    const team = allLowestScorer[idx];
+    if (!team) {
+        console.error('Team not found at index', idx);
+        return;
+    }
+    
+    const oldBalance = userBalance;
+    userBalance -= amount;
+    document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+    
+    btn.disabled = true;
+    btn.textContent = 'Placing...';
+    
+    try {
+        const response = await fetch('/api/place_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bet_type: 'lowest_scorer',
+                owner: team.owner,
+                odds: team.odds,
+                amount: amount
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            userBalance = result.new_balance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            
+            amountInput.value = '';
+            if (potentialWinDiv) potentialWinDiv.innerHTML = '';
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+            
+            showToast('Bet placed!');
+            loadActiveBets();
+        } else {
+            userBalance = oldBalance;
+            document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+            showToast(result.error || 'Failed to place bet', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Place Bet';
+        }
+    } catch (error) {
+        console.error('Error placing bet:', error);
+        userBalance = oldBalance;
+        document.getElementById('userBalance').textContent = `$${userBalance.toFixed(2)}`;
+        showToast('Failed to place bet', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Place Bet';
+    }
+}
+
+async function toggleLowestScorerLineup(event, idx, owner) {
+    event.stopPropagation(); // Prevent card selection when clicking show team
+    
+    const container = document.getElementById(`ls-lineups-${idx}`);
+    const arrow = document.getElementById(`ls-arrow-${idx}`);
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.textContent = '▲';
+        
+        // Fetch lineup if not cached
+        if (!lineupCache[owner]) {
+            try {
+                const lineup = await fetch(`/api/lineup/${encodeURIComponent(owner)}`).then(r => r.json());
+                lineupCache[owner] = lineup;
+                renderLowestScorerLineup(idx, lineup);
+            } catch (error) {
+                console.error('Error fetching lineup:', error);
+            }
+        } else {
+            renderLowestScorerLineup(idx, lineupCache[owner]);
+        }
+    } else {
+        container.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
+
+function renderLowestScorerLineup(idx, lineup) {
+    const container = document.getElementById(`ls-lineups-${idx}`);
+    
+    container.innerHTML = `
+        <div class="single-lineup">
+            ${lineup.map(player => `
+                <div class="lineup-player">
+                    <div class="player-name">${player.player_name}</div>
+                    <div class="player-stats">
+                        <span class="player-position">${player.position}</span>
+                        <span class="player-points">${player.projected_points}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Initialize - load bets first, then matchups and team performance
+async function initialize() {
+    if (isAuthenticated) {
+        await loadActiveBets();
+    }
+    await loadMatchups();
+    await loadTeamPerformance();
+    await loadHighestScorer();
+    await loadLowestScorer();
+}
+
+initialize();
