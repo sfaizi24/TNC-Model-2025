@@ -1,8 +1,8 @@
 import os
 
-from flask import Blueprint, redirect, url_for, session, request, jsonify
-from flask_dance.contrib.google import make_google_blueprint
+from flask import Blueprint, jsonify, redirect, request, session, url_for
 from flask_dance.consumer import oauth_authorized
+from flask_dance.contrib.google import make_google_blueprint
 from flask_login import LoginManager, login_user, logout_user
 
 from database import db
@@ -34,7 +34,7 @@ def _get_safe_next_url():
     )
     if is_navigation:
         return request.url
-    return request.referrer or url_for("betting")
+    return request.referrer or url_for("betting.betting")
 
 
 def _safe_email_for_new_user(email):
@@ -90,7 +90,7 @@ def google_logged_in(blueprint, token):
 
     db.session.commit()
     login_user(user)
-    next_url = session.pop("next_url", url_for("betting"))
+    next_url = session.pop("next_url", url_for("betting.betting"))
     return redirect(next_url)
 
 
@@ -99,4 +99,4 @@ def logout():
     logout_user()
     if google_bp.token is not None:
         del google_bp.token
-    return redirect(url_for("betting"))
+    return redirect(url_for("betting.betting"))

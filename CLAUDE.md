@@ -72,4 +72,21 @@ Do not leave behind AI artifacts: no over-commented code, no unnecessary docstri
 - Python 3.13+, formatted with `ruff format`
 - Flask with Jinja2 templates in `frontend/templates/`
 - SQLAlchemy ORM (models in `models.py`, init in `database.py`)
-- Main app logic in `app.py` (~1500 lines — large file, read specific sections)
+
+## App Structure
+
+```
+app.py              — App factory, config, extensions, blueprint registration (~70 lines)
+extensions.py       — Shared Flask extensions (CSRFProtect)
+migrations.py       — Schema migrations (run on startup)
+auth.py             — Google OAuth, login_manager, admin email allowlist
+models.py           — SQLAlchemy models (User, Bet, WeeklyStats, BettingPeriod)
+database.py         — SQLAlchemy instance
+routes/
+  helpers.py        — Shared helpers: get_current_week(), check_betting_period_lock(), admin_required(), DB path constants
+  pages.py          — Public pages: /, /about, /analytics, static files
+  account.py        — User account: /account, /account/update-profile
+  odds.py           — Odds API: /api/matchups, /api/team_performance, etc. (9 routes)
+  betting.py        — Betting: /betting, /leaderboard, /api/place_bet, etc. (6 routes)
+  admin.py          — Admin: /admin, /api/admin/* (7 routes)
+```
