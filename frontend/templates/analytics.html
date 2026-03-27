@@ -113,7 +113,7 @@ function showError(message, shouldRedirect = false) {
     
     if (shouldRedirect) {
         setTimeout(() => {
-            window.location.href = '/login';
+            window.location.href = '/auth/google';
         }, 2000);
     }
 }

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_from_directory, redirect, url_for, request, session, flash, jsonify
 import os
+from dotenv import load_dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 import sys
@@ -9,12 +10,18 @@ import ast
 from datetime import datetime, timezone, timedelta
 from flask_wtf.csrf import CSRFProtect
 
+load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 
-app = Flask(__name__, 
+app = Flask(__name__,
             template_folder='frontend/templates',
             static_folder='frontend/static')
-app.secret_key = os.environ.get("SESSION_SECRET", os.environ.get('SECRET_KEY', 'tncasino-secret-key-change-in-production'))
+app.secret_key = os.environ["SECRET_KEY"]
+
+if os.environ.get("FLASK_ENV") == "production":
+    app.config["SESSION_COOKIE_SECURE"] = True
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -141,8 +148,13 @@ def run_schema_migrations():
                 '''))
                 logging.info("settled_pnl column added and backfilled")
             
+            # Drop legacy Replit OAuth token table
+            if 'flask_dance_oauth' in inspector.get_table_names():
+                conn.execute(text("DROP TABLE flask_dance_oauth"))
+                logging.info("Dropped legacy flask_dance_oauth table")
+
             logging.info("Schema migrations completed successfully")
-            
+
     except Exception as e:
         logging.error(f"Migration error: {e}")
         import traceback
@@ -155,15 +167,16 @@ with app.app_context():
     run_schema_migrations()
     logging.info("Schema migrations completed")
 
-# Import Replit Auth
-from replit_auth import login_manager, make_replit_blueprint, require_login
+# Auth setup
+from auth import login_manager, auth_bp, google_bp
 from flask_login import current_user, login_required
 from functools import wraps
 
-# Initialize login manager
 login_manager.init_app(app)
+app.register_blueprint(google_bp, url_prefix="/auth")
+app.register_blueprint(auth_bp)
 
-# Admin required decorator
+
 def admin_required(f):
     @wraps(f)
     @login_required
@@ -175,9 +188,6 @@ def admin_required(f):
             return redirect(url_for('betting'))
         return f(*args, **kwargs)
     return decorated_function
-
-# Register Replit Auth blueprint
-app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
 
 @app.before_request
 def make_session_permanent():
@@ -213,7 +223,7 @@ def analytics():
     return render_template('analytics.html', user=current_user if current_user.is_authenticated else None, current_week=week)
 
 @app.route('/account')
-@require_login
+@login_required
 def account():
     from models import Bet, WeeklyStats
     from sqlalchemy.orm import joinedload
@@ -225,7 +235,7 @@ def account():
     return render_template('account.html', user=current_user, bets=bets, weekly_stats=weekly_stats)
 
 @app.route('/account/update-profile', methods=['POST'])
-@require_login
+@login_required
 def update_profile():
     csrf.protect()
     try:
@@ -710,7 +720,7 @@ def check_betting_period_lock(week):
     return None
 
 @app.route('/api/place_bet', methods=['POST'])
-@require_login
+@login_required
 def place_bet():
     from models import Bet, WeeklyStats
     from datetime import datetime
@@ -1074,7 +1084,7 @@ def place_bet():
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/my_bets')
-@require_login
+@login_required
 def get_my_bets():
     from models import Bet
     
@@ -1105,7 +1115,7 @@ def get_my_bets():
         return jsonify([])
 
 @app.route('/api/remove_bet/<int:bet_id>', methods=['DELETE'])
-@require_login
+@login_required
 def remove_bet(bet_id):
     from models import Bet, WeeklyStats
     
@@ -1176,7 +1186,7 @@ def check_session():
     return jsonify({'authenticated': False}), 401
 
 @app.route('/api/teams')
-@require_login
+@login_required
 def get_teams():
     print(f"[TEAMS REQUEST] User: {current_user.id} ({current_user.username})")
     try:
@@ -1224,7 +1234,7 @@ def get_teams():
         return jsonify({'teams': []})
 
 @app.route('/api/team_players')
-@require_login
+@login_required
 def get_team_players():
     team_owner = request.args.get('team')
     print(f"[TEAM_PLAYERS REQUEST] User: {current_user.id} ({current_user.username}), Team: {team_owner}")

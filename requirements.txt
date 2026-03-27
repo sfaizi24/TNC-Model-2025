@@ -1,37 +1,29 @@
-selenium==4.15.2
-webdriver-manager==4.0.1
-playwright==1.40.0
+# Web framework
+flask
+flask-dance
+flask-login
+flask-sqlalchemy
+flask-wtf
+werkzeug
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# Data processing
 pandas==2.1.3
 matplotlib==3.8.2
 seaborn==0.13.0
 jupyter==1.0.0
+
+# Web scraping
+selenium==4.15.2
+webdriver-manager==4.0.1
+playwright==1.40.0
+
+# Utilities
 requests==2.31.0
 python-dotenv==1.0.0
 
-flask
-jupyter
-matplotlib
-pandas
-playwright
-python-dotenv
-requests
-seaborn
-selenium
-webdriver-manager
-Flask-Dance
-Flask-Login
-Flask-SQLAlchemy
-psycopg2-binary
-PyJWT
-Flask-Dance
-Flask-Login
-Flask-SQLAlchemy
-psycopg2-binary
-PyJWT
-flask-dance
-flask-login
-oauthlib
-pyjwt
-sqlalchemy
-werkzeug
-flask-wtf
+# Dev tools
+ruff

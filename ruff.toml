@@ -1,0 +1,19 @@
+target-version = "py313"
+line-length = 120
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes (unused imports, undefined names)
+    "W",    # pycodestyle warnings
+    "I",    # isort (import ordering)
+    "UP",   # pyupgrade (use modern Python syntax)
+    "B",    # flake8-bugbear (common bug patterns)
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+]
+
+[lint.per-file-ignores]
+"backend/notebooks/*.py" = ["E", "F", "W"]  # notebooks are messy, skip
+"migrate_*.py" = ["F841"]  # unused variables OK in migrations
