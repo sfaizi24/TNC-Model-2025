@@ -7,9 +7,9 @@ from flask_login import current_user, login_required
 
 from database import db
 
-LEAGUE_DB_PATH = 'backend/data/databases/league.db'
-PROJECTIONS_DB_PATH = 'backend/data/databases/projections.db'
-ODDS_DB_PATH = 'backend/data/databases/odds.db'
+LEAGUE_DB_PATH = "backend/data/databases/league.db"
+PROJECTIONS_DB_PATH = "backend/data/databases/projections.db"
+ODDS_DB_PATH = "backend/data/databases/odds.db"
 
 
 def get_current_week():
@@ -20,7 +20,9 @@ def get_current_week():
     if period:
         return period.week
 
-    print("[WARNING] No active (unsettled) betting period found in database. Defaulting to week 10. Please create a new betting period via /admin.")
+    print(
+        "[WARNING] No active (unsettled) betting period found in database. Defaulting to week 10. Please create a new betting period via /admin."
+    )
     return 10
 
 
@@ -34,7 +36,11 @@ def check_betting_period_lock(week):
     if not period:
         return None
 
-    if period.is_locked or datetime.now(UTC) >= period.lock_time:
+    lock_time = period.lock_time
+    if lock_time.tzinfo is None:
+        lock_time = lock_time.replace(tzinfo=UTC)
+
+    if period.is_locked or datetime.now(UTC) >= lock_time:
         if not period.is_locked:
             period.is_locked = True
             db.session.commit()
@@ -48,11 +54,12 @@ def admin_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for('pages.index'))
-        if not getattr(current_user, 'is_admin', False):
-            flash('You do not have permission to access this page.', 'error')
-            return redirect(url_for('betting.betting'))
+            return redirect(url_for("pages.index"))
+        if not getattr(current_user, "is_admin", False):
+            flash("You do not have permission to access this page.", "error")
+            return redirect(url_for("betting.betting"))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -63,21 +70,27 @@ def get_team_mapping(week):
         league_conn.row_factory = sqlite3.Row
         league_cursor = league_conn.cursor()
 
-        league_cursor.execute("""
+        league_cursor.execute(
+            """
             SELECT DISTINCT league_id FROM matchups WHERE week = ?
-        """, (week,))
+        """,
+            (week,),
+        )
         league_row = league_cursor.fetchone()
-        current_league_id = league_row['league_id'] if league_row else None
+        current_league_id = league_row["league_id"] if league_row else None
 
-        league_cursor.execute("""
+        league_cursor.execute(
+            """
             SELECT r.roster_id, u.display_name, u.username
             FROM rosters r
             LEFT JOIN users u ON r.owner_id = u.user_id
             WHERE r.league_id = ?
-        """, (current_league_id,))
+        """,
+            (current_league_id,),
+        )
 
         for row in league_cursor.fetchall():
-            owner_name = row['display_name'] or row['username'] or f"Team {row['roster_id']}"
-            team_mapping[row['roster_id']] = owner_name
+            owner_name = row["display_name"] or row["username"] or f"Team {row['roster_id']}"
+            team_mapping[row["roster_id"]] = owner_name
 
     return team_mapping
