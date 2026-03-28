@@ -1,12 +1,3 @@
-    .page-header {
-        margin-bottom: 30px;
-    }
-
-    .page-title {
-        font-size: 32px;
-        color: var(--text-primary);
-    }
-
     .active-week-banner {
         background: linear-gradient(135deg, rgba(26, 144, 255, 0.15) 0%, rgba(63, 185, 80, 0.15) 100%);
         border: 2px solid var(--fanduel-blue);

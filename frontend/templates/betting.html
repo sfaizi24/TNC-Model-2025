@@ -9,8 +9,22 @@
 {% block content %}
 <div id="toast-container" class="toast-container"></div>
 
-{% if user %}
 <div class="page-header">
+    <h1 class="page-title">Week {{ current_week }} Matchups</h1>
+</div>
+
+{% if not user %}
+<div class="hero-banner">
+    <div class="hero-text">
+        <h2>Fantasy Football Betting with Real Odds</h2>
+        <p>$1,000 in free bets. Odds powered by Monte Carlo simulations. Compete for weekly and season prizes.</p>
+    </div>
+    <a href="{{ url_for('google.login') }}" class="hero-cta">Sign In to Start Betting</a>
+</div>
+{% endif %}
+
+{% if user %}
+<div class="betting-info-bar">
     <div class="prize-info">
         <div class="prize-row">
             <span class="prize-label">Weekly Prize:</span> #1 in PnL for the week receives <span class="prize-amount">$20</span>

@@ -1,18 +1,3 @@
-    .page-header {
-        margin-bottom: 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .page-title {
-        font-size: 20px;
-        color: var(--text-primary);
-        margin-bottom: 0;
-    }
-
     .logout-btn {
         padding: 10px 24px;
         background: transparent;
@@ -277,10 +262,6 @@
     }
 
     @media (min-width: 768px) {
-        .page-title {
-            font-size: 28px;
-        }
-
         .account-grid {
             grid-template-columns: repeat(2, 1fr);
         }

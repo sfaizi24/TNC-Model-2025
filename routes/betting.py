@@ -18,7 +18,11 @@ betting_bp = Blueprint("betting", __name__)
 
 @betting_bp.route("/betting")
 def betting():
-    return render_template("betting.html", user=current_user if current_user.is_authenticated else None)
+    return render_template(
+        "betting.html",
+        user=current_user if current_user.is_authenticated else None,
+        current_week=get_current_week(),
+    )
 
 
 @betting_bp.route("/leaderboard")

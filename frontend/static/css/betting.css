@@ -1,4 +1,44 @@
-    .page-header {
+    .hero-banner {
+        background: linear-gradient(135deg, rgba(20, 147, 255, 0.12) 0%, rgba(63, 185, 80, 0.12) 100%);
+        border: 1px solid var(--fanduel-light-gray);
+        border-radius: 10px;
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .hero-text h2 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .hero-text p {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .hero-cta {
+        padding: 12px 28px;
+        background: var(--fanduel-blue);
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        transition: background 0.2s ease;
+    }
+
+    .hero-cta:hover {
+        background: #0D7FE8;
+    }
+
+    .betting-info-bar {
         margin-bottom: 15px;
         display: flex;
         justify-content: space-between;
@@ -540,7 +580,7 @@
     }
     
     @media (max-width: 767px) {
-        .page-header {
+        .betting-info-bar {
             gap: 10px;
         }
         
@@ -642,10 +682,6 @@
     }
     
     @media (min-width: 768px) {
-        .page-title {
-            font-size: 42px;
-        }
-        
         .matchups-grid {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -770,4 +806,30 @@
         background: var(--fanduel-blue);
         color: white;
         border-color: var(--fanduel-blue);
+    }
+
+    @media (max-width: 480px) {
+        .toast-container {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+        }
+
+        .toast {
+            min-width: unset;
+            width: 100%;
+        }
+
+        .hero-banner {
+            padding: 18px 16px;
+        }
+
+        .hero-text h2 {
+            font-size: 17px;
+        }
+
+        .hero-cta {
+            width: 100%;
+            text-align: center;
+        }
     }
