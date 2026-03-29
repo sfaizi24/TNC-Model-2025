@@ -1,4 +1,3 @@
-import sqlite3
 from datetime import UTC, datetime
 
 from flask import Blueprint, jsonify, render_template, request
@@ -7,10 +6,10 @@ from sqlalchemy import Integer, case, cast, desc, distinct, func
 
 from database import db
 from routes.helpers import (
-    ODDS_DB_PATH,
     check_betting_period_lock,
     get_current_week,
     get_team_mapping,
+    query_analytics,
 )
 
 betting_bp = Blueprint("betting", __name__)
@@ -387,12 +386,10 @@ def place_bet():
             team_idx = data.get("team_idx")
             choice = data.get("choice")
 
-            conn = sqlite3.connect(ODDS_DB_PATH)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM betting_odds_team_ou WHERE week = ? ORDER BY owner", (week,))
-            teams = cursor.fetchall()
-            conn.close()
+            teams = query_analytics(
+                "SELECT * FROM betting_odds_team_ou WHERE week = :week ORDER BY owner",
+                {"week": week},
+            )
 
             if team_idx >= len(teams):
                 print(f"[BET REJECTED] User {current_user.id} - Invalid team_idx: {team_idx} (max: {len(teams) - 1})")
@@ -435,12 +432,10 @@ def place_bet():
         team = data.get("team")
         team_mapping = get_team_mapping(week)
 
-        conn = sqlite3.connect(ODDS_DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM betting_odds_matchup_ml WHERE week = ? ORDER BY matchup", (week,))
-        matchups = cursor.fetchall()
-        conn.close()
+        matchups = query_analytics(
+            "SELECT * FROM betting_odds_matchup_ml WHERE week = :week ORDER BY matchup",
+            {"week": week},
+        )
 
         if matchup_idx >= len(matchups):
             print(

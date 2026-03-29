@@ -1,15 +1,11 @@
-import sqlite3
 from datetime import UTC
 from functools import wraps
 
 from flask import flash, redirect, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import text
 
 from database import db
-
-LEAGUE_DB_PATH = "backend/data/databases/league.db"
-PROJECTIONS_DB_PATH = "backend/data/databases/projections.db"
-ODDS_DB_PATH = "backend/data/databases/odds.db"
 
 
 def get_current_week():
@@ -63,34 +59,33 @@ def admin_required(f):
     return decorated_function
 
 
+def query_analytics(sql, params=None):
+    """Execute a read-only SQL query and return results as a list of dicts."""
+    result = db.session.execute(text(sql), params or {})
+    return [dict(row._mapping) for row in result]
+
+
 def get_team_mapping(week):
     """Get roster_id to owner name mapping from league database for the given week."""
+    league_rows = query_analytics(
+        "SELECT DISTINCT league_id FROM sleeper_matchups WHERE week = :week",
+        {"week": week},
+    )
+    current_league_id = league_rows[0]["league_id"] if league_rows else None
+
+    roster_rows = query_analytics(
+        """
+        SELECT r.roster_id, u.display_name, u.username
+        FROM sleeper_rosters r
+        LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
+        WHERE r.league_id = :league_id
+        """,
+        {"league_id": current_league_id},
+    )
+
     team_mapping = {}
-    with sqlite3.connect(LEAGUE_DB_PATH) as league_conn:
-        league_conn.row_factory = sqlite3.Row
-        league_cursor = league_conn.cursor()
-
-        league_cursor.execute(
-            """
-            SELECT DISTINCT league_id FROM matchups WHERE week = ?
-        """,
-            (week,),
-        )
-        league_row = league_cursor.fetchone()
-        current_league_id = league_row["league_id"] if league_row else None
-
-        league_cursor.execute(
-            """
-            SELECT r.roster_id, u.display_name, u.username
-            FROM rosters r
-            LEFT JOIN users u ON r.owner_id = u.user_id
-            WHERE r.league_id = ?
-        """,
-            (current_league_id,),
-        )
-
-        for row in league_cursor.fetchall():
-            owner_name = row["display_name"] or row["username"] or f"Team {row['roster_id']}"
-            team_mapping[row["roster_id"]] = owner_name
+    for row in roster_rows:
+        owner_name = row["display_name"] or row["username"] or f"Team {row['roster_id']}"
+        team_mapping[row["roster_id"]] = owner_name
 
     return team_mapping

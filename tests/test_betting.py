@@ -204,3 +204,33 @@ def test_remove_bet_locked_period(logged_in_client, user, db_session):
 
     assert data["success"] is False
     assert db.session.query(Bet).count() == 1
+
+
+def test_place_team_ou_bet(logged_in_client, user, betting_period, seeded_analytics):
+    resp = logged_in_client.post(
+        "/api/place_bet",
+        json={"bet_type": "team_ou", "amount": 50, "team_idx": 0, "choice": "over"},
+    )
+    data = resp.get_json()
+
+    assert data["success"] is True
+    assert data["new_balance"] == 950.0
+
+    bet = db.session.query(Bet).first()
+    assert bet.bet_type == "team_ou"
+    assert "O/U" in bet.description
+    assert bet.odds == "EVEN"
+
+
+def test_place_moneyline_bet(logged_in_client, user, betting_period, seeded_analytics):
+    resp = logged_in_client.post(
+        "/api/place_bet",
+        json={"bet_type": "moneyline", "amount": 100, "matchup_idx": 0, "team": "team1"},
+    )
+    data = resp.get_json()
+
+    assert data["success"] is True
+
+    bet = db.session.query(Bet).first()
+    assert bet.bet_type == "moneyline"
+    assert bet.odds == "-150"
