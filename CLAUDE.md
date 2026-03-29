@@ -19,6 +19,8 @@ TNCasino — fantasy football analytics & fake-money betting platform. Flask web
 ## Commands
 
 - **Run locally**: `python app.py` (Flask on 0.0.0.0:5000)
+- **Scrape projections**: `python scrape.py --week 17` (runs all scrapers, validates)
+- **Validate scraping**: `python validate_scraping.py --week 17` (checks data quality)
 - **Install browser drivers**: `playwright install chromium` (required for FanDuel scraper)
 - **Format**: `ruff format <file>` | **Lint**: `ruff check <file>`
 
@@ -51,7 +53,7 @@ Nine Jupyter notebooks in `backend/notebooks/`, run sequentially:
 - **Scrapers are fragile** — they break when source sites change layout. Expect failures and be ready to debug/adapt selectors.
 - **Player name matching is brittle** — injury indicators get stripped from names; mismatches cause silent data loss.
 - **Monte Carlo uses lognormal** (not normal) distribution. Position baseline variances: QB=7, RB=9, WR=10, TE=8, K=4, DST=7.
-- **Tests**: `python -m pytest` — 69 tests, all in-memory SQLite, runs in <1s. CI runs lint + tests on every push/PR.
+- **Tests**: `python -m pytest` — 78 tests, all in-memory SQLite, runs in <1s. CI runs lint + tests on every push/PR.
 - **`.env` required** — needs `SECRET_KEY`, `DATABASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `ADMIN_EMAILS`. Local dev also needs `OAUTHLIB_INSECURE_TRANSPORT=1` and `OAUTHLIB_RELAX_TOKEN_SCOPE=1`.
 
 ## Code Quality Philosophy
