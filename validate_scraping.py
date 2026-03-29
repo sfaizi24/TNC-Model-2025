@@ -31,10 +31,8 @@ MIN_PROJECTIONS = 150
 
 
 def normalize_week(week_arg):
-    """Normalize week input: '17' -> 'Week 17', 'Week 17' -> 'Week 17'."""
+    """Normalize week input: '17' -> 'Week 17', 'week 17' -> 'Week 17'."""
     week_str = str(week_arg).strip()
-    if week_str.lower().startswith("week"):
-        return week_str
     match = re.search(r"\d+", week_str)
     return f"Week {match.group()}" if match else week_str
 

@@ -63,7 +63,7 @@ def test_normalize_week_already_formatted():
 
 
 def test_normalize_week_lowercase():
-    assert normalize_week("week 10") == "week 10"
+    assert normalize_week("week 10") == "Week 10"
 
 
 # --- validate tests ---

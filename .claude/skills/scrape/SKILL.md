@@ -41,11 +41,14 @@ Check the result: PASS, WARN, or FAIL. PASS means 3+ sources, 150+ projections, 
 
 **To retry a single source:**
 ```bash
+python -m backend.scrapers.scraper_sleeper --week "Week 17" --season 2025
 python -m backend.scrapers.scraper_espn --week "Week 17" --season 2025
+python -m backend.scrapers.scraper_fantasypros --week "Week 17"
+python -m backend.scrapers.scraper_firstdown --week "Week 17"
+python -m backend.scrapers.scraper_fanduel --week "Week 17"
 ```
 
-Replace `scraper_espn` with: `scraper_sleeper`, `scraper_fantasypros`, `scraper_firstdown`, `scraper_fanduel`.
-Add `--no-headless` to watch the browser for debugging.
+Note: only Sleeper and ESPN accept `--season`. Add `--no-headless` to any browser-based scraper to watch it.
 
 ## Debugging scraper failures
 
