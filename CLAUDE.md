@@ -78,6 +78,8 @@ Do not leave behind AI artifacts: no over-commented code, no unnecessary docstri
 ```
 app.py              — App factory, config, extensions, blueprint registration (~70 lines)
 publish.py          — Push local SQLite analytics data to production PostgreSQL
+scrape.py           — Orchestrate scrapers: per-source isolation, validation, structured output
+validate_scraping.py — Check projection data quality (sources, positions, duplicates)
 extensions.py       — Shared Flask extensions (CSRFProtect)
 migrations.py       — Schema migrations (run on startup)
 auth.py             — Google OAuth, login_manager, admin email allowlist
