@@ -49,6 +49,18 @@ chromedriver.log
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
+# Generated chart outputs
+backend/data/images/*.png
+frontend/static/images/dist_Team_*.png
+frontend/static/images/simulation_*.png
+frontend/static/images/betting_odds_*.png
+frontend/static/images/percentile_ranges_*.png
+frontend/static/images/cdf_plot_*.png
+frontend/static/images/win_probability_*.png
+
+# Replit/agent attachments
+attached_assets/
+
 # Temporary scraper files
 _temp_*.py
 
