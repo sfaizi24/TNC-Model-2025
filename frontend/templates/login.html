@@ -7,28 +7,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="landing-container">
-    <img class="landing-logo" src="{{ url_for('static', filename='images/tnc-logo-shield.png') }}" alt="TNCasino">
-    <div class="landing-eyebrow">TNCasino</div>
-    <h1 class="landing-title">Fantasy Football Betting<br>with real odds.</h1>
-    <p class="landing-subhead">
-        Powered by <span class="model-name">The Model<sup>&trade;</sup> V3</span>. Aggregated projections from FanDuel, FantasyPros, ESPN &amp; FirstDown &mdash; run through 50,000 Monte Carlo simulations per matchup.
-    </p>
+<div class="tnc-login">
+    <div class="tnc-login-card">
+        <img class="tnc-login-logo" src="{{ url_for('static', filename='images/tnc-logo-shield.png') }}" alt="TNCasino">
+        <div class="tnc-login-pre">TNCasino</div>
+        <h1 class="tnc-login-h1">Fantasy Football Betting<br>with real odds.</h1>
+        <p class="tnc-login-sub">
+            Powered by <span class="tnc-model-name">The Model<sup>&trade;</sup> V3</span>. Aggregated projections from FanDuel, FantasyPros, ESPN &amp; FirstDown &mdash; run through 50,000 Monte Carlo simulations per matchup.
+        </p>
 
-    <a href="{{ url_for('google.login') }}" class="login-btn">Sign in with Google</a>
+        <a href="{{ url_for('google.login') }}" class="tnc-btn tnc-btn-primary tnc-login-cta">
+            Sign in with Google
+        </a>
 
-    <div class="landing-stats">
-        <div class="landing-stat">
-            <strong>$1,000</strong>
-            <span>Free starting balance</span>
-        </div>
-        <div class="landing-stat">
-            <strong>$120</strong>
-            <span>Weekly + season prize pool</span>
-        </div>
-        <div class="landing-stat">
-            <strong>50K</strong>
-            <span>Monte Carlo sims per matchup</span>
+        <div class="tnc-login-feat">
+            <div class="tnc-login-stat">
+                <strong>$1,000</strong>
+                <span>Free starting balance</span>
+            </div>
+            <div class="tnc-login-stat">
+                <strong>$120</strong>
+                <span>Weekly + season prize pool</span>
+            </div>
+            <div class="tnc-login-stat">
+                <strong>50K</strong>
+                <span>Monte Carlo sims per matchup</span>
+            </div>
         </div>
     </div>
 </div>
