@@ -1,23 +1,27 @@
+    .section-card {
+        margin-bottom: 24px;
+    }
+
     .leaderboard-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 20px;
-        margin-bottom: 30px;
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .leaderboard-card {
         background: var(--tnc-surface);
-        border-radius: 12px;
-        padding: 20px;
         border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-xl);
+        padding: 16px;
     }
 
     .card-title {
         color: var(--tnc-blue);
         font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        padding-bottom: 10px;
+        font-weight: var(--tnc-fw-semi);
+        margin-bottom: 14px;
+        padding-bottom: 8px;
         border-bottom: 1px solid var(--tnc-border);
         display: flex;
         align-items: center;
@@ -25,65 +29,68 @@
         gap: 8px;
     }
 
-    .trophy {
-        font-size: 20px;
-    }
-
     .week-selector {
         display: flex;
         align-items: center;
         gap: 8px;
+        font-size: 13px;
+        font-weight: var(--tnc-fw-regular);
+    }
+
+    .week-selector label {
+        color: var(--tnc-fg-muted);
     }
 
     .week-selector select {
         background: var(--tnc-bg);
         color: var(--tnc-fg);
         border: 1px solid var(--tnc-border);
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 14px;
+        padding: 6px 10px;
+        border-radius: var(--tnc-r-sm);
+        font-size: 13px;
+        font-family: inherit;
         cursor: pointer;
     }
 
     .rankings-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
     }
 
     .rank-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
+        padding: 12px 14px;
         background: var(--tnc-bg);
-        border-radius: 8px;
         border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-md);
     }
 
     .rank-item.top-1 {
-        border-color: #FFD700;
+        border-color: var(--tnc-gold);
         background: rgba(255, 215, 0, 0.05);
     }
 
     .rank-item.top-2 {
-        border-color: #C0C0C0;
+        border-color: var(--tnc-silver);
         background: rgba(192, 192, 192, 0.05);
     }
 
     .rank-item.top-3 {
-        border-color: #CD7F32;
+        border-color: var(--tnc-bronze);
         background: rgba(205, 127, 50, 0.05);
     }
 
     .rank-item.bottom {
-        border-color: #ff4444;
+        border-color: var(--tnc-loss);
         background: rgba(255, 68, 68, 0.05);
     }
 
     .separator {
         border-top: 2px dashed var(--tnc-border);
-        margin: 16px 0;
+        margin: 16px 0 6px;
         position: relative;
     }
 
@@ -95,9 +102,10 @@
         background: var(--tnc-surface);
         padding: 0 12px;
         color: var(--tnc-fg-muted);
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: var(--tnc-fw-bold);
         text-transform: uppercase;
+        letter-spacing: var(--tnc-track-caps);
     }
 
     .rank-left {
@@ -108,35 +116,39 @@
 
     .rank-number {
         font-size: 16px;
-        font-weight: bold;
-        min-width: 30px;
+        font-weight: var(--tnc-fw-bold);
+        min-width: 24px;
+        text-align: center;
+        color: var(--tnc-fg-muted);
+        font-variant-numeric: tabular-nums;
     }
 
-    .rank-number.gold {
-        color: #FFD700;
+    .rank-number.top-1 {
+        color: var(--tnc-gold);
     }
 
-    .rank-number.silver {
-        color: #C0C0C0;
+    .rank-number.top-2 {
+        color: var(--tnc-silver);
     }
 
-    .rank-number.bronze {
-        color: #CD7F32;
+    .rank-number.top-3 {
+        color: var(--tnc-bronze);
     }
 
-    .rank-number.last {
-        color: #ff4444;
+    .rank-number.bottom {
+        color: var(--tnc-loss);
     }
 
     .user-name {
         color: var(--tnc-fg);
         font-size: 14px;
-        font-weight: 600;
+        font-weight: var(--tnc-fw-semi);
     }
 
     .pnl-value {
         font-size: 16px;
-        font-weight: bold;
+        font-weight: var(--tnc-fw-bold);
+        font-variant-numeric: tabular-nums;
     }
 
     .pnl-value.positive {
@@ -144,14 +156,14 @@
     }
 
     .pnl-value.negative {
-        color: #ff4444;
+        color: var(--tnc-loss);
     }
 
     .bet-detail {
-        padding: 12px 16px;
+        padding: 12px 14px;
         background: var(--tnc-bg);
-        border-radius: 8px;
         border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-md);
         margin-bottom: 10px;
     }
 
@@ -161,20 +173,23 @@
 
     .bet-label {
         color: var(--tnc-fg-muted);
-        font-size: 12px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: var(--tnc-track-mini);
+        font-weight: var(--tnc-fw-semi);
         margin-bottom: 6px;
     }
 
     .bet-description {
         color: var(--tnc-fg);
         font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 8px;
+        font-weight: var(--tnc-fw-semi);
+        margin-bottom: 10px;
     }
 
     .bet-stats {
         display: flex;
-        gap: 16px;
+        gap: 14px;
         align-items: center;
         flex-wrap: wrap;
     }
@@ -192,34 +207,37 @@
 
     .bet-stat-value {
         color: var(--tnc-fg);
-        font-weight: 600;
+        font-weight: var(--tnc-fw-semi);
+        font-variant-numeric: tabular-nums;
     }
 
     .status-badge {
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 3px 10px;
+        border-radius: var(--tnc-r-pill);
         font-size: 11px;
-        font-weight: 600;
+        font-weight: var(--tnc-fw-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tnc-track-mini);
     }
 
     .status-won {
-        background: rgba(63, 185, 80, 0.2);
+        background: var(--tnc-win-tint);
         color: var(--tnc-win);
     }
 
     .status-lost {
-        background: rgba(255, 68, 68, 0.2);
-        color: #ff4444;
+        background: var(--tnc-loss-tint);
+        color: var(--tnc-loss);
     }
 
     .status-pending {
-        background: rgba(210, 153, 34, 0.2);
+        background: var(--tnc-pending-tint);
         color: var(--tnc-pending);
     }
 
     .no-data {
         text-align: center;
-        padding: 30px;
+        padding: 30px 16px;
         color: var(--tnc-fg-muted);
         font-size: 14px;
     }
