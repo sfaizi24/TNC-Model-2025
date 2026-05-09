@@ -7,71 +7,56 @@
 {% endblock %}
 
 {% block content %}
-<div id="toast-container" class="toast-container"></div>
+<div class="tnc-toast-stack" id="toastStack"></div>
 
-<div class="page-header betting-header">
-    <h1 class="page-title">Week {{ current_week }} Matchups</h1>
+<div class="tnc-betting-head">
+    <div>
+        <h1 class="tnc-betting-title">Week {{ current_week }} Matchups</h1>
+        <div class="tnc-model-strip">
+            <span class="tnc-live-dot" aria-hidden="true">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+            </span>
+            <span class="tnc-model-tag">Powered by <span class="tnc-model-name">The Model<sup>&trade;</sup> V3</span></span>
+            <span class="tnc-model-sep">&middot;</span>
+            <a class="tnc-model-link" href="/about">How it works</a>
+        </div>
+    </div>
     {% if user %}
-    <div class="balance-chip">
-        <span class="balance-chip-label">Balance</span>
-        <span class="balance-chip-amount" id="userBalance">${{ "%.2f"|format(user.account_balance) }}</span>
+    <div class="tnc-balance-mini tnc-tab-num">
+        <span>Balance</span>
+        <strong id="userBalance">${{ "%.2f"|format(user.account_balance) }}</strong>
     </div>
     {% endif %}
 </div>
 
-<div class="powered-by-strip">
-    <span class="powered-dot"></span>
-    <span>Powered by <span class="model-name">The Model<sup>&trade;</sup> V3</span></span>
-    <span class="powered-sep">&middot;</span>
-    <a href="/about" class="powered-link">How it works</a>
-</div>
-
-<div class="info-strip">
-    <div class="info-strip-col">
-        <div class="info-strip-label">Net Profit Leader Eligible for IRL Prizes</div>
-        <div class="info-strip-value">
-            <span class="prize-tag">Weekly <strong>$20</strong></span>
-            <span class="prize-sep">&middot;</span>
-            <span class="prize-tag">Season <strong>$100</strong></span>
+<div class="tnc-prize-strip">
+    <div class="tnc-prize-col">
+        <div class="tnc-prize-head">Net Profit Leader Eligible for IRL Prizes</div>
+        <div class="tnc-prize-rows">
+            <span class="tnc-prize-row"><span>Weekly</span><strong>$20</strong></span>
+            <span class="tnc-prize-row"><span>Season</span><strong>$100</strong></span>
         </div>
     </div>
-    <div class="info-strip-col">
-        <div class="info-strip-label">Bets Open Until</div>
-        <div class="info-strip-value">{{ bets_open_until }}</div>
+    <div class="tnc-prize-divider" aria-hidden="true"></div>
+    <div class="tnc-prize-col tnc-prize-col-aside">
+        <div class="tnc-prize-head">Bets Open Until</div>
+        <div class="tnc-prize-rows">
+            <strong class="tnc-prize-when">{{ bets_open_until }}</strong>
+        </div>
     </div>
 </div>
 
-<div class="active-bets-compact" id="activeBetsCompact"></div>
+<div id="activeBets"></div>
 
-<div class="betting-tabs">
-    <button class="betting-tab active" data-tab="matchups-moneyline">Moneyline</button>
-    <button class="betting-tab" data-tab="team-performance">Over/Under</button>
-    <button class="betting-tab" data-tab="highest-scorer">Highest Scorer</button>
-    <button class="betting-tab" data-tab="lowest-scorer">Lowest Scorer</button>
+<div class="tnc-tabs" id="tabs">
+    <button class="tnc-tab is-on" data-tab="ml">Moneyline</button>
+    <button class="tnc-tab" data-tab="ou">Over/Under</button>
+    <button class="tnc-tab" data-tab="hi">Highest Scorer</button>
+    <button class="tnc-tab" data-tab="lo">Lowest Scorer</button>
 </div>
 
-<div id="matchups-moneyline" class="betting-content active">
-    <div class="matchups-grid" id="matchupsGrid">
-        <p class="grid-loading">Loading matchups...</p>
-    </div>
-</div>
-
-<div id="team-performance" class="betting-content">
-    <div class="matchups-grid" id="teamPerformanceGrid">
-        <p class="grid-loading">Loading over/under bets...</p>
-    </div>
-</div>
-
-<div id="highest-scorer" class="betting-content">
-    <div class="matchups-grid" id="highestScorerGrid">
-        <p class="grid-loading">Loading highest scorer bets...</p>
-    </div>
-</div>
-
-<div id="lowest-scorer" class="betting-content">
-    <div class="matchups-grid" id="lowestScorerGrid">
-        <p class="grid-loading">Loading lowest scorer bets...</p>
-    </div>
+<div class="tnc-mc-grid" id="grid">
+    <p class="tnc-mc-loading">Loading matchups&hellip;</p>
 </div>
 {% endblock %}
 
