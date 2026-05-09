@@ -1,5 +1,4 @@
 import logging
-from itertools import groupby
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -13,25 +12,29 @@ account_bp = Blueprint("account", __name__)
 @account_bp.route("/account")
 @login_required
 def account():
-    from models import Bet, BettingPeriod, WeeklyStats
+    from models import Bet, WeeklyStats
 
-    settled_bets = (
+    bet_history = (
         db.session.query(Bet)
-        .filter(Bet.user_id == current_user.id, Bet.status.in_(["won", "lost"]))
+        .filter(Bet.user_id == current_user.id)
         .order_by(Bet.week.desc(), Bet.created_at.desc())
         .all()
     )
-    bets_by_week = [(week, list(week_bets)) for week, week_bets in groupby(settled_bets, key=lambda b: b.week)]
 
-    weekly_stats = (
+    weekly_pnl = (
         db.session.query(WeeklyStats)
-        .join(BettingPeriod, BettingPeriod.week == WeeklyStats.week)
-        .filter(WeeklyStats.user_id == current_user.id, BettingPeriod.is_settled.is_(True))
+        .filter(WeeklyStats.user_id == current_user.id)
         .order_by(WeeklyStats.week.desc())
         .all()
     )
 
-    return render_template("account.html", user=current_user, bets_by_week=bets_by_week, weekly_stats=weekly_stats)
+    return render_template(
+        "account.html",
+        user=current_user,
+        bet_history=bet_history,
+        weekly_pnl=weekly_pnl,
+        starting_balance=1000.00,
+    )
 
 
 @account_bp.route("/account/update-profile", methods=["POST"])

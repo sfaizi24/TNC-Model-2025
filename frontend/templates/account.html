@@ -7,105 +7,122 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Account</h1>
-    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
+<div class="tnc-page-head">
+    <h1 class="tnc-acct-title">Account</h1>
+    <a href="{{ url_for('auth.logout') }}" class="tnc-btn tnc-btn-ghost tnc-acct-logout">Logout</a>
 </div>
 
-<div class="balance-card">
-    <div class="balance-label">Available Balance</div>
-    <div class="balance-amount tnc-num-hero">${{ "%.2f"|format(user.account_balance) }}</div>
-    <div class="balance-pnl {% if user.total_pnl >= 0 %}positive{% else %}negative{% endif %}">
+<div class="tnc-acct-bal">
+    <div class="tnc-acct-bal-label">Available Balance</div>
+    <div class="tnc-acct-bal-amount">${{ "%.2f"|format(user.account_balance) }}</div>
+    <div class="tnc-acct-bal-pnl {% if user.total_pnl >= 0 %}tnc-pos{% else %}tnc-neg{% endif %}">
         {{ '+' if user.total_pnl >= 0 else '-' }}${{ "%.2f"|format(user.total_pnl|abs) }} all-time
     </div>
 </div>
 
-<div class="account-grid">
-    <div class="account-card">
-        <h3>Profile Information</h3>
-        {% if user.first_name or user.last_name %}
-        <div class="info-row">
-            <span class="info-label">Name</span>
-            <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
+<div class="tnc-acct-grid">
+    <div class="tnc-card">
+        <h3 class="tnc-card-h">Profile</h3>
+        <div class="tnc-acct-row">
+            <span class="tnc-acct-row-l">Name</span>
+            <span class="tnc-acct-row-v">{{ user.first_name or '' }} {{ user.last_name or '' }}</span>
         </div>
-        {% endif %}
-        <div class="info-row">
-            <span class="info-label">Email</span>
-            <span class="info-value">{{ user.email or 'Not provided' }}</span>
+        <div class="tnc-acct-row">
+            <span class="tnc-acct-row-l">Email</span>
+            <span class="tnc-acct-row-v">{{ user.email or '—' }}</span>
+        </div>
+        <div class="tnc-acct-row">
+            <span class="tnc-acct-row-l">Starting Balance</span>
+            <span class="tnc-acct-row-v">${{ "%.2f"|format(starting_balance) }}</span>
+        </div>
+        <div class="tnc-acct-row">
+            <span class="tnc-acct-row-l">Admin</span>
+            <span class="tnc-acct-row-v">{{ 'Yes' if user.is_admin else 'No' }}</span>
         </div>
     </div>
 
-    <div class="account-card">
-        <h3>Update Profile</h3>
+    <div class="tnc-card">
+        <h3 class="tnc-card-h">Update Profile</h3>
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+            {% for category, message in messages %}
+                <div class="tnc-acct-flash tnc-acct-flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
         {% endwith %}
-        <form method="POST" action="{{ url_for('account.update_profile') }}" class="profile-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <div class="form-group">
-                <label for="first_name" class="form-label">First Name</label>
-                <input type="text" id="first_name" name="first_name" class="form-input"
+        <form method="POST" action="{{ url_for('account.update_profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="tnc-acct-field">
+                <label for="first_name" class="tnc-acct-label">First Name</label>
+                <input type="text" id="first_name" name="first_name" class="tnc-acct-input"
                        value="{{ user.first_name or '' }}" maxlength="100">
             </div>
-            <div class="form-group">
-                <label for="last_name" class="form-label">Last Name</label>
-                <input type="text" id="last_name" name="last_name" class="form-input"
+            <div class="tnc-acct-field">
+                <label for="last_name" class="tnc-acct-label">Last Name</label>
+                <input type="text" id="last_name" name="last_name" class="tnc-acct-input"
                        value="{{ user.last_name or '' }}" maxlength="100">
             </div>
-            <button type="submit" class="update-btn">Update Profile</button>
+            <button type="submit" class="tnc-btn tnc-btn-primary tnc-acct-update">Update</button>
         </form>
-    </div>
-
-    <div class="account-card">
-        <h3>Weekly Performance</h3>
-        {% if weekly_stats %}
-        <div class="weekly-grid">
-            {% for stat in weekly_stats %}
-            <div class="weekly-tile">
-                <div class="weekly-tile-label">Week {{ stat.week }}</div>
-                <div class="weekly-tile-pnl {% if stat.settled_pnl >= 0 %}positive{% else %}negative{% endif %}">
-                    {{ '+' if stat.settled_pnl >= 0 else '-' }}${{ "%.0f"|format(stat.settled_pnl|abs) }}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="no-bets">No settled weeks yet.</p>
-        {% endif %}
     </div>
 </div>
 
-<div class="account-card">
-    <h3>Bet History</h3>
-    {% if bets_by_week %}
-    <div class="bet-history">
-        {% for week, week_bets in bets_by_week %}
-        <div class="bet-week-section">
-            <div class="bet-week-header">Week {{ week }}</div>
-            {% for bet in week_bets %}
-            <div class="bet-row">
-                <span class="bet-col bet-col-desc">{{ bet.description }}</span>
-                <span class="bet-col bet-col-odds">{{ bet.odds }}</span>
-                <span class="bet-col bet-col-stake">${{ "%.2f"|format(bet.amount) }}</span>
-                <span class="bet-col bet-col-result {% if bet.result > 0 %}positive{% elif bet.result < 0 %}negative{% endif %}">
-                    {{ '+' if bet.result > 0 else ('-' if bet.result < 0 else '') }}${{ "%.2f"|format(bet.result|abs) }}
-                </span>
+<div class="tnc-card tnc-acct-block">
+    <h3 class="tnc-card-h">Weekly P&amp;L</h3>
+    {% if weekly_pnl %}
+    <div class="tnc-acct-weekly">
+        {% for w in weekly_pnl %}
+        <div class="tnc-acct-week">
+            <div class="tnc-acct-week-label">Week {{ w.week }}</div>
+            <div class="tnc-acct-week-pnl tnc-tab-num
+                {% if w.pnl > 0 %}tnc-pos{% elif w.pnl < 0 %}tnc-neg{% else %}tnc-acct-week-flat{% endif %}">
+                {{ '+' if w.pnl > 0 else ('-' if w.pnl < 0 else '') }}${{ "%.2f"|format(w.pnl|abs) }}
             </div>
-            {% endfor %}
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="no-bets">
-        <p>No settled bets yet.</p>
-        <p style="margin-top: 10px;">
-            <a href="/betting" style="color: var(--tnc-blue);">Place your first bet &rarr;</a>
-        </p>
+    <p class="tnc-acct-empty">No weekly results yet.</p>
+    {% endif %}
+</div>
+
+<div class="tnc-card tnc-acct-block">
+    <h3 class="tnc-card-h">Bet History</h3>
+    {% if bet_history %}
+    <div class="tnc-acct-table-wrap">
+        <table class="tnc-acct-table">
+            <thead>
+                <tr>
+                    <th>Wk</th>
+                    <th>Bet</th>
+                    <th>Odds</th>
+                    <th>Stake</th>
+                    <th>Result</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bet_history %}
+                <tr>
+                    <td>{{ b.week or '—' }}</td>
+                    <td>{{ b.description }}</td>
+                    <td class="tnc-tab-num">{{ b.odds }}</td>
+                    <td class="tnc-tab-num">${{ "%.2f"|format(b.amount) }}</td>
+                    <td class="tnc-tab-num
+                        {% if b.status == 'won' %}tnc-pos
+                        {% elif b.status == 'lost' %}tnc-neg
+                        {% endif %}">
+                        {% if b.status == 'pending' %}—
+                        {% elif b.status == 'won' %}+${{ "%.2f"|format(b.result) }}
+                        {% else %}-${{ "%.2f"|format(b.amount) }}
+                        {% endif %}
+                    </td>
+                    <td><span class="tnc-badge tnc-badge-{{ b.status }}">{{ b.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <p class="tnc-acct-empty">No bets yet. <a href="{{ url_for('betting.betting') }}">Place your first bet &rarr;</a></p>
     {% endif %}
 </div>
 {% endblock %}

@@ -378,3 +378,65 @@ body {
     vertical-align: super;
     opacity: 0.85;
 }
+
+.tnc-page-head {
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tnc-card {
+    background: var(--tnc-surface);
+    border: 1px solid var(--tnc-border);
+    border-radius: var(--tnc-r-lg);
+    padding: 14px;
+}
+
+.tnc-card-h {
+    color: var(--tnc-blue);
+    font-size: 15px;
+    font-weight: var(--tnc-fw-semi);
+    margin-bottom: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--tnc-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tnc-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: var(--tnc-fw-semi);
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.tnc-badge-won {
+    background: var(--tnc-win-tint);
+    color: var(--tnc-win);
+}
+
+.tnc-badge-lost {
+    background: var(--tnc-loss-tint);
+    color: var(--tnc-loss);
+}
+
+.tnc-badge-pending {
+    background: var(--tnc-pending-tint);
+    color: var(--tnc-pending);
+}
+
+.tnc-pos {
+    color: var(--tnc-win);
+}
+
+.tnc-neg {
+    color: var(--tnc-loss);
+}
