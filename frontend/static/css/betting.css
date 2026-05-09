@@ -1,698 +1,598 @@
-    .hero-banner {
-        background: linear-gradient(135deg, rgba(20, 147, 255, 0.12) 0%, rgba(63, 185, 80, 0.12) 100%);
-        border: 1px solid var(--tnc-border);
-        border-radius: 10px;
-        padding: 24px 28px;
-        margin-bottom: 20px;
+    .betting-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 20px;
+        justify-content: space-between;
+        gap: 16px;
         flex-wrap: wrap;
     }
 
-    .hero-text h2 {
-        font-size: 20px;
-        color: var(--tnc-fg);
-        margin-bottom: 6px;
-    }
-
-    .hero-text p {
-        color: var(--tnc-fg-muted);
-        font-size: 14px;
-    }
-
-    .hero-cta {
-        padding: 12px 28px;
-        background: var(--tnc-blue);
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 14px;
-        white-space: nowrap;
-        transition: background 0.2s ease;
-    }
-
-    .hero-cta:hover {
-        background: #0D7FE8;
-    }
-
-    .betting-info-bar {
-        margin-bottom: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    .balance-display {
-        background: var(--tnc-bg);
-        padding: 15px 25px;
-        border-radius: 8px;
+    .balance-chip {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 8px 14px;
+        background: var(--tnc-surface);
         border: 1px solid var(--tnc-border);
-        text-align: right;
+        border-radius: var(--tnc-r-pill);
     }
-    
-    .balance-label {
+
+    .balance-chip-label {
+        color: var(--tnc-fg-muted);
+        font-size: 11px;
+        font-weight: var(--tnc-fw-semi);
+        text-transform: uppercase;
+        letter-spacing: var(--tnc-track-caps);
+    }
+
+    .balance-chip-amount {
+        color: var(--tnc-win);
+        font-size: 18px;
+        font-weight: var(--tnc-fw-bold);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .powered-by-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0 14px;
         color: var(--tnc-fg-muted);
         font-size: 12px;
-        margin-bottom: 5px;
     }
-    
-    .balance-amount {
-        color: var(--tnc-win);
-        font-size: 24px;
-        font-weight: bold;
+
+    .powered-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--tnc-blue);
+        box-shadow: 0 0 6px var(--tnc-blue);
     }
-    
-    .prize-info {
-        background: var(--tnc-bg);
-        padding: 15px 25px;
-        border-radius: 8px;
-        border: 1px solid var(--tnc-border);
-    }
-    
-    .prize-row {
-        margin-bottom: 8px;
-        color: var(--tnc-fg);
-        font-size: 14px;
-    }
-    
-    .prize-row:last-child {
-        margin-bottom: 0;
-    }
-    
-    .prize-label {
-        font-weight: bold;
-        color: var(--tnc-fg);
-    }
-    
-    .prize-amount {
+
+    .model-name {
         color: var(--tnc-blue);
-        font-weight: 600;
+        font-weight: var(--tnc-fw-semi);
     }
-    
+
+    .powered-sep {
+        color: var(--tnc-fg-faint);
+    }
+
+    .powered-link {
+        color: var(--tnc-blue);
+        text-decoration: none;
+    }
+
+    .powered-link:hover {
+        text-decoration: underline;
+    }
+
+    .info-strip {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 12px 14px;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-md);
+        margin-bottom: 16px;
+    }
+
+    .info-strip-col {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-strip-label {
+        color: var(--tnc-fg-muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: var(--tnc-track-caps);
+        font-weight: var(--tnc-fw-semi);
+    }
+
+    .info-strip-value {
+        color: var(--tnc-fg);
+        font-size: 13px;
+        font-weight: var(--tnc-fw-semi);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .prize-tag strong {
+        color: var(--tnc-blue);
+        font-weight: var(--tnc-fw-bold);
+    }
+
+    .prize-sep {
+        color: var(--tnc-fg-faint);
+    }
+
     .betting-tabs {
         display: flex;
-        gap: 10px;
-        margin-bottom: 30px;
-        border-bottom: 2px solid var(--tnc-border);
+        gap: 8px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid var(--tnc-border);
         overflow-x: auto;
-        padding-bottom: 0;
     }
-    
+
     .betting-tab {
-        padding: 12px 20px;
+        padding: 10px 14px;
         background: none;
         border: none;
         color: var(--tnc-fg-muted);
-        font-weight: 600;
+        font-weight: var(--tnc-fw-semi);
+        font-size: 13px;
+        font-family: inherit;
         cursor: pointer;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease;
+        border-bottom: 2px solid transparent;
+        transition: color var(--tnc-dur-base) var(--tnc-ease);
         white-space: nowrap;
     }
-    
+
+    .betting-tab:hover {
+        color: var(--tnc-fg);
+    }
+
     .betting-tab.active {
         color: var(--tnc-blue);
         border-bottom-color: var(--tnc-blue);
     }
-    
+
     .betting-content {
         display: none;
     }
-    
+
     .betting-content.active {
         display: block;
     }
-    
+
     .matchups-grid {
         display: grid;
         grid-template-columns: 1fr;
         gap: 12px;
-        margin-bottom: 30px;
+        margin-bottom: 24px;
     }
-    
+
+    .grid-loading {
+        text-align: center;
+        color: var(--tnc-fg-muted);
+        padding: 40px;
+    }
+
     .matchup-card {
         background: var(--tnc-surface);
-        border-radius: 6px;
-        padding: 8px;
         border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-md);
+        padding: 12px;
         position: relative;
+        transition: border-color var(--tnc-dur-base) var(--tnc-ease);
     }
-    
+
     .matchup-card.has-bet {
-        border: 2px solid var(--tnc-win);
-        box-shadow: 0 0 10px rgba(40, 167, 69, 0.15);
+        border-color: var(--tnc-win);
     }
-    
-    .bet-placed-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: var(--tnc-win);
-        color: white;
-        padding: 3px 8px;
-        border-radius: 8px;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-    
-    .matchup-title {
-        display: none;
-    }
-    
-    .team-line {
-        text-align: center;
-        color: var(--tnc-fg);
+
+    .bet-placed-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 10px;
+        background: var(--tnc-win-tint);
+        border: 1px solid var(--tnc-win);
+        border-radius: var(--tnc-r-sm);
+        margin-bottom: 10px;
         font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 8px;
     }
-    
+
+    .bet-placed-info {
+        color: var(--tnc-win);
+        font-weight: var(--tnc-fw-semi);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .bet-placed-cancel {
+        background: transparent;
+        border: none;
+        color: var(--tnc-loss);
+        font-weight: var(--tnc-fw-semi);
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        padding: 2px 6px;
+    }
+
+    .bet-placed-cancel:hover {
+        text-decoration: underline;
+    }
+
     .teams-container {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         gap: 8px;
         align-items: center;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
-    
+
     .team-section {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-    }
-    
-    .team-name {
-        font-weight: 600;
-        color: var(--tnc-fg);
-        font-size: 12px;
+        gap: 6px;
         text-align: center;
     }
-    
+
+    .team-name {
+        color: var(--tnc-fg);
+        font-size: 13px;
+        font-weight: var(--tnc-fw-semi);
+    }
+
     .win-prob {
         color: var(--tnc-fg-muted);
-        font-size: 10px;
-        text-align: center;
+        font-size: 11px;
     }
-    
+
+    .vs-text {
+        color: var(--tnc-fg-faint);
+        font-size: 11px;
+        font-weight: var(--tnc-fw-bold);
+        letter-spacing: var(--tnc-track-mini);
+    }
+
     .odds-button {
         width: 100%;
-        padding: 6px 8px;
+        padding: 8px;
         background: var(--tnc-bg);
         border: 2px solid var(--tnc-border);
-        border-radius: 4px;
+        border-radius: var(--tnc-r-sm);
         color: var(--tnc-blue);
-        font-weight: bold;
-        font-size: 13px;
+        font-weight: var(--tnc-fw-bold);
+        font-size: 14px;
+        font-family: inherit;
+        font-variant-numeric: tabular-nums;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--tnc-dur-base) var(--tnc-ease);
     }
-    
-    .odds-button:hover {
+
+    .odds-button:hover:not(:disabled) {
         border-color: var(--tnc-blue);
-        background: rgba(20, 147, 255, 0.1);
+        background: var(--tnc-blue-tint);
     }
-    
+
     .odds-button.selected {
         border-color: var(--tnc-blue);
         background: var(--tnc-blue);
         color: white;
     }
-    
-    .positive-odds {
+
+    .odds-button.positive-odds {
         color: var(--tnc-win);
     }
-    
+
     .odds-button.selected.positive-odds {
         color: white;
     }
-    
-    .vs-text {
-        color: var(--tnc-fg-muted);
-        font-weight: bold;
-        font-size: 11px;
+
+    .odds-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
     }
-    
+
+    .quick-bet-buttons {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .quick-bet-btn {
+        flex: 1;
+        padding: 6px 0;
+        background: var(--tnc-bg);
+        border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-sm);
+        color: var(--tnc-fg);
+        font-size: 12px;
+        font-weight: var(--tnc-fw-semi);
+        font-family: inherit;
+        cursor: pointer;
+        transition: all var(--tnc-dur-fast) var(--tnc-ease);
+    }
+
+    .quick-bet-btn:hover {
+        background: var(--tnc-blue);
+        color: white;
+        border-color: var(--tnc-blue);
+    }
+
+    .pays-out-line {
+        color: var(--tnc-win);
+        font-size: 11px;
+        text-align: center;
+        min-height: 14px;
+        margin-bottom: 6px;
+        font-variant-numeric: tabular-nums;
+    }
+
     .bet-controls {
         display: flex;
         align-items: center;
-        gap: 6px;
-        border-top: 1px solid var(--tnc-border);
-        padding-top: 6px;
+        gap: 8px;
     }
-    
+
     .bet-input-group {
         flex: 1;
     }
-    
-    .bet-input-label {
-        display: none;
-    }
-    
+
     .bet-amount-input {
         width: 100%;
-        padding: 8px;
+        padding: 9px 10px;
         background: var(--tnc-bg);
         border: 1px solid var(--tnc-border);
-        border-radius: 4px;
+        border-radius: var(--tnc-r-sm);
         color: var(--tnc-fg);
-        font-size: 12px;
+        font-size: 13px;
+        font-family: inherit;
     }
-    
-    .potential-win {
-        color: var(--tnc-win);
-        font-size: 10px;
-        text-align: center;
-        min-height: 15px;
-        margin-bottom: 3px;
+
+    .bet-amount-input:focus {
+        outline: none;
+        border-color: var(--tnc-blue);
     }
-    
+
+    .btn-place-bet {
+        flex: 0 0 auto;
+        padding: 9px 16px;
+        background: var(--tnc-blue);
+        color: white;
+        border: none;
+        border-radius: var(--tnc-r-sm);
+        font-weight: var(--tnc-fw-semi);
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background var(--tnc-dur-base) var(--tnc-ease);
+        white-space: nowrap;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-place-bet:hover:not(:disabled) {
+        background: var(--tnc-blue-hover);
+    }
+
+    .btn-place-bet:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .show-teams-btn {
         width: 100%;
         padding: 6px;
-        margin-top: 6px;
+        margin-top: 10px;
         background: transparent;
         color: var(--tnc-fg-muted);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-        font-size: 10px;
+        border: 1px solid var(--tnc-border-soft);
+        border-radius: var(--tnc-r-sm);
+        font-size: 11px;
+        font-family: inherit;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 4px;
-        transition: all 0.2s;
+        transition: all var(--tnc-dur-fast) var(--tnc-ease);
     }
-    
+
     .show-teams-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.2);
+        background: var(--tnc-surface-2);
+        color: var(--tnc-fg);
     }
-    
+
     .dropdown-arrow {
         font-size: 10px;
-        transition: transform 0.2s;
     }
-    
+
     .lineups-container {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--tnc-border);
     }
-    
+
     .lineup-grid {
         display: grid;
         grid-template-columns: 1fr 1px 1fr;
-        gap: 16px;
+        gap: 14px;
     }
-    
-    .lineup-column {
+
+    .lineup-column,
+    .single-lineup {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
     }
-    
+
     .lineup-divider {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--tnc-border);
         width: 1px;
     }
-    
+
     .lineup-player {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 6px 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 4px;
+        padding: 5px 8px;
+        background: var(--tnc-bg);
+        border-radius: var(--tnc-r-xs);
     }
-    
+
     .player-name {
         color: var(--tnc-fg);
         font-size: 11px;
         flex: 1;
     }
-    
+
     .player-stats {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 11px;
     }
-    
+
     .player-position {
         color: var(--tnc-fg-muted);
-        font-weight: 500;
+        font-weight: var(--tnc-fw-medium);
         min-width: 30px;
         text-align: right;
     }
-    
+
     .player-points {
         color: var(--tnc-blue);
-        font-weight: 600;
+        font-weight: var(--tnc-fw-semi);
         min-width: 30px;
         text-align: right;
+        font-variant-numeric: tabular-nums;
     }
-    
-    .single-lineup {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
+
     .lineup-loading {
         text-align: center;
         color: var(--tnc-fg-muted);
         padding: 12px;
         font-size: 12px;
     }
-    
-    .btn-place-bet {
-        flex: 1;
-        padding: 8px 12px;
+
+    .scorer-button {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--tnc-bg);
+        border: 2px solid var(--tnc-border);
+        border-radius: var(--tnc-r-sm);
+        color: var(--tnc-fg);
+        font-family: inherit;
+        cursor: pointer;
+        margin-bottom: 8px;
+        transition: all var(--tnc-dur-base) var(--tnc-ease);
+    }
+
+    .scorer-button:hover:not(:disabled) {
+        border-color: var(--tnc-blue);
+        background: var(--tnc-blue-tint);
+    }
+
+    .scorer-button.selected {
+        border-color: var(--tnc-blue);
         background: var(--tnc-blue);
         color: white;
-        border: none;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        white-space: nowrap;
     }
-    
-    .btn-place-bet:hover:not(:disabled) {
-        background: #0D7FE8;
-    }
-    
-    .btn-place-bet:disabled {
-        opacity: 0.5;
+
+    .scorer-button:disabled {
+        opacity: 0.45;
         cursor: not-allowed;
     }
-    
-    .active-bets-compact {
-        margin-bottom: 12px;
-    }
-    
-    .compact-bet-item {
-        background: var(--tnc-surface);
-        border-radius: 4px;
-        padding: 6px 10px;
-        border: 1px solid var(--tnc-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-    }
-    
-    .compact-bet-info {
-        color: var(--tnc-fg);
-        font-size: 11px;
-        font-weight: 500;
-    }
-    
-    .compact-bet-remove {
-        background: transparent;
-        border: 1px solid var(--tnc-fg-muted);
-        color: var(--tnc-fg-muted);
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-size: 10px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    
-    .compact-bet-remove:hover {
-        border-color: #dc3545;
-        color: #dc3545;
-    }
-    
-    .active-bets-section {
-        background: var(--tnc-surface);
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid var(--tnc-border);
-    }
-    
-    .section-title {
-        color: var(--tnc-fg);
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-    
-    .bet-item {
-        background: var(--tnc-bg);
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        border: 1px solid var(--tnc-border);
-    }
-    
-    .bet-item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    
-    .bet-description {
-        color: var(--tnc-fg);
-        font-weight: 600;
-        font-size: 15px;
-    }
-    
-    .bet-amount-display {
-        color: var(--tnc-blue);
-        font-weight: bold;
-    }
-    
-    .bet-details {
-        color: var(--tnc-fg-muted);
+
+    .scorer-owner {
         font-size: 13px;
-        margin-bottom: 10px;
+        font-weight: var(--tnc-fw-bold);
+        text-align: left;
     }
-    
-    .bet-actions {
-        display: flex;
-        gap: 10px;
-    }
-    
-    .btn-remove-bet {
-        flex: 1;
-        padding: 8px;
-        background: var(--tnc-loss);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-remove-bet:hover {
-        background: #C82333;
-    }
-    
-    .no-bets {
-        text-align: center;
-        color: var(--tnc-fg-muted);
-        padding: 30px;
-        font-style: italic;
-    }
-    
-    .coming-soon {
-        text-align: center;
-        padding: 60px 20px;
-        color: var(--tnc-fg-muted);
-    }
-    
-    .coming-soon h3 {
-        color: var(--tnc-blue);
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-    
-    .hs-team-row {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        padding: 8px;
-        background: var(--tnc-bg);
-        border-radius: 4px;
-        margin-bottom: 6px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        align-items: center;
-    }
-    
-    .hs-owner {
-        color: white;
-        font-size: 13px;
-        font-weight: 700;
-        text-align: center;
-    }
-    
-    .hs-stats {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .hs-win-prob {
-        color: rgba(255, 255, 255, 0.8);
+
+    .scorer-prob {
         font-size: 11px;
-        font-weight: 600;
+        color: var(--tnc-fg-muted);
     }
-    
-    .hs-odds {
+
+    .scorer-button.selected .scorer-prob {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .scorer-odds {
+        font-size: 14px;
+        font-weight: var(--tnc-fw-bold);
+        color: var(--tnc-blue);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .scorer-odds.positive-odds {
         color: var(--tnc-win);
-        font-size: 13px;
-        font-weight: 700;
-        transition: color 0.3s ease;
     }
-    
-    .matchup-card.selected .hs-team-row {
-        background: var(--tnc-blue);
-    }
-    
-    .matchup-card.selected .hs-odds {
+
+    .scorer-button.selected .scorer-odds {
         color: white;
     }
-    
-    .matchup-card.selected .hs-win-prob {
-        color: rgba(255, 255, 255, 0.9);
+
+    .active-bets-compact {
+        margin-bottom: 14px;
     }
-    
-    .matchup-card.selected .hs-owner {
-        color: white;
+
+    .active-bets-group {
+        margin-bottom: 8px;
     }
-    
-    .matchup-card .potential-win {
-        display: block;
-        text-align: center;
-        width: 100%;
+
+    .active-bets-group-label {
+        color: var(--tnc-fg-muted);
+        font-size: 10px;
+        font-weight: var(--tnc-fw-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tnc-track-caps);
+        margin-bottom: 4px;
     }
-    
-    @media (max-width: 767px) {
-        .betting-info-bar {
-            gap: 10px;
-        }
-        
-        .prize-info {
-            padding: 10px 12px;
-        }
-        
-        .prize-row {
-            font-size: 10px;
-            margin-bottom: 6px;
-        }
-        
-        .prize-amount {
-            font-size: 10px;
-        }
-        
-        .balance-display {
-            padding: 10px 12px;
-        }
-        
-        .balance-label {
-            font-size: 10px;
-        }
-        
-        .balance-amount {
-            font-size: 18px;
-        }
-        
-        .hs-team-row {
-            gap: 3px;
-            padding: 6px;
-        }
-        
-        .hs-owner {
-            font-size: 11px;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        
-        .hs-stats {
-            gap: 6px;
-        }
-        
-        .hs-win-prob {
-            font-size: 9px;
-        }
-        
-        .hs-odds {
-            font-size: 11px;
-        }
-        
-        .matchup-card {
-            padding: 10px;
-        }
-        
-        .matchup-title {
-            font-size: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .team-name {
-            font-size: 13px;
-        }
-        
-        .win-prob {
-            font-size: 10px;
-        }
-        
-        .odds-button {
-            font-size: 14px;
-            padding: 7px 10px;
-        }
-        
-        .bet-amount-input {
-            font-size: 14px;
-            padding: 9px;
-        }
-        
-        .potential-win {
-            font-size: 11px;
-        }
-        
-        .btn-place-bet {
-            font-size: 13px;
-            padding: 9px 14px;
-        }
-        
-        .vs-text {
-            font-size: 11px;
-        }
-        
-        .teams-container {
-            gap: 10px;
-        }
-        
-        .team-section {
-            gap: 6px;
-        }
+
+    .active-bets-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
     }
-    
-    @media (min-width: 768px) {
-        .matchups-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+
+    .active-bet-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 10px 5px 12px;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: var(--tnc-r-pill);
+        font-size: 11px;
+        color: var(--tnc-fg);
     }
-    
-    @media (min-width: 1200px) {
-        .matchups-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
+
+    .active-bet-chip-name {
+        font-weight: var(--tnc-fw-semi);
     }
-    
+
+    .active-bet-chip-odds {
+        color: var(--tnc-fg-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .active-bet-chip-stake {
+        color: var(--tnc-win);
+        font-weight: var(--tnc-fw-semi);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .active-bet-chip-cancel {
+        background: transparent;
+        border: none;
+        color: var(--tnc-fg-muted);
+        font-size: 11px;
+        font-family: inherit;
+        cursor: pointer;
+        padding: 0 0 0 4px;
+        border-left: 1px solid var(--tnc-border);
+        margin-left: 2px;
+    }
+
+    .active-bet-chip-cancel:hover {
+        color: var(--tnc-loss);
+    }
+
     .toast-container {
         position: fixed;
         top: 20px;
@@ -702,45 +602,45 @@
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .toast {
-        background: var(--tnc-bg);
-        border: 2px solid var(--tnc-win);
-        border-radius: 8px;
-        padding: 15px 20px;
-        min-width: 250px;
-        max-width: 400px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        animation: slideIn 0.3s ease-out;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-win);
+        border-radius: var(--tnc-r-md);
+        padding: 12px 16px;
+        min-width: 240px;
+        max-width: 380px;
+        box-shadow: var(--tnc-shadow-toast);
+        animation: slideIn var(--tnc-dur-base) var(--tnc-ease-out);
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
-    
+
     .toast.error {
         border-color: var(--tnc-loss);
     }
-    
+
     .toast-icon {
-        font-size: 20px;
+        font-size: 18px;
         flex-shrink: 0;
     }
-    
+
     .toast.success .toast-icon {
         color: var(--tnc-win);
     }
-    
+
     .toast.error .toast-icon {
         color: var(--tnc-loss);
     }
-    
+
     .toast-message {
         color: var(--tnc-fg);
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: var(--tnc-fw-medium);
         flex: 1;
     }
-    
+
     @keyframes slideIn {
         from {
             transform: translateX(400px);
@@ -751,7 +651,7 @@
             opacity: 1;
         }
     }
-    
+
     @keyframes slideOut {
         from {
             transform: translateX(0);
@@ -762,50 +662,9 @@
             opacity: 0;
         }
     }
-    
+
     .toast.removing {
-        animation: slideOut 0.3s ease-in forwards;
-    }
-    
-    @keyframes successFlash {
-        0% {
-            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
-        }
-        50% {
-            box-shadow: 0 0 20px 10px rgba(40, 167, 69, 0.3);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
-        }
-    }
-    
-    .matchup-card.success-flash {
-        animation: successFlash 0.6s ease-out;
-    }
-    
-    .quick-bet-buttons {
-        display: flex;
-        gap: 4px;
-        margin-bottom: 6px;
-    }
-    
-    .quick-bet-btn {
-        flex: 1;
-        padding: 6px 4px;
-        background: var(--tnc-bg);
-        border: 1px solid var(--tnc-border);
-        border-radius: 4px;
-        color: var(--tnc-fg);
-        font-size: 11px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    
-    .quick-bet-btn:hover {
-        background: var(--tnc-blue);
-        color: white;
-        border-color: var(--tnc-blue);
+        animation: slideOut var(--tnc-dur-base) var(--tnc-ease-out) forwards;
     }
 
     @media (max-width: 480px) {
@@ -820,16 +679,31 @@
             width: 100%;
         }
 
-        .hero-banner {
-            padding: 18px 16px;
+        .scorer-button {
+            grid-template-columns: 1fr auto;
+            gap: 8px;
         }
 
-        .hero-text h2 {
-            font-size: 17px;
+        .scorer-prob {
+            grid-column: 1;
+            grid-row: 2;
+            text-align: left;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .matchups-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
 
-        .hero-cta {
-            width: 100%;
-            text-align: center;
+        .info-strip {
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .matchups-grid {
+            grid-template-columns: repeat(3, 1fr);
         }
     }

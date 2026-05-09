@@ -82,21 +82,34 @@ def get_team_performance():
         return jsonify([])
 
 
+def _scorer_query(table_name):
+    week = get_current_week()
+    rows = query_analytics(
+        f"""
+        SELECT s.owner, s.probability, s.odds, ou.line AS proj_pts
+        FROM {table_name} s
+        LEFT JOIN betting_odds_team_ou ou
+            ON ou.owner = s.owner AND ou.week = s.week
+        WHERE s.week = :week
+        ORDER BY s.probability DESC
+        """,
+        {"week": week},
+    )
+    return [
+        {
+            "owner": row["owner"],
+            "win_prob": round(row["probability"] * 100, 1),
+            "odds": row["odds"],
+            "proj_pts": round(row["proj_pts"], 1) if row["proj_pts"] is not None else None,
+        }
+        for row in rows
+    ]
+
+
 @odds_bp.route("/api/highest_scorer")
 def get_highest_scorer():
     try:
-        week = get_current_week()
-
-        rows = query_analytics(
-            "SELECT owner, probability, odds FROM betting_odds_highest_scorer WHERE week = :week ORDER BY probability DESC",
-            {"week": week},
-        )
-
-        teams = []
-        for row in rows:
-            teams.append({"owner": row["owner"], "win_prob": round(row["probability"] * 100, 1), "odds": row["odds"]})
-
-        return jsonify(teams)
+        return jsonify(_scorer_query("betting_odds_highest_scorer"))
     except Exception as e:
         print(f"Error getting highest scorer: {e}")
         import traceback
@@ -108,18 +121,7 @@ def get_highest_scorer():
 @odds_bp.route("/api/lowest_scorer")
 def get_lowest_scorer():
     try:
-        week = get_current_week()
-
-        rows = query_analytics(
-            "SELECT owner, probability, odds FROM betting_odds_lowest_scorer WHERE week = :week ORDER BY probability DESC",
-            {"week": week},
-        )
-
-        teams = []
-        for row in rows:
-            teams.append({"owner": row["owner"], "win_prob": round(row["probability"] * 100, 1), "odds": row["odds"]})
-
-        return jsonify(teams)
+        return jsonify(_scorer_query("betting_odds_lowest_scorer"))
     except Exception as e:
         print(f"Error getting lowest scorer: {e}")
         import traceback

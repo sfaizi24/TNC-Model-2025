@@ -15,12 +15,32 @@ from routes.helpers import (
 betting_bp = Blueprint("betting", __name__)
 
 
+def _format_lock_time(lock_time):
+    if not lock_time:
+        return "Thursday Night Kickoff"
+
+    from zoneinfo import ZoneInfo
+
+    eastern = lock_time.astimezone(ZoneInfo("America/New_York"))
+    day = eastern.strftime("%a %b ") + str(eastern.day)
+    hour = eastern.hour % 12 or 12
+    suffix = "AM" if eastern.hour < 12 else "PM"
+    minute_part = f":{eastern.minute:02d}" if eastern.minute else ""
+    return f"{day}, {hour}{minute_part} {suffix} ET"
+
+
 @betting_bp.route("/betting")
 def betting():
+    from models import BettingPeriod
+
+    week = get_current_week()
+    period = db.session.query(BettingPeriod).filter_by(week=week).first()
+
     return render_template(
         "betting.html",
         user=current_user if current_user.is_authenticated else None,
-        current_week=get_current_week(),
+        current_week=week,
+        bets_open_until=_format_lock_time(period.lock_time if period else None),
     )
 
 
