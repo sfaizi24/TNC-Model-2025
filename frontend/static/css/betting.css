@@ -137,7 +137,7 @@
 .tnc-prize-row > strong {
     font-size: var(--tnc-fs-12);
     font-weight: var(--tnc-fw-bold);
-    color: var(--tnc-fg);
+    color: var(--tnc-blue);
 }
 
 .tnc-prize-when {
@@ -466,10 +466,6 @@
     transition: all 120ms cubic-bezier(.2, .8, .2, 1);
 }
 
-.tnc-mc-odd[data-positive="1"] {
-    color: var(--tnc-win);
-}
-
 .tnc-mc-odd:hover:not(:disabled) {
     border-color: var(--tnc-blue);
     background: rgba(20, 147, 255, 0.06);
@@ -792,17 +788,6 @@
 .tnc-scorer-pick .tnc-mc-odd-num,
 .tnc-scorer-pick .tnc-mc-odd-prob {
     color: var(--tnc-blue);
-}
-
-.tnc-scorer-pick.is-on .tnc-mc-odd-num,
-.tnc-scorer-pick.is-on .tnc-mc-odd-prob {
-    color: #fff;
-}
-
-.tnc-scorer-pick[data-positive="1"],
-.tnc-scorer-pick[data-positive="1"] .tnc-mc-odd-num,
-.tnc-scorer-pick[data-positive="1"] .tnc-mc-odd-prob {
-    color: var(--tnc-win);
 }
 
 .tnc-scorer-pick.is-on,

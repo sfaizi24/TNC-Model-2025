@@ -189,8 +189,7 @@ function renderMatchupCard(m, idx) {
         return `
             <div class="tnc-mc-side">
                 <div class="tnc-mc-name">${name}</div>
-                <button class="${cls.join(' ')}" data-positive="${odds >= 0 ? '1' : '0'}"
-                        data-action="pick" data-side="${side}"${hasBet ? ' disabled' : ''}>
+                <button class="${cls.join(' ')}" data-action="pick" data-side="${side}"${hasBet ? ' disabled' : ''}>
                     <span class="tnc-mc-odd-num tnc-tab-num">${fmtOdds(odds)}</span>
                     <span class="tnc-mc-odd-prob tnc-tab-num">${fmtPct(prob)}</span>
                 </button>
@@ -229,8 +228,7 @@ function renderOuCard(o, idx) {
         if (pick === which) cls.push('is-on');
         if (placedHere) cls.push('is-placed');
         return `
-            <button class="${cls.join(' ')}" data-positive="1"
-                    data-action="pick" data-side="${which}"${hasBet ? ' disabled' : ''}>
+            <button class="${cls.join(' ')}" data-action="pick" data-side="${which}"${hasBet ? ' disabled' : ''}>
                 <span class="tnc-mc-odd-label">${label}</span>
                 <span class="tnc-mc-odd-num tnc-tab-num">${o.line.toFixed(1)}</span>
             </button>
@@ -275,8 +273,7 @@ function renderScorerCard(s, idx, kind) {
         <div class="tnc-mc${hasBet ? ' has-bet' : ''}${open ? ' is-open' : ''}" data-key="${key}">
             ${renderPlacedStrip(placed)}
             <div class="tnc-mc-name tnc-ou-name-solo">${s.owner}</div>
-            <button class="${cls.join(' ')}" data-positive="${odds >= 0 ? '1' : '0'}"
-                    data-action="pick"${hasBet ? ' disabled' : ''}>
+            <button class="${cls.join(' ')}" data-action="pick"${hasBet ? ' disabled' : ''}>
                 <span class="tnc-mc-odd-num tnc-tab-num">${fmtOdds(odds)}</span>
                 <span class="tnc-mc-odd-prob tnc-tab-num">${fmtPct(prob)}</span>
                 <span class="tnc-mc-odd-prob tnc-tab-num">${proj}</span>
