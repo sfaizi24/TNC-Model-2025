@@ -8,15 +8,15 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">My Account</h1>
+    <h1 class="page-title">Account</h1>
     <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
 </div>
 
 <div class="balance-card">
-    <div class="balance-label">Account Balance</div>
-    <div class="balance-amount">${{ "%.2f"|format(user.account_balance) }}</div>
+    <div class="balance-label">Available Balance</div>
+    <div class="balance-amount tnc-num-hero">${{ "%.2f"|format(user.account_balance) }}</div>
     <div class="balance-pnl {% if user.total_pnl >= 0 %}positive{% else %}negative{% endif %}">
-        Total P&L: {% if user.total_pnl >= 0 %}+{% endif %} ${{ "%.2f"|format(user.total_pnl) }}
+        {{ '+' if user.total_pnl >= 0 else '-' }}${{ "%.2f"|format(user.total_pnl|abs) }} all-time
     </div>
 </div>
 
@@ -33,24 +33,14 @@
             <span class="info-label">Email</span>
             <span class="info-value">{{ user.email or 'Not provided' }}</span>
         </div>
-        <div class="info-row">
-            <span class="info-label">User ID</span>
-            <span class="info-value">{{ user.id }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Member Since</span>
-            <span class="info-value">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</span>
-        </div>
     </div>
-    
+
     <div class="account-card">
-        <h3>Edit Profile</h3>
+        <h3>Update Profile</h3>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">
-                        {{ message }}
-                    </div>
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -58,113 +48,62 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="first_name" class="form-label">First Name</label>
-                <input 
-                    type="text" 
-                    id="first_name" 
-                    name="first_name" 
-                    class="form-input"
-                    value="{{ user.first_name or '' }}"
-                    maxlength="100"
-                >
+                <input type="text" id="first_name" name="first_name" class="form-input"
+                       value="{{ user.first_name or '' }}" maxlength="100">
             </div>
             <div class="form-group">
                 <label for="last_name" class="form-label">Last Name</label>
-                <input 
-                    type="text" 
-                    id="last_name" 
-                    name="last_name" 
-                    class="form-input"
-                    value="{{ user.last_name or '' }}"
-                    maxlength="100"
-                >
+                <input type="text" id="last_name" name="last_name" class="form-input"
+                       value="{{ user.last_name or '' }}" maxlength="100">
             </div>
             <button type="submit" class="update-btn">Update Profile</button>
         </form>
     </div>
-    
+
     <div class="account-card">
         <h3>Weekly Performance</h3>
         {% if weekly_stats %}
-        <div class="bets-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Week</th>
-                        <th>Active Bets</th>
-                        <th>Settled P&L</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for stat in weekly_stats[:4] %}
-                    <tr>
-                        <td>Week {{ stat.week }}</td>
-                        <td class="negative">-${{ "%.0f"|format(stat.active_bets_amount) }}</td>
-                        <td class="{% if stat.settled_pnl >= 0 %}positive{% else %}negative{% endif %}">
-                            {% if stat.settled_pnl >= 0 %}+{% endif %}${{ "%.0f"|format(stat.settled_pnl) }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="weekly-grid">
+            {% for stat in weekly_stats %}
+            <div class="weekly-tile">
+                <div class="weekly-tile-label">Week {{ stat.week }}</div>
+                <div class="weekly-tile-pnl {% if stat.settled_pnl >= 0 %}positive{% else %}negative{% endif %}">
+                    {{ '+' if stat.settled_pnl >= 0 else '-' }}${{ "%.0f"|format(stat.settled_pnl|abs) }}
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% else %}
-        <p class="no-bets">No weekly stats yet. Start betting!</p>
+        <p class="no-bets">No settled weeks yet.</p>
         {% endif %}
     </div>
 </div>
 
 <div class="account-card">
-    <h3>Betting History</h3>
-    {% if bets %}
-    <div class="bets-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>Week</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Odds</th>
-                    <th>Status</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for bet in bets %}
-                <tr>
-                    <td>{{ bet.week }}</td>
-                    <td>{{ bet.description }}</td>
-                    <td>
-                        {% if bet.bet_type == 'team_ou' %}Over/Under
-                        {% elif bet.bet_type == 'matchup' %}Matchup
-                        {% elif bet.bet_type == 'highest_scorer' %}Highest Scorer
-                        {% elif bet.bet_type == 'lowest_scorer' %}Lowest Scorer
-                        {% else %}{{ bet.bet_type }}{% endif %}
-                    </td>
-                    <td>${{ "%.2f"|format(bet.amount) }}</td>
-                    <td>{{ bet.odds }}</td>
-                    <td>
-                        <span class="bet-status status-{{ bet.status }}">
-                            {{ bet.status.capitalize() }}
-                        </span>
-                    </td>
-                    <td class="{% if bet.result > 0 %}positive{% elif bet.result < 0 %}negative{% endif %}">
-                        {% if bet.result != 0 %}
-                            {% if bet.result > 0 %}+{% endif %}${{ "%.2f"|format(bet.result) }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <h3>Bet History</h3>
+    {% if bets_by_week %}
+    <div class="bet-history">
+        {% for week, week_bets in bets_by_week %}
+        <div class="bet-week-section">
+            <div class="bet-week-header">Week {{ week }}</div>
+            {% for bet in week_bets %}
+            <div class="bet-row">
+                <span class="bet-col bet-col-desc">{{ bet.description }}</span>
+                <span class="bet-col bet-col-odds">{{ bet.odds }}</span>
+                <span class="bet-col bet-col-stake">${{ "%.2f"|format(bet.amount) }}</span>
+                <span class="bet-col bet-col-result {% if bet.result > 0 %}positive{% elif bet.result < 0 %}negative{% endif %}">
+                    {{ '+' if bet.result > 0 else ('-' if bet.result < 0 else '') }}${{ "%.2f"|format(bet.result|abs) }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
     </div>
     {% else %}
     <div class="no-bets">
-        <p>No betting history yet.</p>
+        <p>No settled bets yet.</p>
         <p style="margin-top: 10px;">
-            <a href="/betting" style="color: var(--tnc-blue);">Place your first bet →</a>
+            <a href="/betting" style="color: var(--tnc-blue);">Place your first bet &rarr;</a>
         </p>
     </div>
     {% endif %}
