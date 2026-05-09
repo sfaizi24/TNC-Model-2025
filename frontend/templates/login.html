@@ -8,45 +8,27 @@
 
 {% block content %}
 <div class="landing-container">
-    <div class="landing-header">
-        <h1>⚡ Welcome to TNCasino</h1>
-        <p>Your fantasy football betting platform with real-time analytics and competitive prizes</p>
-    </div>
-    
-    <div class="prize-banner">
-        <h2>$1,000</h2>
-        <p>IN FREE BETS!</p>
-        <p style="margin-top: 15px; font-size: 14px;">Weekly Prize: $20 for P&L Leader</p>
-        <p style="font-size: 14px;">Season Prize: $100 for Overall P&L Leader</p>
-    </div>
-    
-    <a href="{{ url_for('google.login') }}" class="login-btn">
-        Sign In with Google
-    </a>
-    
-    <div class="features">
-        <div class="feature">
-            <div class="feature-icon">📊</div>
-            <div class="feature-text">
-                <h3>Advanced Analytics</h3>
-                <p>Monte Carlo simulations and real-time player projections from multiple sources</p>
-            </div>
+    <img class="landing-logo" src="{{ url_for('static', filename='images/tnc-logo-shield.png') }}" alt="TNCasino">
+    <div class="landing-eyebrow">TNCasino</div>
+    <h1 class="landing-title">Fantasy Football Betting<br>with real odds.</h1>
+    <p class="landing-subhead">
+        Powered by <span class="model-name">The Model<sup>&trade;</sup> V3</span>. Aggregated projections from FanDuel, FantasyPros, ESPN &amp; FirstDown &mdash; run through 50,000 Monte Carlo simulations per matchup.
+    </p>
+
+    <a href="{{ url_for('google.login') }}" class="login-btn">Sign in with Google</a>
+
+    <div class="landing-stats">
+        <div class="landing-stat">
+            <strong>$1,000</strong>
+            <span>Free starting balance</span>
         </div>
-        
-        <div class="feature">
-            <div class="feature-icon">💰</div>
-            <div class="feature-text">
-                <h3>Weekly Betting</h3>
-                <p>Place bets on fantasy matchups with live odds and instant results</p>
-            </div>
+        <div class="landing-stat">
+            <strong>$120</strong>
+            <span>Weekly + season prize pool</span>
         </div>
-        
-        <div class="feature">
-            <div class="feature-icon">🏆</div>
-            <div class="feature-text">
-                <h3>Compete for Prizes</h3>
-                <p>Track your performance and compete for weekly and season-long cash prizes</p>
-            </div>
+        <div class="landing-stat">
+            <strong>50K</strong>
+            <span>Monte Carlo sims per matchup</span>
         </div>
     </div>
 </div>

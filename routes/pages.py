@@ -14,6 +14,13 @@ def index():
     return redirect(url_for("betting.betting"))
 
 
+@pages_bp.route("/login")
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("betting.betting"))
+    return render_template("login.html")
+
+
 @pages_bp.route("/about")
 def about():
     return render_template("about.html")
