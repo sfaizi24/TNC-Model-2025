@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 
 from routes.helpers import (
     get_current_week,
+    get_league_id_for_week,
     get_team_mapping,
     query_analytics,
 )
@@ -237,12 +238,21 @@ def get_lineup(owner):
 @login_required
 def get_teams():
     try:
-        rows = query_analytics("""
+        week = get_current_week()
+        league_id = get_league_id_for_week(week)
+        if not league_id:
+            return jsonify({"teams": []})
+
+        rows = query_analytics(
+            """
             SELECT r.roster_id, u.username, u.display_name
             FROM sleeper_rosters r
             LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
+            WHERE r.league_id = :league_id
             ORDER BY r.roster_id
-        """)
+            """,
+            {"league_id": league_id},
+        )
 
         teams = []
         for row in rows:
@@ -274,14 +284,20 @@ def get_team_players():
         return jsonify({"error": "Team parameter required"}), 400
 
     try:
+        week = get_current_week()
+        league_id = get_league_id_for_week(week)
+        if not league_id:
+            return jsonify({"error": "Team not found"}), 404
+
         roster_rows = query_analytics(
             """
             SELECT r.roster_id, r.starters, r.players
             FROM sleeper_rosters r
             LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
-            WHERE u.username = :team_owner OR u.display_name = :team_owner
+            WHERE r.league_id = :league_id
+              AND (u.username = :team_owner OR u.display_name = :team_owner)
             """,
-            {"team_owner": team_owner},
+            {"league_id": league_id, "team_owner": team_owner},
         )
 
         if not roster_rows:
@@ -293,7 +309,7 @@ def get_team_players():
             """
             SELECT sleeper_player_id, first_name, last_name, position, mu, var, starting_status
             FROM projections_rosters
-            WHERE roster_id = :roster_id
+            WHERE roster_id = :roster_id AND week = :week
             ORDER BY
                 CASE position
                     WHEN 'QB' THEN 1
@@ -306,8 +322,48 @@ def get_team_players():
                 END,
                 mu DESC
             """,
-            {"roster_id": roster_id},
+            {"roster_id": roster_id, "week": week},
         )
+
+        if not player_rows:
+            lineup_rows = query_analytics(
+                """
+                SELECT player_name, position, mu, var
+                FROM team_lineups
+                WHERE roster_id = :roster_id AND week = :week
+                    AND slot IN ('QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'FLEX', 'K', 'DEF')
+                ORDER BY
+                    CASE slot
+                        WHEN 'QB' THEN 1
+                        WHEN 'RB1' THEN 2
+                        WHEN 'RB2' THEN 3
+                        WHEN 'WR1' THEN 4
+                        WHEN 'WR2' THEN 5
+                        WHEN 'TE' THEN 6
+                        WHEN 'FLEX' THEN 7
+                        WHEN 'K' THEN 8
+                        WHEN 'DEF' THEN 9
+                        ELSE 10
+                    END
+                """,
+                {"roster_id": roster_id, "week": week},
+            )
+
+            starters = []
+            for row in lineup_rows:
+                player_name = row["player_name"] or ""
+                first_name, _, last_name = player_name.partition(" ")
+                starters.append(
+                    {
+                        "player_first_name": first_name,
+                        "player_last_name": last_name,
+                        "position": row["position"],
+                        "mu": float(row["mu"]) if row["mu"] is not None else None,
+                        "var": float(row["var"]) if row["var"] is not None else None,
+                    }
+                )
+
+            return jsonify({"starters": starters, "bench": []})
 
         starters = []
         bench = []

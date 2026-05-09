@@ -97,8 +97,10 @@ def test_get_teams(logged_in_client, seeded_analytics, betting_period):
     data = resp.get_json()
 
     assert len(data["teams"]) == 2
-    slugs = {t["slug"] for t in data["teams"]}
+    slugs = [t["slug"] for t in data["teams"]]
     assert "alice" in slugs
+    assert "bob" in slugs
+    assert slugs.count("alice") == 1
 
 
 def test_get_team_players(logged_in_client, seeded_analytics, betting_period):
@@ -109,6 +111,18 @@ def test_get_team_players(logged_in_client, seeded_analytics, betting_period):
     assert data["starters"][0]["player_first_name"] == "Patrick"
     assert len(data["bench"]) == 1
     assert data["bench"][0]["player_last_name"] == "Player"
+    assert data["starters"][0]["player_last_name"] != "League"
+
+
+def test_get_team_players_falls_back_to_current_week_lineup(logged_in_client, seeded_analytics, betting_period):
+    resp = logged_in_client.get("/api/team_players?team=bob")
+    data = resp.get_json()
+
+    assert len(data["starters"]) == 1
+    assert data["starters"][0]["player_first_name"] == "Josh"
+    assert data["starters"][0]["player_last_name"] == "Allen"
+    assert data["starters"][0]["mu"] == 21.0
+    assert data["bench"] == []
 
 
 def test_matchups_empty_week(client, analytics_tables, betting_period):

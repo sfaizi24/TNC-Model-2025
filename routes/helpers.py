@@ -65,13 +65,17 @@ def query_analytics(sql, params=None):
     return [dict(row._mapping) for row in result]
 
 
-def get_team_mapping(week):
-    """Get roster_id to owner name mapping from league database for the given week."""
+def get_league_id_for_week(week):
     league_rows = query_analytics(
         "SELECT DISTINCT league_id FROM sleeper_matchups WHERE week = :week",
         {"week": week},
     )
-    current_league_id = league_rows[0]["league_id"] if league_rows else None
+    return league_rows[0]["league_id"] if league_rows else None
+
+
+def get_team_mapping(week):
+    """Get roster_id to owner name mapping from league database for the given week."""
+    current_league_id = get_league_id_for_week(week)
 
     roster_rows = query_analytics(
         """

@@ -251,13 +251,18 @@ def seeded_analytics(analytics_tables, db_session):
     db_session.session.execute(
         text("""
         INSERT INTO sleeper_users (user_id, username, display_name)
-        VALUES ('u1', 'alice', 'Alice A'), ('u2', 'bob', 'Bob B')
+        VALUES ('u1', 'alice', 'Alice A'),
+               ('u2', 'bob', 'Bob B'),
+               ('u3', 'old-alice', 'Alice A')
     """)
     )
     db_session.session.execute(
         text("""
         INSERT INTO sleeper_rosters (roster_id, league_id, owner_id)
-        VALUES (1, 'league1', 'u1'), (2, 'league1', 'u2')
+        VALUES (1, 'league1', 'u1'),
+               (2, 'league1', 'u2'),
+               (99, 'old-league', 'u1'),
+               (100, 'old-league', 'u3')
     """)
     )
     db_session.session.execute(
@@ -307,17 +312,19 @@ def seeded_analytics(analytics_tables, db_session):
     )
     db_session.session.execute(
         text("""
-        INSERT INTO team_lineups (owner, week, slot, player_name, position, mu)
-        VALUES ('Alice A', 10, 'QB', 'Patrick Mahomes', 'QB', 22.5),
-               ('Alice A', 10, 'RB1', 'Derrick Henry', 'RB', 15.0),
-               ('Alice A', 10, 'WR1', 'Tyreek Hill', 'WR', 18.0)
+        INSERT INTO team_lineups (roster_id, owner, week, slot, player_name, position, mu, var)
+        VALUES (1, 'Alice A', 10, 'QB', 'Patrick Mahomes', 'QB', 22.5, 7.0),
+               (1, 'Alice A', 10, 'RB1', 'Derrick Henry', 'RB', 15.0, 8.0),
+               (1, 'Alice A', 10, 'WR1', 'Tyreek Hill', 'WR', 18.0, 9.0),
+               (2, 'Bob B', 10, 'QB', 'Josh Allen', 'QB', 21.0, 6.5)
     """)
     )
     db_session.session.execute(
         text("""
-        INSERT INTO projections_rosters (roster_id, first_name, last_name, position, mu, var, starting_status)
-        VALUES (1, 'Patrick', 'Mahomes', 'QB', 22.5, 7.0, 1),
-               (1, 'Bench', 'Player', 'WR', 5.0, 3.0, 0)
+        INSERT INTO projections_rosters (roster_id, first_name, last_name, position, week, mu, var, starting_status)
+        VALUES (1, 'Patrick', 'Mahomes', 'QB', 10, 22.5, 7.0, 1),
+               (1, 'Bench', 'Player', 'WR', 10, 5.0, 3.0, 0),
+               (99, 'Wrong', 'League', 'QB', 10, 99.0, 99.0, 1)
     """)
     )
     db_session.session.commit()
