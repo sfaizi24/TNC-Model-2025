@@ -408,6 +408,17 @@ body {
     gap: 8px;
 }
 
+.tnc-cardh-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tnc-blue);
+}
+
+.tnc-cardh-row-bad {
+    color: var(--tnc-loss);
+}
+
 .tnc-badge {
     padding: 2px 8px;
     border-radius: 10px;

@@ -6,238 +6,189 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
 {% endblock %}
 
-{% macro leader_row(leader, rank, kind) %}
-<div class="rank-item {{ kind }}">
-    <div class="rank-left">
-        <span class="rank-number {{ kind }}">{{ rank }}</span>
-        <span class="user-name">
-            {% if leader[1] or leader[2] %}
-                {{ leader[1] }} {{ leader[2] }}
-            {% else %}
-                User #{{ leader[0]|string|truncate(8, True, '') }}
-            {% endif %}
+{% set ICON_TROPHY %}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M6 9V4h12v5a6 6 0 0 1-12 0Z"/>
+    <path d="M6 5H3v2a3 3 0 0 0 3 3"/>
+    <path d="M18 5h3v2a3 3 0 0 1-3 3"/>
+    <path d="M9 21h6"/><path d="M12 17v4"/>
+</svg>
+{% endset %}
+
+{% set ICON_FLAME %}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4-1-2 1-4 3-6Z"/>
+</svg>
+{% endset %}
+
+{% set ICON_CHART %}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/>
+</svg>
+{% endset %}
+
+{% set ICON_SKULL %}
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 3a8 8 0 0 0-5 14v3h10v-3a8 8 0 0 0-5-14Z"/>
+    <circle cx="9" cy="13" r="1.2" fill="currentColor"/>
+    <circle cx="15" cy="13" r="1.2" fill="currentColor"/>
+    <path d="M10 18h4"/>
+</svg>
+{% endset %}
+
+{% macro display_name(first, last, user_id) -%}
+    {%- if first or last -%}
+        {{ first }} {{ last }}
+    {%- else -%}
+        User #{{ user_id|string|truncate(8, True, '') }}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro rank_row(name, pnl, rank=none, kind=none) %}
+<div class="tnc-lb-rank{% if kind == 'bottom' %} tnc-lb-rank-bot{% elif rank %} tnc-lb-rank-{{ rank }}{% endif %}">
+    <div class="tnc-lb-rank-l">
+        <span class="tnc-lb-rank-num">
+            {%- if kind == 'bottom' -%}
+                {{ ICON_SKULL }}
+            {%- else -%}
+                {{ rank }}
+            {%- endif -%}
         </span>
+        <span class="tnc-lb-rank-name">{{ name }}</span>
     </div>
-    <span class="pnl-value {% if leader[3] >= 0 %}positive{% else %}negative{% endif %}">
-        {{ '+' if leader[3] >= 0 else '-' }}${{ "%.2f"|format(leader[3]|abs) }}
+    <span class="tnc-lb-rank-pnl {% if pnl >= 0 %}tnc-pos{% else %}tnc-neg{% endif %}">
+        {{ '+' if pnl >= 0 else '-' }}${{ "%.2f"|format(pnl|abs) }}
     </span>
 </div>
 {% endmacro %}
 
-{% macro popular_bet(bet, label) %}
-{% if bet %}
-<div class="bet-detail">
-    <div class="bet-label">{{ label }}</div>
-    <div class="bet-description">{{ bet[0] }}</div>
-    <div class="bet-stats">
-        <div class="bet-stat">
-            <span class="bet-stat-label">Times Bet:</span>
-            <span class="bet-stat-value">{{ bet[1] }}</span>
-        </div>
-        <div class="bet-stat">
-            <span class="bet-stat-label">Total Wagered:</span>
-            <span class="bet-stat-value">${{ "%.2f"|format(bet[5]) }}</span>
-        </div>
-        {% if bet[2] %}
-        <span class="status-badge status-won">Won</span>
-        {% elif bet[3] %}
-        <span class="status-badge status-lost">Lost</span>
-        {% elif bet[4] %}
-        <span class="status-badge status-pending">Pending</span>
+{% macro stat(label, value, value_class='') %}
+<div class="tnc-lb-stat">
+    <span class="tnc-lb-stat-l">{{ label }}:</span>
+    <span class="tnc-lb-stat-v {{ value_class }}">{{ value }}</span>
+</div>
+{% endmacro %}
+
+{% macro outcome_bet(bet, label, kind) %}
+<div class="tnc-lb-bet">
+    <div class="tnc-lb-bet-label">{{ label }}</div>
+    <div class="tnc-lb-bet-desc">{{ bet[0] }}</div>
+    <div class="tnc-lb-bet-stats">
+        {{ stat('User', display_name(bet[4], bet[5], '')) }}
+        {{ stat('Odds', bet[1]) }}
+        {{ stat('Bet', '$%.2f'|format(bet[2])) }}
+        {% if kind == 'won' %}
+            {{ stat('Won', '+$%.2f'|format(bet[3]), 'tnc-pos') }}
+        {% else %}
+            {{ stat('Lost', '-$%.2f'|format(bet[2]), 'tnc-neg') }}
         {% endif %}
     </div>
 </div>
-{% endif %}
+{% endmacro %}
+
+{% macro popular_bet(bet, label) %}
+<div class="tnc-lb-bet">
+    <div class="tnc-lb-bet-label">{{ label }}</div>
+    <div class="tnc-lb-bet-desc">{{ bet[0] }}</div>
+    <div class="tnc-lb-bet-stats">
+        {{ stat('Wagered', '$%.2f'|format(bet[5])) }}
+        {{ stat('Times', bet[1]) }}
+        {% if bet[2] %}<span class="tnc-badge tnc-badge-won">{{ bet[2] }} Won</span>{% endif %}
+        {% if bet[3] %}<span class="tnc-badge tnc-badge-lost">{{ bet[3] }} Lost</span>{% endif %}
+        {% if bet[4] %}<span class="tnc-badge tnc-badge-pending">{{ bet[4] }} Pending</span>{% endif %}
+    </div>
+</div>
 {% endmacro %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Leaderboard</h1>
+<div class="tnc-page-head">
+    <h1 class="tnc-lb-title">Leaderboard</h1>
 </div>
 
-<div class="leaderboard-card section-card">
-    <h2 class="card-title"><span>All-Time Leaders</span></h2>
-    <div class="rankings-list">
-        {% if alltime_top %}
-            {% for leader in alltime_top %}
-                {% set rank_kind = 'top-1' if loop.index == 1 else ('top-2' if loop.index == 2 else 'top-3') %}
-                {{ leader_row(leader, loop.index, rank_kind) }}
-            {% endfor %}
-
-            {% if alltime_bottom %}
-            <div class="separator">
-                <span class="separator-label">Bottom Performers</span>
-            </div>
-            {% for leader in alltime_bottom %}
-                {{ leader_row(leader, loop.index, 'bottom') }}
-            {% endfor %}
-            {% endif %}
-        {% else %}
-            <div class="no-data">No users with bets yet. Start betting to appear on the leaderboard!</div>
+<div class="tnc-card tnc-lb-block">
+    <h2 class="tnc-card-h">
+        <span class="tnc-cardh-row">{{ ICON_TROPHY }}All-Time Leaders</span>
+    </h2>
+    {% if alltime_top %}
+    <div class="tnc-lb-list">
+        {% for leader in alltime_top %}
+            {{ rank_row(display_name(leader[1], leader[2], leader[0]), leader[3], rank=loop.index) }}
+        {% endfor %}
+        {% if alltime_bottom %}
+        <div class="tnc-lb-sep"><span class="tnc-lb-sep-label">Bottom Performers</span></div>
+        {% for leader in alltime_bottom %}
+            {{ rank_row(display_name(leader[1], leader[2], leader[0]), leader[3], kind='bottom') }}
+        {% endfor %}
         {% endif %}
     </div>
+    {% else %}
+    <div class="tnc-lb-empty">No users with bets yet. Start betting to appear on the leaderboard!</div>
+    {% endif %}
 </div>
 
-<div class="leaderboard-card section-card">
-    <h2 class="card-title">
-        <span>Weekly Leaders</span>
-        <div class="week-selector">
-            <label for="week-select">Week</label>
-            <select id="week-select" onchange="window.location.href='/leaderboard?week='+this.value">
+<div class="tnc-card tnc-lb-block">
+    <h2 class="tnc-card-h">
+        <span class="tnc-cardh-row">{{ ICON_TROPHY }}Weekly Leaders</span>
+        <div class="tnc-lb-week">
+            <label class="tnc-lb-week-label" for="week-select">Week:</label>
+            <select id="week-select" class="tnc-lb-week-sel"
+                    onchange="window.location.href='/leaderboard?week='+this.value">
                 {% for week in available_weeks %}
                 <option value="{{ week }}" {% if week == selected_week %}selected{% endif %}>{{ week }}</option>
                 {% endfor %}
             </select>
         </div>
     </h2>
-    <div class="rankings-list">
-        {% if weekly_top %}
-            {% for leader in weekly_top %}
-                {% set rank_kind = 'top-1' if loop.index == 1 else ('top-2' if loop.index == 2 else 'top-3') %}
-                {{ leader_row(leader, loop.index, rank_kind) }}
-            {% endfor %}
-
-            {% if weekly_bottom %}
-            <div class="separator">
-                <span class="separator-label">Bottom Performers</span>
-            </div>
-            {% for leader in weekly_bottom %}
-                {{ leader_row(leader, loop.index, 'bottom') }}
-            {% endfor %}
-            {% endif %}
-        {% else %}
-            <div class="no-data">No bets placed for week {{ selected_week }}. Be the first!</div>
+    {% if weekly_top %}
+    <div class="tnc-lb-list">
+        {% for leader in weekly_top %}
+            {{ rank_row(display_name(leader[1], leader[2], leader[0]), leader[3], rank=loop.index) }}
+        {% endfor %}
+        {% if weekly_bottom %}
+        <div class="tnc-lb-sep"><span class="tnc-lb-sep-label">Bottom Performers</span></div>
+        {% for leader in weekly_bottom %}
+            {{ rank_row(display_name(leader[1], leader[2], leader[0]), leader[3], kind='bottom') }}
+        {% endfor %}
         {% endif %}
     </div>
+    {% else %}
+    <div class="tnc-lb-empty">No bets placed for week {{ selected_week }}. Be the first!</div>
+    {% endif %}
 </div>
 
-<div class="leaderboard-grid">
-    <div class="leaderboard-card">
-        <h2 class="card-title"><span>Best Bets</span></h2>
-
-        {% if best_odds_bet %}
-        <div class="bet-detail">
-            <div class="bet-label">Highest Odds That Won</div>
-            <div class="bet-description">{{ best_odds_bet[0] }}</div>
-            <div class="bet-stats">
-                <div class="bet-stat">
-                    <span class="bet-stat-label">User:</span>
-                    <span class="bet-stat-value">{{ best_odds_bet[4] or 'Unknown' }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Odds:</span>
-                    <span class="bet-stat-value">{{ best_odds_bet[1] }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Bet:</span>
-                    <span class="bet-stat-value">${{ "%.2f"|format(best_odds_bet[2]) }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Won:</span>
-                    <span class="bet-stat-value pnl-value positive">+${{ "%.2f"|format(best_odds_bet[3]) }}</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if most_money_won %}
-        <div class="bet-detail">
-            <div class="bet-label">Most Money Won</div>
-            <div class="bet-description">{{ most_money_won[0] }}</div>
-            <div class="bet-stats">
-                <div class="bet-stat">
-                    <span class="bet-stat-label">User:</span>
-                    <span class="bet-stat-value">{{ most_money_won[4] or 'Unknown' }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Odds:</span>
-                    <span class="bet-stat-value">{{ most_money_won[1] }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Bet:</span>
-                    <span class="bet-stat-value">${{ "%.2f"|format(most_money_won[2]) }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Won:</span>
-                    <span class="bet-stat-value pnl-value positive">+${{ "%.2f"|format(most_money_won[3]) }}</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
+<div class="tnc-lb-grid">
+    <div class="tnc-card">
+        <h2 class="tnc-card-h">
+            <span class="tnc-cardh-row">{{ ICON_FLAME }}Best Bets</span>
+        </h2>
+        {% if best_odds_bet %}{{ outcome_bet(best_odds_bet, 'Highest Odds That Won', 'won') }}{% endif %}
+        {% if most_money_won %}{{ outcome_bet(most_money_won, 'Most Money Won', 'won') }}{% endif %}
         {% if not best_odds_bet and not most_money_won %}
-        <div class="no-data">No bets yet. Be the first!</div>
+        <div class="tnc-lb-empty">No winning bets yet. Be the first!</div>
         {% endif %}
     </div>
 
-    <div class="leaderboard-card">
-        <h2 class="card-title"><span>Worst Bets</span></h2>
-
-        {% if worst_odds_bet %}
-        <div class="bet-detail">
-            <div class="bet-label">Worst Odds That Lost</div>
-            <div class="bet-description">{{ worst_odds_bet[0] }}</div>
-            <div class="bet-stats">
-                <div class="bet-stat">
-                    <span class="bet-stat-label">User:</span>
-                    <span class="bet-stat-value">{{ worst_odds_bet[4] or 'Unknown' }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Odds:</span>
-                    <span class="bet-stat-value">{{ worst_odds_bet[1] }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Bet:</span>
-                    <span class="bet-stat-value">${{ "%.2f"|format(worst_odds_bet[2]) }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Lost:</span>
-                    <span class="bet-stat-value pnl-value negative">-${{ "%.2f"|format(worst_odds_bet[2]) }}</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if biggest_loss %}
-        <div class="bet-detail">
-            <div class="bet-label">Most Money Lost</div>
-            <div class="bet-description">{{ biggest_loss[0] }}</div>
-            <div class="bet-stats">
-                <div class="bet-stat">
-                    <span class="bet-stat-label">User:</span>
-                    <span class="bet-stat-value">{{ biggest_loss[4] or 'Unknown' }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Odds:</span>
-                    <span class="bet-stat-value">{{ biggest_loss[1] }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Bet:</span>
-                    <span class="bet-stat-value">${{ "%.2f"|format(biggest_loss[2]) }}</span>
-                </div>
-                <div class="bet-stat">
-                    <span class="bet-stat-label">Lost:</span>
-                    <span class="bet-stat-value pnl-value negative">-${{ "%.2f"|format(biggest_loss[2]) }}</span>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
+    <div class="tnc-card">
+        <h2 class="tnc-card-h">
+            <span class="tnc-cardh-row tnc-cardh-row-bad">{{ ICON_SKULL }}Worst Bets</span>
+        </h2>
+        {% if worst_odds_bet %}{{ outcome_bet(worst_odds_bet, 'Worst Odds That Lost', 'lost') }}{% endif %}
+        {% if biggest_loss %}{{ outcome_bet(biggest_loss, 'Most Money Lost', 'lost') }}{% endif %}
         {% if not worst_odds_bet and not biggest_loss %}
-        <div class="no-data">No losing bets yet. Everyone's winning!</div>
+        <div class="tnc-lb-empty">No losing bets yet. Everyone's winning!</div>
         {% endif %}
     </div>
 
-    <div class="leaderboard-card">
-        <h2 class="card-title"><span>Most Popular Bets</span></h2>
-
-        {{ popular_bet(popular_moneyline, 'Most Popular Moneyline') }}
-        {{ popular_bet(popular_over_under, 'Most Popular Over/Under') }}
-        {{ popular_bet(popular_highest, 'Most Popular Highest Scorer') }}
-        {{ popular_bet(popular_lowest, 'Most Popular Lowest Scorer') }}
-
+    <div class="tnc-card">
+        <h2 class="tnc-card-h">
+            <span class="tnc-cardh-row">{{ ICON_CHART }}Most Popular Bets</span>
+        </h2>
+        {% if popular_moneyline %}{{ popular_bet(popular_moneyline, 'Most Popular Moneyline') }}{% endif %}
+        {% if popular_over_under %}{{ popular_bet(popular_over_under, 'Most Popular Over/Under') }}{% endif %}
+        {% if popular_highest %}{{ popular_bet(popular_highest, 'Most Popular Highest Scorer') }}{% endif %}
+        {% if popular_lowest %}{{ popular_bet(popular_lowest, 'Most Popular Lowest Scorer') }}{% endif %}
         {% if not popular_moneyline and not popular_over_under and not popular_highest and not popular_lowest %}
-        <div class="no-data">No popular bets yet. Start betting to see trends!</div>
+        <div class="tnc-lb-empty">No popular bets yet. Start betting to see trends!</div>
         {% endif %}
     </div>
 </div>
