@@ -4,10 +4,10 @@
 
     .section-title {
         font-size: 18px;
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         margin-bottom: 15px;
         padding-bottom: 8px;
-        border-bottom: 2px solid var(--fanduel-light-gray);
+        border-bottom: 2px solid var(--tnc-border);
     }
 
     .edge-to-edge-image {
@@ -19,10 +19,10 @@
     .roster-divider {
         margin: 20px 0;
         padding: 10px 0;
-        border-top: 2px solid var(--fanduel-light-gray);
-        border-bottom: 2px solid var(--fanduel-light-gray);
+        border-top: 2px solid var(--tnc-border);
+        border-bottom: 2px solid var(--tnc-border);
         text-align: center;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-weight: 600;
         font-size: 14px;
         text-transform: uppercase;

@@ -1,6 +1,6 @@
     .hero-banner {
         background: linear-gradient(135deg, rgba(20, 147, 255, 0.12) 0%, rgba(63, 185, 80, 0.12) 100%);
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
         border-radius: 10px;
         padding: 24px 28px;
         margin-bottom: 20px;
@@ -13,18 +13,18 @@
 
     .hero-text h2 {
         font-size: 20px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         margin-bottom: 6px;
     }
 
     .hero-text p {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 14px;
     }
 
     .hero-cta {
         padding: 12px 28px;
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
         text-decoration: none;
         border-radius: 6px;
@@ -47,35 +47,35 @@
     }
     
     .balance-display {
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         padding: 15px 25px;
         border-radius: 8px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
         text-align: right;
     }
     
     .balance-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 12px;
         margin-bottom: 5px;
     }
     
     .balance-amount {
-        color: var(--success-green);
+        color: var(--tnc-win);
         font-size: 24px;
         font-weight: bold;
     }
     
     .prize-info {
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         padding: 15px 25px;
         border-radius: 8px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
     
     .prize-row {
         margin-bottom: 8px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
     }
     
@@ -85,11 +85,11 @@
     
     .prize-label {
         font-weight: bold;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
     }
     
     .prize-amount {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-weight: 600;
     }
     
@@ -97,7 +97,7 @@
         display: flex;
         gap: 10px;
         margin-bottom: 30px;
-        border-bottom: 2px solid var(--fanduel-light-gray);
+        border-bottom: 2px solid var(--tnc-border);
         overflow-x: auto;
         padding-bottom: 0;
     }
@@ -106,7 +106,7 @@
         padding: 12px 20px;
         background: none;
         border: none;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-weight: 600;
         cursor: pointer;
         border-bottom: 3px solid transparent;
@@ -115,8 +115,8 @@
     }
     
     .betting-tab.active {
-        color: var(--fanduel-blue);
-        border-bottom-color: var(--fanduel-blue);
+        color: var(--tnc-blue);
+        border-bottom-color: var(--tnc-blue);
     }
     
     .betting-content {
@@ -135,15 +135,15 @@
     }
     
     .matchup-card {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 6px;
         padding: 8px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
         position: relative;
     }
     
     .matchup-card.has-bet {
-        border: 2px solid var(--success-green);
+        border: 2px solid var(--tnc-win);
         box-shadow: 0 0 10px rgba(40, 167, 69, 0.15);
     }
     
@@ -151,7 +151,7 @@
         position: absolute;
         top: 8px;
         right: 8px;
-        background: var(--success-green);
+        background: var(--tnc-win);
         color: white;
         padding: 3px 8px;
         border-radius: 8px;
@@ -167,7 +167,7 @@
     
     .team-line {
         text-align: center;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 12px;
         font-weight: 600;
         margin-bottom: 8px;
@@ -189,13 +189,13 @@
     
     .team-name {
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 12px;
         text-align: center;
     }
     
     .win-prob {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 10px;
         text-align: center;
     }
@@ -203,10 +203,10 @@
     .odds-button {
         width: 100%;
         padding: 6px 8px;
-        background: var(--fanduel-dark);
-        border: 2px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        border: 2px solid var(--tnc-border);
         border-radius: 4px;
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-weight: bold;
         font-size: 13px;
         cursor: pointer;
@@ -214,18 +214,18 @@
     }
     
     .odds-button:hover {
-        border-color: var(--fanduel-blue);
+        border-color: var(--tnc-blue);
         background: rgba(20, 147, 255, 0.1);
     }
     
     .odds-button.selected {
-        border-color: var(--fanduel-blue);
-        background: var(--fanduel-blue);
+        border-color: var(--tnc-blue);
+        background: var(--tnc-blue);
         color: white;
     }
     
     .positive-odds {
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
     
     .odds-button.selected.positive-odds {
@@ -233,7 +233,7 @@
     }
     
     .vs-text {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-weight: bold;
         font-size: 11px;
     }
@@ -242,7 +242,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        border-top: 1px solid var(--fanduel-light-gray);
+        border-top: 1px solid var(--tnc-border);
         padding-top: 6px;
     }
     
@@ -257,15 +257,15 @@
     .bet-amount-input {
         width: 100%;
         padding: 8px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        border: 1px solid var(--tnc-border);
         border-radius: 4px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 12px;
     }
     
     .potential-win {
-        color: var(--success-green);
+        color: var(--tnc-win);
         font-size: 10px;
         text-align: center;
         min-height: 15px;
@@ -277,7 +277,7 @@
         padding: 6px;
         margin-top: 6px;
         background: transparent;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 4px;
         font-size: 10px;
@@ -332,7 +332,7 @@
     }
     
     .player-name {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 11px;
         flex: 1;
     }
@@ -345,14 +345,14 @@
     }
     
     .player-position {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-weight: 500;
         min-width: 30px;
         text-align: right;
     }
     
     .player-points {
-        color: var(--primary-color);
+        color: var(--tnc-blue);
         font-weight: 600;
         min-width: 30px;
         text-align: right;
@@ -366,7 +366,7 @@
     
     .lineup-loading {
         text-align: center;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         padding: 12px;
         font-size: 12px;
     }
@@ -374,7 +374,7 @@
     .btn-place-bet {
         flex: 1;
         padding: 8px 12px;
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
         border: none;
         border-radius: 4px;
@@ -399,10 +399,10 @@
     }
     
     .compact-bet-item {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 4px;
         padding: 6px 10px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -410,15 +410,15 @@
     }
     
     .compact-bet-info {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 11px;
         font-weight: 500;
     }
     
     .compact-bet-remove {
         background: transparent;
-        border: 1px solid var(--text-secondary);
-        color: var(--text-secondary);
+        border: 1px solid var(--tnc-fg-muted);
+        color: var(--tnc-fg-muted);
         padding: 3px 8px;
         border-radius: 3px;
         font-size: 10px;
@@ -432,25 +432,25 @@
     }
     
     .active-bets-section {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 12px;
         padding: 20px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
     
     .section-title {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 20px;
         font-weight: 600;
         margin-bottom: 15px;
     }
     
     .bet-item {
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 10px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
     
     .bet-item-header {
@@ -461,18 +461,18 @@
     }
     
     .bet-description {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-weight: 600;
         font-size: 15px;
     }
     
     .bet-amount-display {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-weight: bold;
     }
     
     .bet-details {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 13px;
         margin-bottom: 10px;
     }
@@ -485,7 +485,7 @@
     .btn-remove-bet {
         flex: 1;
         padding: 8px;
-        background: var(--error-red);
+        background: var(--tnc-loss);
         color: white;
         border: none;
         border-radius: 6px;
@@ -500,7 +500,7 @@
     
     .no-bets {
         text-align: center;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         padding: 30px;
         font-style: italic;
     }
@@ -508,11 +508,11 @@
     .coming-soon {
         text-align: center;
         padding: 60px 20px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
     }
     
     .coming-soon h3 {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-size: 24px;
         margin-bottom: 10px;
     }
@@ -522,7 +522,7 @@
         flex-direction: column;
         gap: 4px;
         padding: 8px;
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         border-radius: 4px;
         margin-bottom: 6px;
         transition: all 0.3s ease;
@@ -551,14 +551,14 @@
     }
     
     .hs-odds {
-        color: var(--success-green);
+        color: var(--tnc-win);
         font-size: 13px;
         font-weight: 700;
         transition: color 0.3s ease;
     }
     
     .matchup-card.selected .hs-team-row {
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
     }
     
     .matchup-card.selected .hs-odds {
@@ -704,8 +704,8 @@
     }
     
     .toast {
-        background: var(--fanduel-dark);
-        border: 2px solid var(--success-green);
+        background: var(--tnc-bg);
+        border: 2px solid var(--tnc-win);
         border-radius: 8px;
         padding: 15px 20px;
         min-width: 250px;
@@ -718,7 +718,7 @@
     }
     
     .toast.error {
-        border-color: var(--error-red);
+        border-color: var(--tnc-loss);
     }
     
     .toast-icon {
@@ -727,15 +727,15 @@
     }
     
     .toast.success .toast-icon {
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
     
     .toast.error .toast-icon {
-        color: var(--error-red);
+        color: var(--tnc-loss);
     }
     
     .toast-message {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
         font-weight: 500;
         flex: 1;
@@ -792,10 +792,10 @@
     .quick-bet-btn {
         flex: 1;
         padding: 6px 4px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        border: 1px solid var(--tnc-border);
         border-radius: 4px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
@@ -803,9 +803,9 @@
     }
     
     .quick-bet-btn:hover {
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
-        border-color: var(--fanduel-blue);
+        border-color: var(--tnc-blue);
     }
 
     @media (max-width: 480px) {

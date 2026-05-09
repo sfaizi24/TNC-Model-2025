@@ -11,7 +11,7 @@
     .about-header h1 {
         font-size: 1.6em;
         margin-bottom: 8px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
     }
 
     .about-header p {
@@ -20,8 +20,8 @@
     }
 
     .section {
-        background: var(--fanduel-gray);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
         border-radius: 8px;
         padding: 20px 16px;
         margin-bottom: 20px;
@@ -30,15 +30,15 @@
     .section h2 {
         font-size: 1.3em;
         margin-bottom: 14px;
-        color: var(--fanduel-blue);
-        border-bottom: 2px solid var(--fanduel-light-gray);
+        color: var(--tnc-blue);
+        border-bottom: 2px solid var(--tnc-border);
         padding-bottom: 8px;
     }
 
     .section h3 {
         font-size: 1.1em;
         margin: 16px 0 10px 0;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
     }
 
     .section p {
@@ -58,7 +58,7 @@
     }
 
     .highlight {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-weight: 500;
     }
 
@@ -83,14 +83,14 @@
 
     .lock-notice {
         background: rgba(20, 147, 255, 0.1);
-        border-left: 4px solid var(--fanduel-blue);
+        border-left: 4px solid var(--tnc-blue);
         padding: 16px;
         margin-top: 20px;
         border-radius: 4px;
     }
 
     .lock-notice p {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         margin: 0;
         font-size: 0.95em;
     }

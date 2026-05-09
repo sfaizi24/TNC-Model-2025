@@ -140,7 +140,7 @@ document.getElementById('team-select').addEventListener('change', async function
         distributionImage.src = `/analytics-images/dist_Team_${selectedTeam}_week_${currentWeek}.png`;
         playersSection.style.display = 'block';
 
-        playersContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading players...</div>';
+        playersContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--tnc-fg-muted);">Loading players...</div>';
 
         try {
             const teamParam = encodeURIComponent(selectedTeam);
@@ -159,13 +159,13 @@ document.getElementById('team-select').addEventListener('change', async function
             if ((data.starters && data.starters.length > 0) || (data.bench && data.bench.length > 0)) {
                 let html = `
                     <div style="overflow-x: auto;">
-                        <table style="width: 100%; background: var(--fanduel-gray); border-radius: 12px; overflow: hidden; border: 1px solid var(--fanduel-light-gray);">
+                        <table style="width: 100%; background: var(--tnc-surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--tnc-border);">
                             <thead>
-                                <tr style="background: var(--fanduel-darker); border-bottom: 2px solid var(--fanduel-blue);">
-                                    <th style="padding: 8px 10px; text-align: left; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Player</th>
-                                    <th style="padding: 8px 10px; text-align: center; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Pos</th>
-                                    <th style="padding: 8px 10px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Proj</th>
-                                    <th style="padding: 8px 10px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 12px;">Var</th>
+                                <tr style="background: var(--tnc-bg-deep); border-bottom: 2px solid var(--tnc-blue);">
+                                    <th style="padding: 8px 10px; text-align: left; color: var(--tnc-blue); font-weight: 600; font-size: 12px;">Player</th>
+                                    <th style="padding: 8px 10px; text-align: center; color: var(--tnc-blue); font-weight: 600; font-size: 12px;">Pos</th>
+                                    <th style="padding: 8px 10px; text-align: right; color: var(--tnc-blue); font-weight: 600; font-size: 12px;">Proj</th>
+                                    <th style="padding: 8px 10px; text-align: right; color: var(--tnc-blue); font-weight: 600; font-size: 12px;">Var</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,11 +178,11 @@ document.getElementById('team-select').addEventListener('change', async function
                         const muDisplay = player.mu !== null ? player.mu.toFixed(1) : '-';
                         const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
-                            <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
-                                <td style="padding: 6px 8px; color: var(--text-primary); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
-                                <td style="padding: 6px 8px; text-align: center; color: var(--text-secondary); font-weight: 600; font-size: 12px;">${player.position}</td>
-                                <td style="padding: 6px 8px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
-                                <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 13px;">${varDisplay}</td>
+                            <tr style="border-bottom: 1px solid var(--tnc-border); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
+                                <td style="padding: 6px 8px; color: var(--tnc-fg); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 6px 8px; text-align: center; color: var(--tnc-fg-muted); font-weight: 600; font-size: 12px;">${player.position}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--tnc-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--tnc-fg-muted); font-weight: 600; font-size: 13px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;
@@ -200,11 +200,11 @@ document.getElementById('team-select').addEventListener('change', async function
                         const muDisplay = player.mu !== null ? player.mu.toFixed(1) : '-';
                         const varDisplay = player.var !== null ? player.var.toFixed(1) : '-';
                         html += `
-                            <tr style="border-bottom: 1px solid var(--fanduel-light-gray); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
-                                <td style="padding: 6px 8px; color: var(--text-primary); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
-                                <td style="padding: 6px 8px; text-align: center; color: var(--text-secondary); font-weight: 600; font-size: 12px;">${player.position}</td>
-                                <td style="padding: 6px 8px; text-align: right; color: var(--fanduel-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
-                                <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); font-weight: 600; font-size: 13px;">${varDisplay}</td>
+                            <tr style="border-bottom: 1px solid var(--tnc-border); ${rowIndex % 2 === 0 ? 'background: rgba(20, 147, 255, 0.05);' : ''}">
+                                <td style="padding: 6px 8px; color: var(--tnc-fg); font-size: 13px;">${player.player_first_name} ${player.player_last_name}</td>
+                                <td style="padding: 6px 8px; text-align: center; color: var(--tnc-fg-muted); font-weight: 600; font-size: 12px;">${player.position}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--tnc-blue); font-weight: 600; font-size: 14px;">${muDisplay}</td>
+                                <td style="padding: 6px 8px; text-align: right; color: var(--tnc-fg-muted); font-weight: 600; font-size: 13px;">${varDisplay}</td>
                             </tr>
                         `;
                         rowIndex++;
@@ -219,7 +219,7 @@ document.getElementById('team-select').addEventListener('change', async function
 
                 playersContainer.innerHTML = html;
             } else {
-                playersContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 30px;">No player data available for this team.</p>';
+                playersContainer.innerHTML = '<p style="color: var(--tnc-fg-muted); text-align: center; padding: 30px;">No player data available for this team.</p>';
             }
         } catch (error) {
             console.error('Error loading players:', error);

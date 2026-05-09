@@ -100,7 +100,7 @@
             updateActiveWeekBanner(periods);
 
             if (periods.length === 0) {
-                document.getElementById('periodsTable').innerHTML = '<p style="color: var(--text-secondary);">No betting periods set</p>';
+                document.getElementById('periodsTable').innerHTML = '<p style="color: var(--tnc-fg-muted);">No betting periods set</p>';
                 return;
             }
 
@@ -134,7 +134,7 @@
             const bets = await response.json();
 
             if (bets.length === 0) {
-                document.getElementById('pendingBetsTable').innerHTML = '<p style="color: var(--text-secondary);">No pending bets for this week</p>';
+                document.getElementById('pendingBetsTable').innerHTML = '<p style="color: var(--tnc-fg-muted);">No pending bets for this week</p>';
                 return;
             }
 

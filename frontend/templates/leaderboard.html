@@ -67,7 +67,7 @@
     <h2 class="card-title">
         <span><span class="trophy">🏆</span> Weekly Leaders</span>
         <div class="week-selector">
-            <label for="week-select" style="color: var(--text-secondary); font-size: 14px; font-weight: normal;">Week:</label>
+            <label for="week-select" style="color: var(--tnc-fg-muted); font-size: 14px; font-weight: normal;">Week:</label>
             <select id="week-select" onchange="window.location.href='/leaderboard?week='+this.value">
                 {% for week in available_weeks %}
                 <option value="{{ week }}" {% if week == selected_week %}selected{% endif %}>{{ week }}</option>

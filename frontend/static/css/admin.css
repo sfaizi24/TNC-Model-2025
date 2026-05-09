@@ -1,6 +1,6 @@
     .active-week-banner {
         background: linear-gradient(135deg, rgba(26, 144, 255, 0.15) 0%, rgba(63, 185, 80, 0.15) 100%);
-        border: 2px solid var(--fanduel-blue);
+        border: 2px solid var(--tnc-blue);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 25px;
@@ -19,7 +19,7 @@
 
     .active-week-label {
         font-size: 14px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -27,7 +27,7 @@
     .active-week-number {
         font-size: 36px;
         font-weight: 700;
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
     }
 
     .active-week-status {
@@ -48,7 +48,7 @@
 
     .status-badge.open {
         background: rgba(63, 185, 80, 0.2);
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .status-badge.locked {
@@ -69,7 +69,7 @@
     }
 
     .status-dot.open {
-        background: var(--success-green);
+        background: var(--tnc-win);
     }
 
     .status-dot.locked {
@@ -89,7 +89,7 @@
 
     .lock-countdown {
         font-size: 13px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
     }
 
     .quick-actions {
@@ -106,18 +106,18 @@
     }
 
     .admin-card {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 12px;
         padding: 25px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
 
     .admin-card h3 {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-size: 20px;
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
+        border-bottom: 1px solid var(--tnc-border);
     }
 
     .form-group {
@@ -126,7 +126,7 @@
 
     .form-label {
         display: block;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 14px;
         margin-bottom: 8px;
     }
@@ -134,21 +134,21 @@
     .form-input {
         width: 100%;
         padding: 12px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        border: 1px solid var(--tnc-border);
         border-radius: 6px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
     }
 
     .form-input:focus {
         outline: none;
-        border-color: var(--fanduel-blue);
+        border-color: var(--tnc-blue);
     }
 
     .btn {
         padding: 12px 24px;
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
         border: none;
         border-radius: 6px;
@@ -162,7 +162,7 @@
     }
 
     .btn-success {
-        background: var(--success-green);
+        background: var(--tnc-win);
     }
 
     .btn-success:hover {
@@ -193,12 +193,12 @@
 
     .btn-outline {
         background: transparent;
-        border: 1px solid var(--fanduel-blue);
-        color: var(--fanduel-blue);
+        border: 1px solid var(--tnc-blue);
+        color: var(--tnc-blue);
     }
 
     .btn-outline:hover {
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
     }
 
@@ -210,8 +210,8 @@
     th {
         text-align: left;
         padding: 12px;
-        background: var(--fanduel-dark);
-        color: var(--text-secondary);
+        background: var(--tnc-bg);
+        color: var(--tnc-fg-muted);
         font-size: 13px;
         font-weight: 600;
         text-transform: uppercase;
@@ -219,8 +219,8 @@
 
     td {
         padding: 15px 12px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
-        color: var(--text-primary);
+        border-bottom: 1px solid var(--tnc-border);
+        color: var(--tnc-fg);
     }
 
     tr:last-child td {
@@ -232,7 +232,7 @@
     }
 
     tr.active-row td:first-child {
-        border-left: 3px solid var(--fanduel-blue);
+        border-left: 3px solid var(--tnc-blue);
     }
 
     .message {
@@ -243,7 +243,7 @@
 
     .message-success {
         background: rgba(63, 185, 80, 0.2);
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .message-error {

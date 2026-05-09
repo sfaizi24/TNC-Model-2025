@@ -6,19 +6,19 @@
     }
 
     .leaderboard-card {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 12px;
         padding: 20px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
 
     .card-title {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 16px;
         padding-bottom: 10px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
+        border-bottom: 1px solid var(--tnc-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -36,9 +36,9 @@
     }
 
     .week-selector select {
-        background: var(--fanduel-dark);
-        color: var(--text-primary);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        color: var(--tnc-fg);
+        border: 1px solid var(--tnc-border);
         padding: 6px 12px;
         border-radius: 6px;
         font-size: 14px;
@@ -56,9 +56,9 @@
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         border-radius: 8px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
 
     .rank-item.top-1 {
@@ -82,7 +82,7 @@
     }
 
     .separator {
-        border-top: 2px dashed var(--fanduel-light-gray);
+        border-top: 2px dashed var(--tnc-border);
         margin: 16px 0;
         position: relative;
     }
@@ -92,9 +92,9 @@
         top: -10px;
         left: 50%;
         transform: translateX(-50%);
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         padding: 0 12px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 12px;
         font-weight: 600;
         text-transform: uppercase;
@@ -129,7 +129,7 @@
     }
 
     .user-name {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
         font-weight: 600;
     }
@@ -140,7 +140,7 @@
     }
 
     .pnl-value.positive {
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .pnl-value.negative {
@@ -149,9 +149,9 @@
 
     .bet-detail {
         padding: 12px 16px;
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         border-radius: 8px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
         margin-bottom: 10px;
     }
 
@@ -160,13 +160,13 @@
     }
 
     .bet-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 12px;
         margin-bottom: 6px;
     }
 
     .bet-description {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
         font-weight: 600;
         margin-bottom: 8px;
@@ -187,11 +187,11 @@
     }
 
     .bet-stat-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
     }
 
     .bet-stat-value {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-weight: 600;
     }
 
@@ -204,7 +204,7 @@
 
     .status-won {
         background: rgba(63, 185, 80, 0.2);
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .status-lost {
@@ -214,13 +214,13 @@
 
     .status-pending {
         background: rgba(210, 153, 34, 0.2);
-        color: var(--warning-yellow);
+        color: var(--tnc-pending);
     }
 
     .no-data {
         text-align: center;
         padding: 30px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 14px;
     }
 

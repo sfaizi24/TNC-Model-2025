@@ -1,8 +1,8 @@
     .logout-btn {
         padding: 10px 24px;
         background: transparent;
-        color: var(--text-primary);
-        border: 1px solid var(--fanduel-light-gray);
+        color: var(--tnc-fg);
+        border: 1px solid var(--tnc-border);
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
@@ -11,20 +11,20 @@
     }
 
     .logout-btn:hover {
-        background: var(--fanduel-light-gray);
+        background: var(--tnc-border);
     }
 
     .balance-card {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 16px;
         padding: 20px 40px;
         margin-bottom: 30px;
         text-align: center;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
 
     .balance-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 14px;
         margin-bottom: 8px;
         text-transform: uppercase;
@@ -34,7 +34,7 @@
     .balance-amount {
         font-size: 48px;
         font-weight: bold;
-        color: var(--success-green);
+        color: var(--tnc-win);
         margin-bottom: 8px;
     }
 
@@ -45,7 +45,7 @@
     }
 
     .positive {
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .negative {
@@ -60,18 +60,18 @@
     }
 
     .account-card {
-        background: var(--fanduel-gray);
+        background: var(--tnc-surface);
         border-radius: 12px;
         padding: 16px;
-        border: 1px solid var(--fanduel-light-gray);
+        border: 1px solid var(--tnc-border);
     }
 
     .account-card h3 {
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         font-size: 16px;
         margin-bottom: 14px;
         padding-bottom: 8px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
+        border-bottom: 1px solid var(--tnc-border);
     }
 
     .info-row {
@@ -79,7 +79,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 10px 0;
-        border-bottom: 1px solid var(--fanduel-light-gray);
+        border-bottom: 1px solid var(--tnc-border);
     }
 
     .info-row:last-child {
@@ -87,12 +87,12 @@
     }
 
     .info-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 13px;
     }
 
     .info-value {
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-weight: 600;
         font-size: 13px;
     }
@@ -110,8 +110,8 @@
     th {
         text-align: left;
         padding: 8px 10px;
-        background: var(--fanduel-dark);
-        color: var(--text-secondary);
+        background: var(--tnc-bg);
+        color: var(--tnc-fg-muted);
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
@@ -119,8 +119,8 @@
 
     td {
         padding: 10px;
-        border-bottom: 1px solid var(--fanduel-light-gray);
-        color: var(--text-primary);
+        border-bottom: 1px solid var(--tnc-border);
+        color: var(--tnc-fg);
         font-size: 13px;
     }
 
@@ -129,7 +129,7 @@
     }
 
     tr:hover td {
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
     }
 
     .bet-status {
@@ -142,12 +142,12 @@
 
     .status-pending {
         background: rgba(210, 153, 34, 0.2);
-        color: var(--warning-yellow);
+        color: var(--tnc-pending);
     }
 
     .status-won {
         background: rgba(63, 185, 80, 0.2);
-        color: var(--success-green);
+        color: var(--tnc-win);
     }
 
     .status-lost {
@@ -158,7 +158,7 @@
     .no-bets {
         text-align: center;
         padding: 40px;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
     }
 
     .weekly-stats-grid {
@@ -169,14 +169,14 @@
     }
 
     .stat-card {
-        background: var(--fanduel-dark);
+        background: var(--tnc-bg);
         padding: 20px;
         border-radius: 8px;
         text-align: center;
     }
 
     .stat-card .week-label {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 12px;
         margin-bottom: 10px;
     }
@@ -196,7 +196,7 @@
 
     .form-label {
         display: block;
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         font-size: 13px;
         margin-bottom: 6px;
         font-weight: 600;
@@ -205,10 +205,10 @@
     .form-input {
         width: 100%;
         padding: 10px 12px;
-        background: var(--fanduel-dark);
-        border: 1px solid var(--fanduel-light-gray);
+        background: var(--tnc-bg);
+        border: 1px solid var(--tnc-border);
         border-radius: 6px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         font-size: 14px;
         font-family: inherit;
         transition: border-color 0.3s ease;
@@ -216,13 +216,13 @@
 
     .form-input:focus {
         outline: none;
-        border-color: var(--fanduel-blue);
+        border-color: var(--tnc-blue);
     }
 
     .update-btn {
         width: 100%;
         padding: 12px 24px;
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
         border: none;
         border-radius: 6px;
@@ -251,8 +251,8 @@
 
     .flash-success {
         background: rgba(63, 185, 80, 0.2);
-        color: var(--success-green);
-        border: 1px solid var(--success-green);
+        color: var(--tnc-win);
+        border: 1px solid var(--tnc-win);
     }
 
     .flash-error {

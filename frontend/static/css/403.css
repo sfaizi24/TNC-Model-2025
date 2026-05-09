@@ -8,18 +8,18 @@
     .error-code {
         font-size: 72px;
         font-weight: bold;
-        color: var(--fanduel-blue);
+        color: var(--tnc-blue);
         margin-bottom: 20px;
     }
 
     .error-title {
         font-size: 24px;
-        color: var(--text-primary);
+        color: var(--tnc-fg);
         margin-bottom: 15px;
     }
 
     .error-message {
-        color: var(--text-secondary);
+        color: var(--tnc-fg-muted);
         margin-bottom: 30px;
         line-height: 1.6;
     }
@@ -27,7 +27,7 @@
     .btn-primary {
         display: inline-block;
         padding: 14px 40px;
-        background: var(--fanduel-blue);
+        background: var(--tnc-blue);
         color: white;
         border: none;
         border-radius: 6px;

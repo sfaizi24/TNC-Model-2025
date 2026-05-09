@@ -5,30 +5,124 @@
 }
 
 :root {
-    --fanduel-blue: #1493FF;
-    --fanduel-dark: #0D1117;
-    --fanduel-darker: #010409;
-    --fanduel-gray: #161B22;
-    --fanduel-light-gray: #30363D;
-    --text-primary: #FFFFFF;
-    --text-secondary: #8B949E;
-    --success-green: #3FB950;
-    --warning-yellow: #D29922;
-    --error-red: #FF4444;
-    --text-danger: #FF6B6B;
-    --primary-color: var(--fanduel-blue);
+    /* Brand */
+    --tnc-blue: #1493FF;
+    --tnc-blue-hover: #0D7FE8;
+    --tnc-blue-pressed: #0066CC;
+
+    /* Surfaces */
+    --tnc-bg: #0D1117;
+    --tnc-bg-deep: #010409;
+    --tnc-surface: #161B22;
+    --tnc-surface-2: #1C232C;
+    --tnc-border: #30363D;
+    --tnc-border-soft: rgba(255, 255, 255, 0.10);
+
+    /* Text */
+    --tnc-fg: #FFFFFF;
+    --tnc-fg-muted: #8B949E;
+    --tnc-fg-faint: rgba(255, 255, 255, 0.65);
+
+    /* Semantic */
+    --tnc-win: #3FB950;
+    --tnc-loss: #FF4444;
+    --tnc-loss-soft: #FF6B6B;
+    --tnc-pending: #D29922;
+
+    /* Podium medals */
+    --tnc-gold: #FFD700;
+    --tnc-silver: #C0C0C0;
+    --tnc-bronze: #CD7F32;
+
+    /* Tints */
+    --tnc-blue-tint: rgba(20, 147, 255, 0.10);
+    --tnc-win-tint: rgba(63, 185, 80, 0.20);
+    --tnc-loss-tint: rgba(255, 68, 68, 0.20);
+    --tnc-pending-tint: rgba(210, 153, 34, 0.20);
+
+    /* Typography */
+    --tnc-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    --tnc-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+    --tnc-fs-10: 10px;
+    --tnc-fs-11: 11px;
+    --tnc-fs-12: 12px;
+    --tnc-fs-13: 13px;
+    --tnc-fs-14: 14px;
+    --tnc-fs-16: 16px;
+    --tnc-fs-18: 18px;
+    --tnc-fs-20: 20px;
+    --tnc-fs-24: 24px;
+    --tnc-fs-28: 28px;
+    --tnc-fs-32: 32px;
+    --tnc-fs-48: 48px;
+
+    --tnc-fw-regular: 400;
+    --tnc-fw-medium: 500;
+    --tnc-fw-semi: 600;
+    --tnc-fw-bold: 700;
+    --tnc-fw-black: 800;
+
+    --tnc-lh-tight: 1.15;
+    --tnc-lh-normal: 1.5;
+    --tnc-lh-loose: 1.6;
+
+    --tnc-track-caps: 1px;
+    --tnc-track-mini: 0.3px;
+
+    /* Radii */
+    --tnc-r-xs: 4px;
+    --tnc-r-sm: 6px;
+    --tnc-r-md: 8px;
+    --tnc-r-lg: 10px;
+    --tnc-r-xl: 12px;
+    --tnc-r-2xl: 16px;
+    --tnc-r-pill: 999px;
+
+    /* Elevation */
+    --tnc-shadow-cta: 0 4px 12px rgba(20, 147, 255, 0.30);
+    --tnc-shadow-cta-hi: 0 6px 16px rgba(20, 147, 255, 0.40);
+    --tnc-shadow-prize: 0 4px 12px rgba(16, 185, 129, 0.30);
+    --tnc-shadow-toast: 0 4px 12px rgba(0, 0, 0, 0.30);
+    --tnc-glow-success: 0 0 20px 10px rgba(40, 167, 69, 0.30);
+    --tnc-glow-bet-on: 0 0 10px rgba(40, 167, 69, 0.15);
+
+    /* Spacing (4px base) */
+    --tnc-sp-1: 4px;
+    --tnc-sp-2: 6px;
+    --tnc-sp-3: 8px;
+    --tnc-sp-4: 10px;
+    --tnc-sp-5: 12px;
+    --tnc-sp-6: 16px;
+    --tnc-sp-7: 20px;
+    --tnc-sp-8: 24px;
+    --tnc-sp-9: 30px;
+    --tnc-sp-10: 40px;
+    --tnc-sp-12: 60px;
+
+    /* Layout */
+    --tnc-content-max: 1400px;
+    --tnc-mobile-bp: 768px;
+    --tnc-header-h: 60px;
+    --tnc-header-h-mob: 45px;
+
+    /* Motion */
+    --tnc-ease: ease;
+    --tnc-ease-out: ease-out;
+    --tnc-dur-fast: 0.2s;
+    --tnc-dur-base: 0.3s;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-    background: var(--fanduel-dark);
-    color: var(--text-primary);
+    background: var(--tnc-bg);
+    color: var(--tnc-fg);
     min-height: 100vh;
 }
 
 .header {
-    background: var(--fanduel-darker);
-    border-bottom: 1px solid var(--fanduel-light-gray);
+    background: var(--tnc-bg-deep);
+    border-bottom: 1px solid var(--tnc-border);
     padding: 0 20px;
     position: sticky;
     top: 0;
@@ -61,7 +155,7 @@ body {
 }
 
 .nav-link {
-    color: var(--text-secondary);
+    color: var(--tnc-fg-muted);
     text-decoration: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -70,12 +164,12 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--text-primary);
-    background: var(--fanduel-gray);
+    color: var(--tnc-fg);
+    background: var(--tnc-surface);
 }
 
 .nav-link.active {
-    color: var(--fanduel-blue);
+    color: var(--tnc-blue);
     background: rgba(20, 147, 255, 0.1);
 }
 
@@ -83,7 +177,7 @@ body {
     display: block;
     background: none;
     border: none;
-    color: var(--text-primary);
+    color: var(--tnc-fg);
     font-size: 24px;
     cursor: pointer;
     padding: 8px;
@@ -95,8 +189,8 @@ body {
     top: 60px;
     left: 0;
     right: 0;
-    background: var(--fanduel-darker);
-    border-bottom: 1px solid var(--fanduel-light-gray);
+    background: var(--tnc-bg-deep);
+    border-bottom: 1px solid var(--tnc-border);
     padding: 20px;
     flex-direction: column;
     gap: 10px;
@@ -169,7 +263,7 @@ body {
 
 .page-title {
     font-size: 20px;
-    color: var(--text-primary);
+    color: var(--tnc-fg);
     font-weight: 700;
 }
 
@@ -180,7 +274,7 @@ body {
 }
 
 .site-footer {
-    border-top: 1px solid var(--fanduel-light-gray);
+    border-top: 1px solid var(--tnc-border);
     padding: 20px;
     margin-top: 60px;
 }
@@ -197,20 +291,34 @@ body {
 }
 
 .footer-brand {
-    color: var(--text-primary);
+    color: var(--tnc-fg);
     font-weight: 600;
 }
 
 .footer-tagline {
-    color: var(--text-secondary);
+    color: var(--tnc-fg-muted);
 }
 
 .footer-link {
-    color: var(--fanduel-blue);
+    color: var(--tnc-blue);
     text-decoration: none;
     transition: opacity 0.2s ease;
 }
 
 .footer-link:hover {
     opacity: 0.8;
+}
+
+.tnc-num-balance {
+    font-size: var(--tnc-fs-24);
+    font-weight: var(--tnc-fw-bold);
+    color: var(--tnc-win);
+    font-variant-numeric: tabular-nums;
+}
+
+.tnc-num-hero {
+    font-size: var(--tnc-fs-48);
+    font-weight: var(--tnc-fw-bold);
+    color: var(--tnc-win);
+    font-variant-numeric: tabular-nums;
 }
