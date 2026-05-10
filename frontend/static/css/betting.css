@@ -24,7 +24,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--tnc-fs-11);
+    font-size: var(--tnc-fs-13);
     color: var(--tnc-fg-muted);
     font-weight: var(--tnc-fw-medium);
     margin-top: 4px;
