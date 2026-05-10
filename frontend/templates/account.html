@@ -31,14 +31,6 @@
             <span class="tnc-acct-row-l">Email</span>
             <span class="tnc-acct-row-v">{{ user.email or '—' }}</span>
         </div>
-        <div class="tnc-acct-row">
-            <span class="tnc-acct-row-l">Starting Balance</span>
-            <span class="tnc-acct-row-v">${{ "%.2f"|format(starting_balance) }}</span>
-        </div>
-        <div class="tnc-acct-row">
-            <span class="tnc-acct-row-l">Admin</span>
-            <span class="tnc-acct-row-v">{{ 'Yes' if user.is_admin else 'No' }}</span>
-        </div>
     </div>
 
     <div class="tnc-card">
@@ -86,41 +78,42 @@
 
 <div class="tnc-card tnc-acct-block">
     <h3 class="tnc-card-h">Bet History</h3>
-    {% if bet_history %}
-    <div class="tnc-acct-table-wrap">
-        <table class="tnc-acct-table">
-            <thead>
-                <tr>
-                    <th>Wk</th>
-                    <th>Bet</th>
-                    <th>Odds</th>
-                    <th>Stake</th>
-                    <th>Result</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for b in bet_history %}
-                <tr>
-                    <td>{{ b.week or '—' }}</td>
-                    <td>{{ b.description }}</td>
-                    <td class="tnc-tab-num">{{ b.odds }}</td>
-                    <td class="tnc-tab-num">${{ "%.2f"|format(b.amount) }}</td>
-                    <td class="tnc-tab-num
-                        {% if b.status == 'won' %}tnc-pos
-                        {% elif b.status == 'lost' %}tnc-neg
-                        {% endif %}">
-                        {% if b.status == 'pending' %}—
-                        {% elif b.status == 'won' %}+${{ "%.2f"|format(b.result) }}
-                        {% else %}-${{ "%.2f"|format(b.amount) }}
-                        {% endif %}
-                    </td>
-                    <td><span class="tnc-badge tnc-badge-{{ b.status }}">{{ b.status }}</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    {% if bets_by_week %}
+    {% for week, bets in bets_by_week %}
+    <div class="tnc-acct-bh-week">
+        <div class="tnc-acct-bh-week-h">Week {{ week or '—' }}</div>
+        <div class="tnc-acct-table-wrap">
+            <table class="tnc-acct-table">
+                <thead>
+                    <tr>
+                        <th>Bet</th>
+                        <th>Odds</th>
+                        <th>Stake</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bets %}
+                    <tr>
+                        <td>{{ b.description }}</td>
+                        <td class="tnc-tab-num">{{ b.odds }}</td>
+                        <td class="tnc-tab-num">${{ "%.2f"|format(b.amount) }}</td>
+                        <td class="tnc-tab-num
+                            {% if b.status == 'won' %}tnc-pos
+                            {% elif b.status == 'lost' %}tnc-neg
+                            {% endif %}">
+                            {% if b.status == 'pending' %}—
+                            {% elif b.status == 'won' %}+${{ "%.2f"|format(b.result) }}
+                            {% else %}-${{ "%.2f"|format(b.amount) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+    {% endfor %}
     {% else %}
     <p class="tnc-acct-empty">No bets yet. <a href="{{ url_for('betting.betting') }}">Place your first bet &rarr;</a></p>
     {% endif %}

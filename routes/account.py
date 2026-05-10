@@ -1,4 +1,5 @@
 import logging
+from itertools import groupby
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -14,12 +15,13 @@ account_bp = Blueprint("account", __name__)
 def account():
     from models import Bet, WeeklyStats
 
-    bet_history = (
+    bets = (
         db.session.query(Bet)
         .filter(Bet.user_id == current_user.id)
         .order_by(Bet.week.desc(), Bet.created_at.desc())
         .all()
     )
+    bets_by_week = [(week, list(group)) for week, group in groupby(bets, key=lambda b: b.week)]
 
     weekly_pnl = (
         db.session.query(WeeklyStats)
@@ -31,9 +33,8 @@ def account():
     return render_template(
         "account.html",
         user=current_user,
-        bet_history=bet_history,
+        bets_by_week=bets_by_week,
         weekly_pnl=weekly_pnl,
-        starting_balance=1000.00,
     )
 
 

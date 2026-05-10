@@ -173,10 +173,23 @@
     overflow-x: auto;
 }
 
+.tnc-acct-bh-week + .tnc-acct-bh-week {
+    margin-top: 18px;
+}
+
+.tnc-acct-bh-week-h {
+    color: var(--tnc-fg-muted);
+    font-size: var(--tnc-fs-11);
+    font-weight: var(--tnc-fw-semi);
+    text-transform: uppercase;
+    letter-spacing: var(--tnc-track-caps);
+    margin-bottom: 6px;
+}
+
 .tnc-acct-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 540px;
+    min-width: 380px;
 }
 
 .tnc-acct-table th {
