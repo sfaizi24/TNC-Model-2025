@@ -2,10 +2,12 @@ from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
 from routes.helpers import (
+    display_name_for,
     get_current_week,
     get_league_id_for_week,
     get_team_mapping,
     query_analytics,
+    resolve_owner,
 )
 
 odds_bp = Blueprint("odds", __name__)
@@ -66,7 +68,7 @@ def get_team_performance():
             teams.append(
                 {
                     "team_id": row["team_id"],
-                    "owner": row["owner"],
+                    "owner": display_name_for(row["owner"]),
                     "line": row["line"],
                     "over_prob": row["over_prob"],
                     "under_prob": row["under_prob"],
@@ -97,7 +99,7 @@ def _scorer_query(table_name):
     )
     return [
         {
-            "owner": row["owner"],
+            "owner": display_name_for(row["owner"]),
             "win_prob": round(row["probability"] * 100, 1),
             "odds": row["odds"],
             "proj_pts": round(row["proj_pts"], 1) if row["proj_pts"] is not None else None,
@@ -144,7 +146,7 @@ def get_first_place():
         for row in rows:
             teams.append(
                 {
-                    "owner": row["owner"],
+                    "owner": display_name_for(row["owner"]),
                     "win_prob": round(row["probability"] * 100, 1),
                     "odds": row["american_odds"],
                 }
@@ -173,7 +175,7 @@ def get_ammad_playoff():
         for row in rows:
             teams.append(
                 {
-                    "owner": row["owner"],
+                    "owner": display_name_for(row["owner"]),
                     "win_prob": round(row["probability"] * 100, 1),
                     "odds": row["american_odds"],
                 }
@@ -213,7 +215,7 @@ def get_lineup(owner):
                     ELSE 10
                 END
             """,
-            {"owner": owner, "week": week},
+            {"owner": resolve_owner(owner), "week": week},
         )
 
         lineup = []
@@ -262,7 +264,8 @@ def get_teams():
             display_name = row["display_name"]
             roster_id = row["roster_id"]
 
-            label = display_name or username or f"Team {roster_id}"
+            raw_label = display_name or username or f"Team {roster_id}"
+            label = display_name_for(raw_label)
             slug = username or display_name
 
             if slug:
@@ -291,6 +294,7 @@ def get_team_players():
         if not league_id:
             return jsonify({"error": "Team not found"}), 404
 
+        raw_owner = resolve_owner(team_owner)
         roster_rows = query_analytics(
             """
             SELECT r.roster_id, r.starters, r.players
@@ -299,7 +303,7 @@ def get_team_players():
             WHERE r.league_id = :league_id
               AND (u.username = :team_owner OR u.display_name = :team_owner)
             """,
-            {"league_id": league_id, "team_owner": team_owner},
+            {"league_id": league_id, "team_owner": raw_owner},
         )
 
         if not roster_rows:

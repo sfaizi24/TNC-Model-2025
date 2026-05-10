@@ -7,6 +7,7 @@ from sqlalchemy import Integer, case, cast, desc, distinct, func
 from database import db
 from routes.helpers import (
     check_betting_period_lock,
+    friendly_description,
     get_current_week,
     get_team_mapping,
     query_analytics,
@@ -436,7 +437,7 @@ def place_bet():
 
             potential_win = amount
             current_user.account_balance -= amount
-            description = f"{owner} O/U {line:.1f}: {choice.capitalize()}"
+            description = friendly_description(f"{owner} O/U {line:.1f}: {choice.capitalize()}")
 
             bet = Bet(
                 user_id=current_user.id,
@@ -557,7 +558,7 @@ def get_my_bets():
             bets_data.append(
                 {
                     "id": bet.id,
-                    "description": bet.description,
+                    "description": friendly_description(bet.description),
                     "amount": bet.amount,
                     "odds": bet.odds,
                     "potential_win": bet.potential_win,

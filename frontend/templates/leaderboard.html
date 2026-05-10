@@ -39,7 +39,7 @@
         <div class="tnc-lb-bet-label">{{ label }}</div>
         <div class="tnc-lb-bet-week">Week {{ bet[6] }}</div>
     </div>
-    <div class="tnc-lb-bet-desc">{{ bet[0] }}</div>
+    <div class="tnc-lb-bet-desc">{{ bet[0]|friendly_names }}</div>
     <div class="tnc-lb-bet-stats">
         {{ stat('User', display_name(bet[4], bet[5], '')) }}
         {{ stat('Odds', bet[1]) }}
@@ -63,7 +63,7 @@
         <div class="tnc-lb-bet-label">{{ label }}</div>
         <div class="tnc-lb-bet-week">Week {{ bet[6] }}</div>
     </div>
-    <div class="tnc-lb-bet-desc">{{ bet[0] }}</div>
+    <div class="tnc-lb-bet-desc">{{ bet[0]|friendly_names }}</div>
     <div class="tnc-lb-bet-stats">
         {{ stat('Users', bet[1]) }}
         {{ stat('Wagered', '$%.2f'|format(bet[5])) }}

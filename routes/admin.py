@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user
 
 from database import db
-from routes.helpers import admin_required
+from routes.helpers import admin_required, friendly_description
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -96,7 +96,7 @@ def get_pending_bets():
                 {
                     "id": bet.id,
                     "user_id": bet.user_id,
-                    "description": bet.description,
+                    "description": friendly_description(bet.description),
                     "amount": bet.amount,
                     "odds": bet.odds,
                     "potential_win": bet.potential_win,

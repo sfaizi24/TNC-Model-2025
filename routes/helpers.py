@@ -7,6 +7,52 @@ from sqlalchemy import text
 
 from database import db
 
+# Maps a Sleeper username (or display_name as it appears in the DB) to the
+# friendly first name we want shown across the site. Lookups elsewhere should
+# go through display_name_for / friendly_description so this stays the only
+# place the mapping is defined.
+OWNER_DISPLAY_NAMES = {
+    "xavierking4": "Dany",
+    "umarrahman30": "Umar",
+    "sfaizi24": "Samer",
+    "sahirsyed30": "Sahir",
+    "monkeyman966699696": "Hasan",
+    "mehdidrissi": "Mehdi",
+    "asadrafique": "Asad",
+    "amir812": "Arman",
+    "TBK41": "Tabarak",
+    "Jibraan": "Jibraan",
+    "Bilal879": "Bilal",
+    "Ammady": "Ammad",
+}
+
+_REVERSE_OWNER_LOOKUP = {friendly: raw for raw, friendly in OWNER_DISPLAY_NAMES.items()}
+
+
+def display_name_for(owner):
+    if not owner:
+        return owner
+    return OWNER_DISPLAY_NAMES.get(owner, owner)
+
+
+def resolve_owner(name):
+    """Translate a friendly display name back to its raw Sleeper handle."""
+    if not name:
+        return name
+    return _REVERSE_OWNER_LOOKUP.get(name, name)
+
+
+def friendly_description(description):
+    """Replace any raw Sleeper handles inside a stored bet description.
+
+    Replaces longest keys first so that 'Bilal' never shadows 'Bilal879'.
+    """
+    if not description:
+        return description
+    for raw in sorted(OWNER_DISPLAY_NAMES, key=len, reverse=True):
+        description = description.replace(raw, OWNER_DISPLAY_NAMES[raw])
+    return description
+
 
 def get_current_week():
     from models import BettingPeriod
@@ -90,6 +136,6 @@ def get_team_mapping(week):
     team_mapping = {}
     for row in roster_rows:
         owner_name = row["display_name"] or row["username"] or f"Team {row['roster_id']}"
-        team_mapping[row["roster_id"]] = owner_name
+        team_mapping[row["roster_id"]] = display_name_for(owner_name)
 
     return team_mapping

@@ -86,6 +86,10 @@ def create_app(config=None):
     app.register_blueprint(betting_bp)
     app.register_blueprint(admin_bp)
 
+    from routes.helpers import friendly_description
+
+    app.jinja_env.filters["friendly_names"] = friendly_description
+
     @app.before_request
     def make_session_permanent():
         session.permanent = True
