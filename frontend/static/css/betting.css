@@ -45,21 +45,24 @@
     color: var(--tnc-fg);
 }
 
-.tnc-model-sep {
-    opacity: 0.4;
-}
-
-.tnc-model-link {
-    color: var(--tnc-fg-muted);
-    text-decoration: underline;
-    text-decoration-color: rgba(255, 255, 255, 0.18);
-    text-underline-offset: 2px;
+.tnc-model-name {
+    color: var(--tnc-fg);
+    text-decoration: none;
     transition: color var(--tnc-dur-base) var(--tnc-ease);
 }
 
-.tnc-model-link:hover {
+.tnc-model-name:hover {
     color: var(--tnc-blue);
-    text-decoration-color: var(--tnc-blue);
+}
+
+.tnc-model-link-icon {
+    margin-left: 4px;
+    vertical-align: -2px;
+    opacity: 0.55;
+}
+
+.tnc-model-name:hover .tnc-model-link-icon {
+    opacity: 1;
 }
 
 .tnc-balance-mini {
