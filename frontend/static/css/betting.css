@@ -46,13 +46,14 @@
 }
 
 .tnc-model-name {
-    color: var(--tnc-fg);
-    text-decoration: none;
+    color: var(--tnc-blue);
+    text-decoration: underline;
+    text-underline-offset: 2px;
     transition: color var(--tnc-dur-base) var(--tnc-ease);
 }
 
 .tnc-model-name:hover {
-    color: var(--tnc-blue);
+    color: var(--tnc-blue-hover, var(--tnc-blue));
 }
 
 .tnc-model-link-icon {
@@ -500,7 +501,7 @@
 
 .tnc-mc-odd-inline {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
     gap: 6px;
     padding: 7px 6px;
