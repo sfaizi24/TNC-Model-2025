@@ -189,7 +189,6 @@
 .tnc-acct-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 380px;
 }
 
 .tnc-acct-table th {

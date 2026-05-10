@@ -95,7 +95,7 @@
                 <tbody>
                     {% for b in bets %}
                     <tr>
-                        <td>{{ b.description }}</td>
+                        <td>{{ b.description|replace(' ' ~ b.odds, '') }}</td>
                         <td class="tnc-tab-num">{{ b.odds }}</td>
                         <td class="tnc-tab-num">${{ "%.2f"|format(b.amount) }}</td>
                         <td class="tnc-tab-num
