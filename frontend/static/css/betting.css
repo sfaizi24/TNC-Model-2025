@@ -728,34 +728,32 @@
 .tnc-lp-row {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
-    padding: 4px 6px;
+    padding: 6px 8px;
     background: rgba(255, 255, 255, 0.025);
     border-radius: 3px;
 }
 
 .tnc-lp-name {
     color: var(--tnc-fg);
-    font-size: var(--tnc-fs-10);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: var(--tnc-fs-13);
+    line-height: 1.15;
 }
 
 .tnc-lp-pos {
     color: var(--tnc-fg-muted);
-    font-size: 9px;
+    font-size: var(--tnc-fs-11);
     font-weight: var(--tnc-fw-semi);
-    min-width: 22px;
+    min-width: 24px;
     text-align: right;
 }
 
 .tnc-lp-pts {
     color: var(--tnc-blue);
-    font-size: var(--tnc-fs-10);
+    font-size: var(--tnc-fs-13);
     font-weight: var(--tnc-fw-bold);
-    min-width: 26px;
+    min-width: 30px;
     text-align: right;
 }
 
