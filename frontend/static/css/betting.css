@@ -143,7 +143,7 @@
 .tnc-prize-when {
     font-size: var(--tnc-fs-12);
     font-weight: var(--tnc-fw-bold);
-    color: var(--tnc-fg);
+    color: var(--tnc-fg-muted);
 }
 
 .tnc-prize-divider {

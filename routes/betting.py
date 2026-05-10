@@ -22,11 +22,11 @@ def _format_lock_time(lock_time):
     from zoneinfo import ZoneInfo
 
     eastern = lock_time.astimezone(ZoneInfo("America/New_York"))
-    day = eastern.strftime("%a %b ") + str(eastern.day)
+    day = eastern.strftime("%b ") + str(eastern.day)
     hour = eastern.hour % 12 or 12
     suffix = "AM" if eastern.hour < 12 else "PM"
     minute_part = f":{eastern.minute:02d}" if eastern.minute else ""
-    return f"{day}, {hour}{minute_part} {suffix} ET"
+    return f"{day}, {hour}{minute_part}{suffix} ET"
 
 
 @betting_bp.route("/betting")
