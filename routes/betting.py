@@ -98,6 +98,7 @@ def leaderboard():
             func.sum(Bet.result).label("result"),
             User.first_name,
             User.last_name,
+            Bet.week,
         )
         .join(User, Bet.user_id == User.id)
         .filter(Bet.status == "won")
@@ -114,6 +115,7 @@ def leaderboard():
             func.sum(Bet.result).label("result"),
             User.first_name,
             User.last_name,
+            Bet.week,
         )
         .join(User, Bet.user_id == User.id)
         .filter(Bet.status == "won")
@@ -124,7 +126,13 @@ def leaderboard():
 
     worst_odds_bet = (
         db.session.query(
-            Bet.description, Bet.odds, func.sum(Bet.amount).label("amount"), Bet.result, User.first_name, User.last_name
+            Bet.description,
+            Bet.odds,
+            func.sum(Bet.amount).label("amount"),
+            Bet.result,
+            User.first_name,
+            User.last_name,
+            Bet.week,
         )
         .join(User, Bet.user_id == User.id)
         .filter(Bet.status == "lost")
@@ -135,7 +143,13 @@ def leaderboard():
 
     biggest_loss = (
         db.session.query(
-            Bet.description, Bet.odds, func.sum(Bet.amount).label("amount"), Bet.result, User.first_name, User.last_name
+            Bet.description,
+            Bet.odds,
+            func.sum(Bet.amount).label("amount"),
+            Bet.result,
+            User.first_name,
+            User.last_name,
+            Bet.week,
         )
         .join(User, Bet.user_id == User.id)
         .filter(Bet.status == "lost")
@@ -153,6 +167,7 @@ def leaderboard():
                 func.sum(case((Bet.status == "lost", 1), else_=0)).label("losses"),
                 func.sum(case((Bet.status == "pending", 1), else_=0)).label("pending"),
                 func.sum(Bet.amount).label("total_wagered"),
+                func.max(Bet.week).label("week"),
             )
             .filter(Bet.bet_type == bet_type)
             .group_by(Bet.description)

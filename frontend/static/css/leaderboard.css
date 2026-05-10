@@ -151,10 +151,25 @@
     margin-bottom: 0;
 }
 
+.tnc-lb-bet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    gap: 8px;
+}
+
 .tnc-lb-bet-label {
     color: var(--tnc-fg-muted);
     font-size: var(--tnc-fs-11);
-    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: var(--tnc-track-mini);
+}
+
+.tnc-lb-bet-week {
+    color: var(--tnc-fg-muted);
+    font-size: var(--tnc-fs-11);
+    font-weight: var(--tnc-fw-semi);
     text-transform: uppercase;
     letter-spacing: var(--tnc-track-mini);
 }
@@ -188,6 +203,36 @@
     color: var(--tnc-fg);
     font-weight: var(--tnc-fw-semi);
     font-variant-numeric: tabular-nums;
+}
+
+.tnc-lb-outcome {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: var(--tnc-r-sm);
+    font-size: var(--tnc-fs-16);
+    font-weight: var(--tnc-fw-bold);
+    text-transform: uppercase;
+    letter-spacing: var(--tnc-track-caps);
+    text-align: center;
+}
+
+.tnc-lb-outcome-won {
+    background: var(--tnc-win-tint);
+    color: var(--tnc-win);
+}
+
+.tnc-lb-outcome-lost {
+    background: var(--tnc-loss-tint);
+    color: var(--tnc-loss);
+}
+
+.tnc-lb-outcome-pending {
+    background: var(--tnc-pending-tint);
+    color: var(--tnc-pending);
+}
+
+.tnc-card-h-bad {
+    color: var(--tnc-loss);
 }
 
 .tnc-lb-empty {
