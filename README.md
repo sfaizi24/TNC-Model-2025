@@ -1,7 +1,5 @@
 # TNCasino: Fantasy Football Analytics & Fake Betting Platform
 
-> **Built purely for fun as an analytical side project**  
-
 ---
 
 ## TLDR
