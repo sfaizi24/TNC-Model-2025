@@ -13,6 +13,7 @@ TNCasino — fantasy football analytics & fake-money betting platform. Flask web
 - **Production**: https://tncasino.win — DigitalOcean Droplet (143.198.183.213), gunicorn + nginx, Cloudflare DNS/SSL
 - **Deploy code**: `git push origin main && ssh root@143.198.183.213 "cd /opt/tncasino && git pull && sudo systemctl restart tncasino"`
 - **Publish data**: `python publish.py` (pushes local SQLite analytics to production PostgreSQL)
+- **Publish analytics charts**: `scp backend/data/images/*.png root@143.198.183.213:/var/lib/tncasino/analytics/` after each pipeline run. The Flask app reads them from `$ANALYTICS_IMAGES_DIR` (set in prod `.env`), so they live outside the git working tree and survive `git pull`.
 - **Server config**: systemd service at `/etc/systemd/system/tncasino.service`, nginx at `/etc/nginx/sites-available/tncasino`
 - **Production env**: `/opt/tncasino/.env` (separate from local `.env`)
 
@@ -54,7 +55,7 @@ Nine Jupyter notebooks in `backend/notebooks/`, run sequentially:
 - **Player name matching is brittle** — injury indicators get stripped from names; mismatches cause silent data loss.
 - **Monte Carlo uses lognormal** (not normal) distribution. Position baseline variances: QB=7, RB=9, WR=10, TE=8, K=4, DST=7.
 - **Tests**: `python -m pytest` — 78 tests, all in-memory SQLite, runs in <1s. CI runs lint + tests on every push/PR.
-- **`.env` required** — needs `SECRET_KEY`, `DATABASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `ADMIN_EMAILS`. Local dev also needs `OAUTHLIB_INSECURE_TRANSPORT=1` and `OAUTHLIB_RELAX_TOKEN_SCOPE=1`.
+- **`.env` required** — needs `SECRET_KEY`, `DATABASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `ADMIN_EMAILS`. Local dev also needs `OAUTHLIB_INSECURE_TRANSPORT=1` and `OAUTHLIB_RELAX_TOKEN_SCOPE=1`. Prod sets `ANALYTICS_IMAGES_DIR=/var/lib/tncasino/analytics` so the analytics charts live outside the git working tree; local dev falls back to `backend/data/images/`.
 
 ## Code Quality Philosophy
 

@@ -8,6 +8,8 @@ from routes.helpers import get_current_week
 
 pages_bp = Blueprint("pages", __name__)
 
+ANALYTICS_IMAGES_DIR = os.environ.get("ANALYTICS_IMAGES_DIR", "backend/data/images")
+
 
 @pages_bp.route("/")
 def index():
@@ -28,12 +30,11 @@ def about():
 
 @pages_bp.route("/analytics")
 def analytics():
-    images_dir = "backend/data/images"
     week = get_current_week()
 
     available_weeks = set()
-    if os.path.exists(images_dir):
-        for filename in os.listdir(images_dir):
+    if os.path.exists(ANALYTICS_IMAGES_DIR):
+        for filename in os.listdir(ANALYTICS_IMAGES_DIR):
             match = re.search(r"simulation_distributions_overlay_week_(\d+)\.png", filename)
             if match:
                 available_weeks.add(int(match.group(1)))
@@ -56,10 +57,9 @@ def serve_static(filename):
 def serve_analytics_image(filename):
     from werkzeug.security import safe_join
 
-    images_dir = "backend/data/images"
-    safe_path = safe_join(images_dir, filename)
+    safe_path = safe_join(ANALYTICS_IMAGES_DIR, filename)
 
     if not safe_path or not os.path.exists(safe_path):
         return "Image not found", 404
 
-    return send_from_directory(images_dir, filename, max_age=86400)
+    return send_from_directory(ANALYTICS_IMAGES_DIR, filename, max_age=86400)
