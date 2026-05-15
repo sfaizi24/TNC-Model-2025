@@ -58,6 +58,21 @@ frontend/static/images/percentile_ranges_*.png
 frontend/static/images/cdf_plot_*.png
 frontend/static/images/win_probability_*.png
 
+# Generated CSV outputs (pipeline artifacts)
+backend/data/csv/
+
+# Orphan duplicates of nfl_players.csv (canonical lives in league.db)
+/nfl_players.csv
+backend/notebooks/nfl_players.csv
+
+# Personal Claude / IDE config
+.claude/settings.local.json
+.cursorignore
+
+# One-off scratch / handoff docs (kept locally, not for public repo)
+backend/notebooks/Post-Week Analysis.ipynb
+docs/redesign-spec.md
+
 # Replit/agent attachments
 attached_assets/
 
