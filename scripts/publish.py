@@ -6,13 +6,14 @@ temporary tables first, gets validated, then atomically replaces the
 live tables.
 
 Usage:
-    python publish.py              # publish all tables
-    python publish.py --dry-run    # validate without swapping
+    python -m scripts.publish              # publish all tables
+    python -m scripts.publish --dry-run    # validate without swapping
 """
 
 import os
 import sqlite3
 import sys
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -25,19 +26,24 @@ if not DATABASE_URL:
     print("ERROR: DATABASE_URL not set in environment or .env")
     sys.exit(1)
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+ODDS_DB = str(PROJECT_ROOT / "backend/data/databases/odds.db")
+PROJECTIONS_DB = str(PROJECT_ROOT / "backend/data/databases/projections.db")
+LEAGUE_DB = str(PROJECT_ROOT / "backend/data/databases/league.db")
+
 # SQLite source → (table_name, PostgreSQL target_name)
 TABLE_MAP = [
-    ("backend/data/databases/odds.db", "betting_odds_matchup_ml", "betting_odds_matchup_ml"),
-    ("backend/data/databases/odds.db", "betting_odds_team_ou", "betting_odds_team_ou"),
-    ("backend/data/databases/odds.db", "betting_odds_highest_scorer", "betting_odds_highest_scorer"),
-    ("backend/data/databases/odds.db", "betting_odds_lowest_scorer", "betting_odds_lowest_scorer"),
-    ("backend/data/databases/odds.db", "betting_odds_first_place", "betting_odds_first_place"),
-    ("backend/data/databases/odds.db", "betting_odds_make_playoffs", "betting_odds_make_playoffs"),
-    ("backend/data/databases/projections.db", "team_lineups", "team_lineups"),
-    ("backend/data/databases/league.db", "rosters", "sleeper_rosters"),
-    ("backend/data/databases/league.db", "users", "sleeper_users"),
-    ("backend/data/databases/league.db", "matchups", "sleeper_matchups"),
-    ("backend/data/databases/league.db", "projections_rosters", "projections_rosters"),
+    (ODDS_DB, "betting_odds_matchup_ml", "betting_odds_matchup_ml"),
+    (ODDS_DB, "betting_odds_team_ou", "betting_odds_team_ou"),
+    (ODDS_DB, "betting_odds_highest_scorer", "betting_odds_highest_scorer"),
+    (ODDS_DB, "betting_odds_lowest_scorer", "betting_odds_lowest_scorer"),
+    (ODDS_DB, "betting_odds_first_place", "betting_odds_first_place"),
+    (ODDS_DB, "betting_odds_make_playoffs", "betting_odds_make_playoffs"),
+    (PROJECTIONS_DB, "team_lineups", "team_lineups"),
+    (LEAGUE_DB, "rosters", "sleeper_rosters"),
+    (LEAGUE_DB, "users", "sleeper_users"),
+    (LEAGUE_DB, "matchups", "sleeper_matchups"),
+    (LEAGUE_DB, "projections_rosters", "projections_rosters"),
 ]
 
 # Tables protected from DROP (owned by Flask ORM)

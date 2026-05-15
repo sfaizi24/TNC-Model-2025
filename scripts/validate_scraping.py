@@ -5,8 +5,8 @@ in projections.db for a given week. Used by the /scrape skill and
 scrape.py orchestrator.
 
 Usage:
-    python validate_scraping.py --week 17
-    python validate_scraping.py --week 17 --json
+    python -m scripts.validate_scraping --week 17
+    python -m scripts.validate_scraping --week 17 --json
 """
 
 import json
@@ -15,7 +15,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-DEFAULT_DB_PATH = Path(__file__).parent / "backend/data/databases/projections.db"
+DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "backend/data/databases/projections.db"
 
 EXPECTED_SOURCES = [
     "sleeper.com",

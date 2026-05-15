@@ -8,10 +8,12 @@ Run the following checks and report results. Stop at the first failure category 
 ## Step 1: Syntax check (py_compile)
 
 Run `python -m py_compile <file>` on each of these files:
-- `app.py`
-- `models.py`
-- `database.py`
-- `auth.py`
+- `app/__init__.py`
+- `app/models.py`
+- `app/database.py`
+- `app/auth.py`
+- All `.py` files in `app/routes/`
+- All `.py` files in `scripts/`
 - All `.py` files in `backend/scrapers/`
 
 Report any files that fail to compile.
@@ -20,7 +22,7 @@ Report any files that fail to compile.
 
 Run:
 ```
-python -c "import app; import models; import database"
+python -c "import app; from app import models, database"
 ```
 
 If this fails, diagnose the missing dependency or import error.

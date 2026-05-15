@@ -1,4 +1,4 @@
-from routes.helpers import get_team_mapping, query_analytics
+from app.routes.helpers import get_team_mapping, query_analytics
 
 
 def test_query_analytics_returns_dicts(seeded_analytics, betting_period):

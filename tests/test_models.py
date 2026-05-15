@@ -3,7 +3,7 @@ from datetime import UTC
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from models import Bet, BettingPeriod, User, WeeklyStats
+from app.models import Bet, BettingPeriod, User, WeeklyStats
 
 
 def test_user_defaults(db_session):

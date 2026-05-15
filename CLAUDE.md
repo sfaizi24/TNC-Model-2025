@@ -6,22 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TNCasino — fantasy football analytics & fake-money betting platform. Flask web app + Jupyter notebook data pipeline. Scrapes projections from multiple sources, runs Monte Carlo simulations, and generates betting odds.
 
-**Auth**: Google OAuth via flask-dance (`auth.py`). Admin access controlled by `ADMIN_EMAILS` env var.
+**Auth**: Google OAuth via flask-dance (`app/auth.py`). Admin access controlled by `ADMIN_EMAILS` env var.
 
 ## Deployment
 
 - **Production**: https://tncasino.win — DigitalOcean Droplet (143.198.183.213), gunicorn + nginx, Cloudflare DNS/SSL
 - **Deploy code**: `git push origin main && ssh root@143.198.183.213 "cd /opt/tncasino && git pull && sudo systemctl restart tncasino"`
-- **Publish data**: `python publish.py` (pushes local SQLite analytics to production PostgreSQL)
+- **Publish data**: `python -m scripts.publish` (pushes local SQLite analytics to production PostgreSQL)
 - **Publish analytics charts**: `scp backend/data/images/*.png root@143.198.183.213:/var/lib/tncasino/analytics/` after each pipeline run. The Flask app reads them from `$ANALYTICS_IMAGES_DIR` (set in prod `.env`), so they live outside the git working tree and survive `git pull`.
 - **Server config**: systemd service at `/etc/systemd/system/tncasino.service`, nginx at `/etc/nginx/sites-available/tncasino`
 - **Production env**: `/opt/tncasino/.env` (separate from local `.env`)
 
 ## Commands
 
-- **Run locally**: `python app.py` (Flask on 0.0.0.0:5000)
-- **Scrape projections**: `python scrape.py --week 17` (runs all scrapers, validates)
-- **Validate scraping**: `python validate_scraping.py --week 17` (checks data quality)
+- **Run locally**: `python -m app` (Flask on 0.0.0.0:5000)
+- **Scrape projections**: `python -m scripts.scrape --week 17` (runs all scrapers, validates)
+- **Validate scraping**: `python -m scripts.validate_scraping --week 17` (checks data quality)
 - **Install browser drivers**: `playwright install chromium` (required for FanDuel scraper)
 - **Format**: `ruff format <file>` | **Lint**: `ruff check <file>`
 
@@ -45,9 +45,9 @@ Nine Jupyter notebooks in `backend/notebooks/`, run sequentially:
 
 **Local pipeline**: Notebooks write to local SQLite files (`league.db`, `projections.db`, `odds.db`, `montecarlo.db`). These are **gitignored** — never committed.
 
-**Publishing data**: After running notebooks, `python publish.py` pushes analytics tables from local SQLite to production PostgreSQL using a staging+swap strategy. Tables are renamed to avoid collisions (e.g., `users` → `sleeper_users`, `rosters` → `sleeper_rosters`).
+**Publishing data**: After running notebooks, `python -m scripts.publish` pushes analytics tables from local SQLite to production PostgreSQL using a staging+swap strategy. Tables are renamed to avoid collisions (e.g., `users` → `sleeper_users`, `rosters` → `sleeper_rosters`).
 
-**Flask app reads**: All routes query PostgreSQL via `db.session` (SQLAlchemy). Analytics queries use `query_analytics()` helper in `routes/helpers.py`.
+**Flask app reads**: All routes query PostgreSQL via `db.session` (SQLAlchemy). Analytics queries use `query_analytics()` helper in `app/routes/helpers.py`.
 
 ## Key Gotchas
 
@@ -72,25 +72,29 @@ Do not leave behind AI artifacts: no over-commented code, no unnecessary docstri
 
 - Python 3.13+, formatted with `ruff format`
 - Flask with Jinja2 templates in `frontend/templates/`
-- SQLAlchemy ORM (models in `models.py`, init in `database.py`)
+- SQLAlchemy ORM (models in `app/models.py`, init in `app/database.py`)
 
 ## App Structure
 
 ```
-app.py              — App factory, config, extensions, blueprint registration (~70 lines)
-publish.py          — Push local SQLite analytics data to production PostgreSQL
-scrape.py           — Orchestrate scrapers: per-source isolation, validation, structured output
-validate_scraping.py — Check projection data quality (sources, positions, duplicates)
-extensions.py       — Shared Flask extensions (CSRFProtect)
-migrations.py       — Schema migrations (run on startup)
-auth.py             — Google OAuth, login_manager, admin email allowlist
-models.py           — SQLAlchemy models (User, Bet, WeeklyStats, BettingPeriod)
-database.py         — SQLAlchemy instance
-routes/
-  helpers.py        — Shared helpers: query_analytics(), get_current_week(), check_betting_period_lock(), admin_required()
-  pages.py          — Public pages: /, /about, /analytics, static files
-  account.py        — User account: /account, /account/update-profile
-  odds.py           — Odds API: /api/matchups, /api/team_performance, etc. (9 routes)
-  betting.py        — Betting: /betting, /leaderboard, /api/place_bet, etc. (6 routes)
-  admin.py          — Admin: /admin, /api/admin/* (7 routes)
+app/                  — Flask application package
+  __init__.py         — App factory, config, extensions, blueprint registration. Also exposes `app` for gunicorn.
+  __main__.py         — `python -m app` entry point for local dev
+  auth.py             — Google OAuth, login_manager, admin email allowlist
+  database.py         — SQLAlchemy instance
+  extensions.py       — Shared Flask extensions (CSRFProtect)
+  migrations.py       — Schema migrations (run on startup)
+  models.py           — SQLAlchemy models (User, Bet, WeeklyStats, BettingPeriod)
+  routes/
+    helpers.py        — Shared helpers: query_analytics(), get_current_week(), check_betting_period_lock(), admin_required()
+    pages.py          — Public pages: /, /about, /analytics, static files
+    account.py        — User account: /account, /account/update-profile
+    odds.py           — Odds API: /api/matchups, /api/team_performance, etc. (9 routes)
+    betting.py        — Betting: /betting, /leaderboard, /api/place_bet, etc. (6 routes)
+    admin.py          — Admin: /admin, /api/admin/* (7 routes)
+
+scripts/              — Standalone CLI tools (invoked as `python -m scripts.<name>`)
+  publish.py          — Push local SQLite analytics data to production PostgreSQL
+  scrape.py           — Orchestrate scrapers: per-source isolation, validation, structured output
+  validate_scraping.py — Check projection data quality (sources, positions, duplicates)
 ```

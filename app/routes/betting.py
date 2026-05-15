@@ -4,8 +4,8 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
 from sqlalchemy import Integer, case, cast, desc, distinct, func
 
-from database import db
-from routes.helpers import (
+from ..database import db
+from .helpers import (
     check_betting_period_lock,
     friendly_description,
     get_current_week,
@@ -32,7 +32,7 @@ def _format_lock_time(lock_time):
 
 @betting_bp.route("/betting")
 def betting():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     week = get_current_week()
     period = db.session.query(BettingPeriod).filter_by(week=week).first()
@@ -47,7 +47,7 @@ def betting():
 
 @betting_bp.route("/leaderboard")
 def leaderboard():
-    from models import Bet, User, WeeklyStats
+    from ..models import Bet, User, WeeklyStats
 
     current_week = get_current_week()
     selected_week = request.args.get("week", current_week, type=int)
@@ -206,7 +206,7 @@ def leaderboard():
 @betting_bp.route("/api/place_bet", methods=["POST"])
 @login_required
 def place_bet():
-    from models import Bet, WeeklyStats
+    from ..models import Bet, WeeklyStats
 
     data = request.get_json()
     bet_type = data.get("bet_type", "moneyline")
@@ -543,7 +543,7 @@ def place_bet():
 @betting_bp.route("/api/my_bets")
 @login_required
 def get_my_bets():
-    from models import Bet
+    from ..models import Bet
 
     try:
         bets = (
@@ -580,7 +580,7 @@ def get_my_bets():
 @betting_bp.route("/api/remove_bet/<int:bet_id>", methods=["DELETE"])
 @login_required
 def remove_bet(bet_id):
-    from models import Bet, WeeklyStats
+    from ..models import Bet, WeeklyStats
 
     try:
         bet = db.session.query(Bet).filter_by(id=bet_id, user_id=current_user.id, status="pending").first()

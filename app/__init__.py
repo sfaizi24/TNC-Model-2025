@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.DEBUG)
 def create_app(config=None):
     app = Flask(
         __name__,
-        template_folder="frontend/templates",
-        static_folder="frontend/static",
+        template_folder="../frontend/templates",
+        static_folder="../frontend/static",
     )
 
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "")
@@ -47,38 +47,38 @@ def create_app(config=None):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # Extensions
-    from extensions import csrf
+    from .extensions import csrf
 
     csrf.init_app(app)
 
-    from database import db
+    from .database import db
 
     db.init_app(app)
 
     # Database setup
     with app.app_context():
-        import models  # noqa: F401
+        from . import models  # noqa: F401
 
         db.create_all()
         logging.info("Database tables created")
 
         if not app.config.get("TESTING"):
-            from migrations import run_schema_migrations
+            from .migrations import run_schema_migrations
 
             run_schema_migrations()
             logging.info("Schema migrations completed")
 
     # Auth
-    from auth import init_auth
+    from .auth import init_auth
 
     init_auth(app)
 
     # Route blueprints
-    from routes.account import account_bp
-    from routes.admin import admin_bp
-    from routes.betting import betting_bp
-    from routes.odds import odds_bp
-    from routes.pages import pages_bp
+    from .routes.account import account_bp
+    from .routes.admin import admin_bp
+    from .routes.betting import betting_bp
+    from .routes.odds import odds_bp
+    from .routes.pages import pages_bp
 
     app.register_blueprint(pages_bp)
     app.register_blueprint(account_bp)
@@ -86,7 +86,7 @@ def create_app(config=None):
     app.register_blueprint(betting_bp)
     app.register_blueprint(admin_bp)
 
-    from routes.helpers import friendly_description
+    from .routes.helpers import friendly_description
 
     app.jinja_env.filters["friendly_names"] = friendly_description
 
@@ -99,9 +99,3 @@ def create_app(config=None):
 
 if "pytest" not in sys.modules:
     app = create_app()
-
-if __name__ == "__main__":
-    if "app" not in dir():
-        app = create_app()
-    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
-    app.run(host="0.0.0.0", port=5000, debug=debug_mode)

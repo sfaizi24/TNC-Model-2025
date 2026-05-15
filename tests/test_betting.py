@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
-from database import db
-from models import Bet, BettingPeriod, WeeklyStats
+from app.database import db
+from app.models import Bet, BettingPeriod, WeeklyStats
 
 
 def test_place_bet_positive_odds(logged_in_client, user, betting_period):

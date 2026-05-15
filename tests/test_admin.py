@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
-from database import db
-from models import BettingPeriod
+from app.database import db
+from app.models import BettingPeriod
 
 
 def test_admin_page_requires_admin(logged_in_client, user):

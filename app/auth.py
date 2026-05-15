@@ -5,8 +5,8 @@ from flask_dance.consumer import oauth_authorized
 from flask_dance.contrib.google import make_google_blueprint
 from flask_login import LoginManager, login_user, logout_user
 
-from database import db
-from models import User
+from .database import db
+from .models import User
 
 login_manager = LoginManager()
 

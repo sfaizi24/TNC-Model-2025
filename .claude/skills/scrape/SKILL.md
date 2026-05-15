@@ -14,12 +14,12 @@ Examples: `/scrape 17`, `/scrape 17 2025`, `/scrape espn 17`, `/scrape fanduel f
 ## Step 1: Run scrapers
 
 ```bash
-python scrape.py --week <N> --season <YEAR>
+python -m scripts.scrape --week <N> --season <YEAR>
 ```
 
 Or for specific sources:
 ```bash
-python scrape.py --week <N> --sources sleeper,espn
+python -m scripts.scrape --week <N> --sources sleeper,espn
 ```
 
 Read the summary output. Each source shows OK, EMPTY, or FAILED with row counts and timing.
@@ -27,7 +27,7 @@ Read the summary output. Each source shows OK, EMPTY, or FAILED with row counts 
 ## Step 2: Validate
 
 ```bash
-python validate_scraping.py --week <N>
+python -m scripts.validate_scraping --week <N>
 ```
 
 Check the result: PASS, WARN, or FAIL. PASS means 3+ sources, 150+ projections, all positions covered.
@@ -89,8 +89,8 @@ When a scraper fails, read the scraper source file to understand what broke. Com
 2. Run it with `--no-headless` to see the browser
 3. Identify what changed (selector, API response, page structure)
 4. Edit the scraper to fix the issue
-5. Retry just that source: `python scrape.py --week <N> --sources <name>`
-6. Re-validate: `python validate_scraping.py --week <N>`
+5. Retry just that source: `python -m scripts.scrape --week <N> --sources <name>`
+6. Re-validate: `python -m scripts.validate_scraping --week <N>`
 
 ## After scraping
 

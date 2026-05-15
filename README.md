@@ -139,8 +139,16 @@ The platform uses multiple SQLite databases:
 │   │   └── ...
 │   └── static/
 │       └── images/             # Web assets
-├── app.py                      # Flask application
-├── models.py                   # Database models
+├── app/                        # Flask application package
+│   ├── __init__.py             # App factory + gunicorn entry point
+│   ├── auth.py                 # Google OAuth + login manager
+│   ├── database.py             # SQLAlchemy instance
+│   ├── models.py               # Database models
+│   └── routes/                 # Blueprints (pages, betting, odds, admin, account)
+├── scripts/                    # Standalone CLI tools
+│   ├── publish.py              # Push local SQLite to production PostgreSQL
+│   ├── scrape.py               # Orchestrate all scrapers
+│   └── validate_scraping.py    # Check projection data quality
 └── requirements.txt            # Python dependencies
 ```
 
@@ -187,7 +195,7 @@ That will create the db files. Push the ones you need, not the monte carlo one b
 
 then run
 ```bash
-python app.py
+python -m app
 ```
 
 email me for more information if you do want to do this yourself

@@ -4,7 +4,7 @@ import re
 from flask import Blueprint, redirect, render_template, send_from_directory, url_for
 from flask_login import current_user
 
-from routes.helpers import get_current_week
+from .helpers import get_current_week
 
 pages_bp = Blueprint("pages", __name__)
 

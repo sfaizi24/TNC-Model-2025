@@ -1,4 +1,4 @@
-from models import Bet, BettingPeriod, User, WeeklyStats
+from app.models import Bet, BettingPeriod, User, WeeklyStats
 
 
 def _seed_leaderboard_data(db_session):
@@ -224,7 +224,7 @@ def test_popular_bet_stats(client, db_session, captured_templates):
     _seed_leaderboard_data(db_session)
 
     # Add extra bets with the same description to test group-by aggregation
-    from models import Bet
+    from app.models import Bet
 
     extra_bets = [
         Bet(

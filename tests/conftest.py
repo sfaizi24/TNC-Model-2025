@@ -5,8 +5,8 @@ from sqlalchemy import text
 from sqlalchemy.pool import StaticPool
 
 from app import create_app
-from database import db as _db
-from models import BettingPeriod, User
+from app.database import db as _db
+from app.models import BettingPeriod, User
 
 TEST_CONFIG = {
     "TESTING": True,

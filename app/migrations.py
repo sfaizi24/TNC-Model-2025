@@ -1,6 +1,6 @@
 import logging
 
-from database import db
+from .database import db
 
 
 def run_schema_migrations():

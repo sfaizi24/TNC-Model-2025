@@ -5,7 +5,7 @@ from flask import flash, redirect, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import text
 
-from database import db
+from ..database import db
 
 # Maps a Sleeper username (or display_name as it appears in the DB) to the
 # friendly first name we want shown across the site. Lookups elsewhere should
@@ -55,7 +55,7 @@ def friendly_description(description):
 
 
 def get_current_week():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     period = db.session.query(BettingPeriod).filter_by(is_settled=False).order_by(BettingPeriod.week.desc()).first()
 
@@ -71,7 +71,7 @@ def get_current_week():
 def check_betting_period_lock(week):
     from datetime import datetime
 
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     period = db.session.query(BettingPeriod).filter_by(week=week).first()
 

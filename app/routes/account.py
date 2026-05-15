@@ -4,8 +4,8 @@ from itertools import groupby
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from database import db
-from extensions import csrf
+from ..database import db
+from ..extensions import csrf
 
 account_bp = Blueprint("account", __name__)
 
@@ -13,7 +13,7 @@ account_bp = Blueprint("account", __name__)
 @account_bp.route("/account")
 @login_required
 def account():
-    from models import Bet, WeeklyStats
+    from ..models import Bet, WeeklyStats
 
     bets = (
         db.session.query(Bet)

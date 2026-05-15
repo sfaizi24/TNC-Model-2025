@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
-from models import BettingPeriod
-from routes.helpers import check_betting_period_lock, get_current_week
+from app.models import BettingPeriod
+from app.routes.helpers import check_betting_period_lock, get_current_week
 
 
 def test_get_current_week_returns_active_period(db_session):

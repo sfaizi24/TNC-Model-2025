@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
 
-from database import db
+from .database import db
 
 
 def utc_now():

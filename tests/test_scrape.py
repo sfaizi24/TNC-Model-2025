@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from validate_scraping import normalize_week, validate
+from scripts.validate_scraping import normalize_week, validate
 
 
 @pytest.fixture

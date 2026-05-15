@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user
 
-from database import db
-from routes.helpers import admin_required, friendly_description
+from ..database import db
+from .helpers import admin_required, friendly_description
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -18,7 +18,7 @@ def admin():
 @admin_bp.route("/api/admin/betting_periods", methods=["GET"])
 @admin_required
 def get_betting_periods():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     try:
         periods = db.session.query(BettingPeriod).order_by(BettingPeriod.week.desc()).all()
@@ -47,7 +47,7 @@ def get_betting_periods():
 @admin_bp.route("/api/admin/set_betting_period", methods=["POST"])
 @admin_required
 def set_betting_period():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     data = request.get_json()
     week = data.get("week")
@@ -83,7 +83,7 @@ def set_betting_period():
 @admin_bp.route("/api/admin/pending_bets", methods=["GET"])
 @admin_required
 def get_pending_bets():
-    from models import Bet
+    from ..models import Bet
 
     week = request.args.get("week", 10, type=int)
 
@@ -116,7 +116,7 @@ def get_pending_bets():
 @admin_bp.route("/api/admin/settle_bet", methods=["POST"])
 @admin_required
 def settle_bet():
-    from models import Bet, User, WeeklyStats
+    from ..models import Bet, User, WeeklyStats
 
     data = request.get_json()
     bet_id = data.get("bet_id")
@@ -178,7 +178,7 @@ def settle_bet():
 @admin_bp.route("/api/admin/settle_week", methods=["POST"])
 @admin_required
 def settle_week():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     data = request.get_json()
     week = data.get("week")
@@ -209,7 +209,7 @@ def settle_week():
 @admin_bp.route("/api/admin/unlock_period", methods=["POST"])
 @admin_required
 def unlock_period():
-    from models import BettingPeriod
+    from ..models import BettingPeriod
 
     data = request.get_json()
     week = data.get("week")

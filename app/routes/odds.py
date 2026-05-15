@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
-from routes.helpers import (
+from .helpers import (
     display_name_for,
     get_current_week,
     get_league_id_for_week,

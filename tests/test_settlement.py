@@ -1,4 +1,4 @@
-from models import Bet, WeeklyStats
+from app.models import Bet, WeeklyStats
 
 
 def _place_bet(db_session, user, betting_period):

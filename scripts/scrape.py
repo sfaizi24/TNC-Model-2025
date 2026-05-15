@@ -5,10 +5,10 @@ Deletes stale data before each scraper run so row counts reflect
 fresh results. Prints a structured summary at the end.
 
 Usage:
-    python scrape.py --week 17                        # all sources
-    python scrape.py --week 17 --sources sleeper,espn # specific sources
-    python scrape.py --week 17 --no-headless          # visible browser
-    python scrape.py --week 17 --validate             # also run validation
+    python -m scripts.scrape --week 17                        # all sources
+    python -m scripts.scrape --week 17 --sources sleeper,espn # specific sources
+    python -m scripts.scrape --week 17 --no-headless          # visible browser
+    python -m scripts.scrape --week 17 --validate             # also run validation
 """
 
 import sqlite3
@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from validate_scraping import DEFAULT_DB_PATH, normalize_week
+from scripts.validate_scraping import DEFAULT_DB_PATH, normalize_week
 
 SEASON_DEFAULT = "2025"
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
     # Run validation if requested
     if args.validate:
-        from validate_scraping import print_report, validate
+        from scripts.validate_scraping import print_report, validate
 
         result = validate(db_path, week)
         print_report(result)
