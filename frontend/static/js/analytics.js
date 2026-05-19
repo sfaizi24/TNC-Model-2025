@@ -69,9 +69,14 @@ async function loadTeams() {
         }
 
         const data = await response.json();
-        populateTeamSelect(document.getElementById('team-select'), data.teams, data.teams[0].slug);
+        if (!data.teams?.length) {
+            showError('No teams are available for the current week.');
+            return;
+        }
+        const defaultSlug = data.teams[0].slug;
+        populateTeamSelect(document.getElementById('team-select'), data.teams, defaultSlug);
         populateTeamSelect(document.getElementById('opponent-select'), data.teams, '', 'Auto (scheduled opponent)');
-        populateTeamSelect(document.getElementById('single-team-select'), data.teams, data.teams[0].slug);
+        populateTeamSelect(document.getElementById('single-team-select'), data.teams, defaultSlug);
         syncDisabledOptions();
         hideError();
     } catch (error) {
@@ -117,6 +122,22 @@ function syncDisabledOptions() {
 let matchupChart = null;
 let marginChart = null;
 let singleTeamChart = null;
+
+function clearMatchupArea() {
+    if (matchupChart) { matchupChart.destroy(); matchupChart = null; }
+    if (marginChart) { marginChart.destroy(); marginChart = null; }
+    document.getElementById('matchup-header').innerHTML = '';
+    document.getElementById('matchup-stats').innerHTML = '';
+    document.getElementById('matchup-lineups').innerHTML = '';
+    const marginWrapper = document.getElementById('margin-canvas').parentElement;
+    if (marginWrapper) marginWrapper.style.display = 'none';
+}
+
+function clearSingleTeamArea() {
+    if (singleTeamChart) { singleTeamChart.destroy(); singleTeamChart = null; }
+    const stats = document.getElementById('single-team-stats');
+    if (stats) stats.innerHTML = '';
+}
 
 function escapeHtml(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -402,6 +423,7 @@ async function loadDistribution(teamParam, opponentParam) {
         if (opponentParam) url += `&opponent=${opponentParam}`;
         const response = await fetchWithTimeout(url, {}, 10000);
         if (!response.ok) {
+            clearMatchupArea();
             if (response.status === 401) showError('Your session has expired. Redirecting to login...', true);
             else if (response.status === 404) showError('Matchup data is not available for the selected teams yet.');
             else showError('Failed to load matchup chart. Please refresh the page and try again.');
@@ -412,9 +434,12 @@ async function loadDistribution(teamParam, opponentParam) {
         renderDistributionChart(payload);
         if (payload.opponent) {
             loadMatchupLineups(payload.team.owner, payload.opponent.owner);
+        } else {
+            document.getElementById('matchup-lineups').innerHTML = '';
         }
         return true;
     } catch (error) {
+        clearMatchupArea();
         if (error.name === 'AbortError') showError('Matchup chart request timed out. Please try again.');
         else showError('Unable to load matchup chart. Please check your connection and try again.');
         return false;
@@ -463,6 +488,7 @@ async function loadSingleTeamDistribution(teamParam) {
         const url = `/api/team_distribution?team=${teamParam}&week=${currentWeek}`;
         const response = await fetchWithTimeout(url, {}, 10000);
         if (!response.ok) {
+            clearSingleTeamArea();
             if (response.status === 401) showError('Your session has expired. Redirecting to login...', true);
             else if (response.status === 404) showError('Distribution data is not available for the selected team yet.');
             else showError('Failed to load team chart. Please refresh the page and try again.');
@@ -472,6 +498,7 @@ async function loadSingleTeamDistribution(teamParam) {
         renderSingleTeamChart(await response.json());
         return true;
     } catch (error) {
+        clearSingleTeamArea();
         if (error.name === 'AbortError') showError('Team chart request timed out. Please try again.');
         else showError('Unable to load team chart. Please check your connection and try again.');
         return false;
