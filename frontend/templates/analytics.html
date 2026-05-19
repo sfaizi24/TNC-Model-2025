@@ -7,33 +7,78 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Research Teams and View League-wide Analytics</h1>
+<div class="tnc-betting-head">
+    <div>
+        <h1 class="tnc-betting-title">Analytics</h1>
+        <div class="tnc-model-strip">
+            <span class="tnc-live-dot" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+            </span>
+            <span class="tnc-model-tag">Powered by <a class="tnc-model-name" href="/about">The Model<sup>&trade;</sup> V3<svg class="tnc-model-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a></span>
+        </div>
+    </div>
 </div>
 
-<div style="margin-bottom: 20px;">
-    <label for="team-select" style="display: block; font-size: 14px; color: var(--tnc-fg); margin-bottom: 8px; font-weight: 600;">Select Team:</label>
-    <select id="team-select" style="width: 100%; max-width: 400px; padding: 10px 12px; font-size: 14px; background: var(--tnc-surface); color: var(--tnc-fg); border: 1px solid var(--tnc-border); border-radius: 8px; cursor: pointer;">
-        <option value="all">All Teams</option>
-        <!-- Teams will be loaded dynamically -->
-    </select>
-    <div id="teams-error" style="display: none; margin-top: 12px; padding: 12px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; color: #ef4444; font-size: 13px;"></div>
+<div class="tnc-tabs" id="analytics-tabs">
+    <button class="tnc-tab is-on" data-tab="league">League-Wide</button>
+    <button class="tnc-tab" data-tab="matchups">Matchups</button>
+    <button class="tnc-tab" data-tab="teams">Individual Teams</button>
 </div>
 
-<div id="team-distribution" class="section" data-week="{{ current_week|default(10) }}">
-    <img id="distribution-image" src="/analytics-images/simulation_distributions_overlay_week_{{ current_week }}.png" alt="Team Distribution" class="edge-to-edge-image" decoding="async">
-</div>
+<div id="teams-error" style="display: none; margin-top: 12px; padding: 12px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; color: #ef4444; font-size: 13px;"></div>
 
-<div id="team-players" class="section" style="display: none;">
+<section class="tab-panel" data-panel="league" data-week="{{ current_week }}">
+    <img src="/analytics-images/simulation_distributions_overlay_week_{{ current_week }}.png" alt="Team Distribution Overlay" class="edge-to-edge-image" decoding="async">
+    <img src="/analytics-images/simulation_boxplot_week_{{ current_week }}.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
+</section>
+
+<section class="tab-panel" data-panel="matchups" style="display: none;" data-week="{{ current_week }}">
+    <div class="team-pickers">
+        <div class="team-picker">
+            <label for="team-select">Left team</label>
+            <select id="team-select"></select>
+        </div>
+        <div class="vs-divider">vs</div>
+        <div class="team-picker">
+            <label for="opponent-select">Right team</label>
+            <select id="opponent-select">
+                <option value="">Auto (scheduled opponent)</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="matchup-chart">
+        <div id="matchup-header" class="matchup-header"></div>
+        <div class="matchup-canvas-wrapper">
+            <canvas id="distribution-canvas"></canvas>
+        </div>
+        <div class="matchup-canvas-wrapper">
+            <canvas id="margin-canvas"></canvas>
+        </div>
+        <div id="matchup-stats" class="matchup-stats"></div>
+        <div id="matchup-lineups" class="tnc-mc-lineups"></div>
+    </div>
+</section>
+
+<section class="tab-panel" data-panel="teams" style="display: none;" data-week="{{ current_week }}">
+    <div class="team-pickers">
+        <div class="team-picker">
+            <label for="single-team-select">Team</label>
+            <select id="single-team-select"></select>
+        </div>
+    </div>
+
+    <div class="matchup-canvas-wrapper">
+        <canvas id="single-distribution-canvas"></canvas>
+    </div>
+    <div id="single-team-stats" class="matchup-stats"></div>
+
     <h2 class="section-title">Team Roster & Projections</h2>
     <div id="players-table-container"></div>
-</div>
-
-<div class="section">
-    <img src="/analytics-images/simulation_boxplot_week_{{ current_week }}.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
-</div>
+</section>
 {% endblock %}
 
 {% block page_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% endblock %}

@@ -1,5 +1,13 @@
-    .section {
-        margin-bottom: 40px;
+    .tab-panel {
+        margin-top: 16px;
+    }
+
+    .tab-panel > .edge-to-edge-image + .edge-to-edge-image {
+        margin-top: 24px;
+    }
+
+    .tab-panel .section-title {
+        margin-top: 28px;
     }
 
     .section-title {
@@ -27,5 +35,154 @@
         font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 1px;
+    }
+
+    .team-pickers {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .team-picker {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .team-picker label {
+        display: block;
+        font-size: 14px;
+        color: var(--tnc-fg);
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .team-picker select {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        background: var(--tnc-surface);
+        color: var(--tnc-fg);
+        border: 1px solid var(--tnc-border);
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .team-pickers .vs-divider {
+        padding: 12px 4px;
+        color: var(--tnc-fg-muted);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .matchup-header {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .matchup-header .side {
+        flex: 1;
+        max-width: 240px;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: 12px;
+        padding: 12px 14px;
+    }
+
+    .matchup-header .side.team {
+        border-color: var(--tnc-blue);
+    }
+
+    .matchup-header .side.opponent {
+        border-color: var(--tnc-loss-soft);
+    }
+
+    .matchup-header .label {
+        font-size: 12px;
+        color: var(--tnc-fg-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .matchup-header .name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--tnc-fg);
+        margin-bottom: 6px;
+    }
+
+    .matchup-header .win-prob {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .matchup-header .side.team .win-prob { color: var(--tnc-blue); }
+    .matchup-header .side.opponent .win-prob { color: var(--tnc-loss-soft); }
+
+    .matchup-header .moneyline {
+        font-size: 12px;
+        color: var(--tnc-fg-muted);
+        margin-top: 2px;
+    }
+
+    .matchup-warning {
+        flex: 1;
+        align-self: center;
+        font-size: 13px;
+        color: var(--tnc-fg-muted);
+        text-align: center;
+        padding: 12px;
+    }
+
+    .matchup-canvas-wrapper {
+        position: relative;
+        height: 420px;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: 12px;
+        padding: 6px;
+    }
+
+    .matchup-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .matchup-stats .stat {
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+
+    .matchup-stats .stat .stat-label {
+        font-size: 11px;
+        color: var(--tnc-fg-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .matchup-stats .stat .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .matchup-stats .stat .team-val { color: var(--tnc-blue); }
+    .matchup-stats .stat .opp-val { color: var(--tnc-loss-soft); }
+
+    #single-team-stats .stat .stat-row {
+        justify-content: center;
     }
 

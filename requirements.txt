@@ -12,6 +12,7 @@ psycopg2-binary
 
 # Data processing
 pandas
+scipy
 matplotlib
 seaborn
 jupyter

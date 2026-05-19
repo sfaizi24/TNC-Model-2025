@@ -1,6 +1,8 @@
+import numpy as np
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
+from .. import montecarlo
 from .helpers import (
     display_name_for,
     get_current_week,
@@ -278,6 +280,189 @@ def get_teams():
 
         traceback.print_exc()
         return jsonify({"teams": []})
+
+
+@odds_bp.route("/api/team_distribution")
+@login_required
+def get_team_distribution():
+    """Return KDE density curves for the selected team and (optionally) an opponent.
+
+    When `opponent` is supplied, win probability is computed live from paired
+    Monte Carlo samples (sims aligned by sim_id), letting users compare any
+    two teams — not just the scheduled matchup. Without `opponent`, the
+    endpoint falls back to the scheduled matchup from betting_odds_matchup_ml
+    and reports the published moneylines.
+    """
+    team_slug = request.args.get("team")
+    if not team_slug:
+        return jsonify({"error": "Team parameter required"}), 400
+
+    week_param = request.args.get("week", type=int)
+    week = week_param or get_current_week()
+
+    raw_owner = resolve_owner(team_slug)
+    team_samples = montecarlo.get_samples(raw_owner, week)
+    if team_samples is None:
+        return jsonify({"error": f"No simulation data for {raw_owner} in week {week}"}), 404
+
+    opponent_slug = request.args.get("opponent")
+    if opponent_slug and opponent_slug != team_slug:
+        opp_pair = _opponent_from_slug(opponent_slug, week, team_samples)
+    else:
+        opp_pair = _opponent_from_matchup(raw_owner, week)
+
+    sample_sets = [team_samples] + ([opp_pair["samples"]] if opp_pair else [])
+    x_grid = montecarlo.shared_x_grid(*sample_sets)
+
+    team_win_prob = opp_pair["team_win_prob"] if opp_pair else None
+    team_ml = opp_pair["team_ml"] if opp_pair else None
+
+    response = {
+        "week": week,
+        "x": x_grid.tolist(),
+        "team": _team_payload(raw_owner, display_name_for(raw_owner), team_samples, x_grid, team_win_prob, team_ml),
+    }
+    if opp_pair:
+        response["opponent"] = _team_payload(
+            opp_pair["owner"],
+            opp_pair["label"],
+            opp_pair["samples"],
+            x_grid,
+            opp_pair["opp_win_prob"],
+            opp_pair["opp_ml"],
+        )
+        response["margin"] = _margin_payload(team_samples, opp_pair["samples"])
+
+    return jsonify(response)
+
+
+def _margin_payload(team_samples, opp_samples):
+    """Empirical tail probabilities of the paired margin on [-40, +40].
+
+    The left arm is P(margin <= x), answering "opponent wins by >= |x|".
+    The right arm is P(margin >= x), answering "team wins by >= x".
+    """
+    margin = np.sort(team_samples - opp_samples)
+    x = np.linspace(-40, 40, 161)
+    cdf = np.searchsorted(margin, x, side="right") / margin.size
+    left = x <= 0
+    right = x >= 0
+    return {
+        "left_x": x[left].tolist(),
+        "left_y": cdf[left].tolist(),
+        "right_x": x[right].tolist(),
+        "right_y": (1 - cdf[right]).tolist(),
+    }
+
+
+def _opponent_from_slug(opponent_slug, week, team_samples):
+    """Build an opponent record for an arbitrary team chosen by the user.
+
+    Win probability is computed empirically from paired sims (sim_id-aligned),
+    so it stays honest even when the pair isn't the scheduled matchup.
+    Moneylines are omitted because the published ones only apply to the
+    scheduled pair.
+    """
+    opp_raw = resolve_owner(opponent_slug)
+    opp_samples = montecarlo.get_samples(opp_raw, week)
+    if opp_samples is None or len(opp_samples) != len(team_samples):
+        return None
+
+    team_wins = float((team_samples > opp_samples).mean())
+    ties = float((team_samples == opp_samples).mean())
+    return {
+        "owner": opp_raw,
+        "samples": opp_samples,
+        "label": display_name_for(opp_raw),
+        "team_win_prob": team_wins,
+        "opp_win_prob": 1.0 - team_wins - ties,
+        "team_ml": None,
+        "opp_ml": None,
+    }
+
+
+def _opponent_from_matchup(raw_owner, week):
+    """Look up the scheduled opponent for the team and inherit published odds."""
+    league_id = get_league_id_for_week(week)
+    roster_rows = query_analytics(
+        """
+        SELECT r.roster_id
+        FROM sleeper_rosters r
+        LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
+        WHERE r.league_id = :league_id
+          AND (u.username = :owner OR u.display_name = :owner)
+        """,
+        {"league_id": league_id, "owner": raw_owner},
+    )
+    if not roster_rows:
+        return None
+    team_roster_id = roster_rows[0]["roster_id"]
+
+    matchup_rows = query_analytics(
+        """
+        SELECT team1_id, team1_win_prob, team1_ml,
+               team2_id, team2_win_prob, team2_ml
+        FROM betting_odds_matchup_ml
+        WHERE week = :week AND (team1_id = :rid OR team2_id = :rid)
+        """,
+        {"week": week, "rid": team_roster_id},
+    )
+    if not matchup_rows:
+        return None
+    matchup = matchup_rows[0]
+
+    if matchup["team1_id"] == team_roster_id:
+        opp_id = matchup["team2_id"]
+        team_wp, opp_wp = matchup["team1_win_prob"], matchup["team2_win_prob"]
+        team_ml, opp_ml = matchup["team1_ml"], matchup["team2_ml"]
+    else:
+        opp_id = matchup["team1_id"]
+        team_wp, opp_wp = matchup["team2_win_prob"], matchup["team1_win_prob"]
+        team_ml, opp_ml = matchup["team2_ml"], matchup["team1_ml"]
+
+    opp_owner_rows = query_analytics(
+        """
+        SELECT u.username, u.display_name
+        FROM sleeper_rosters r
+        LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
+        WHERE r.roster_id = :rid AND r.league_id = :league_id
+        """,
+        {"rid": opp_id, "league_id": league_id},
+    )
+    if not opp_owner_rows:
+        return None
+
+    opp_raw = opp_owner_rows[0]["username"] or opp_owner_rows[0]["display_name"]
+    opp_samples = montecarlo.get_samples(opp_raw, week)
+    if opp_samples is None:
+        return None
+
+    return {
+        "owner": opp_raw,
+        "samples": opp_samples,
+        "label": display_name_for(opp_raw),
+        "team_win_prob": team_wp,
+        "opp_win_prob": opp_wp,
+        "team_ml": team_ml,
+        "opp_ml": opp_ml,
+    }
+
+
+def _team_payload(owner, label, samples, x_grid, win_prob, moneyline):
+    p10, p50, p90 = np.percentile(samples, [10, 50, 90])
+    sorted_samples = np.sort(samples)
+    return {
+        "owner": owner,
+        "label": label,
+        "y": montecarlo.density_curve(samples, x_grid).tolist(),
+        "cdf": (np.searchsorted(sorted_samples, x_grid, side="right") / samples.size).tolist(),
+        "mean": float(samples.mean()),
+        "p10": float(p10),
+        "p50": float(p50),
+        "p90": float(p90),
+        "win_prob": win_prob,
+        "moneyline": moneyline,
+    }
 
 
 @odds_bp.route("/api/team_players")
