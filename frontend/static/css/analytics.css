@@ -2,10 +2,6 @@
         margin-top: 16px;
     }
 
-    .tab-panel > .edge-to-edge-image + .edge-to-edge-image {
-        margin-top: 24px;
-    }
-
     .tab-panel .section-title {
         margin-top: 28px;
     }
@@ -18,10 +14,41 @@
         border-bottom: 2px solid var(--tnc-border);
     }
 
-    .edge-to-edge-image {
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        display: block;
+    .league-card {
+        margin-top: 16px;
+        background: var(--tnc-surface);
+        border: 1px solid var(--tnc-border);
+        border-radius: 12px;
+        padding: 16px 18px 18px;
+    }
+
+    .league-card-title {
+        font-size: 16px;
+        color: var(--tnc-blue);
+        margin: 0 0 4px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--tnc-border);
+    }
+
+    .league-card-caption {
+        font-size: 12px;
+        color: var(--tnc-fg-muted);
+        margin-bottom: 14px;
+    }
+
+    .league-card-title + .league-chart-wrapper {
+        margin-top: 14px;
+    }
+
+    .league-chart-wrapper {
+        position: relative;
+    }
+
+    .league-chart-wrapper--standings { height: 580px; }
+    .league-chart-wrapper--position  { height: 460px; }
+
+    @media (max-width: 720px) {
+        .league-card { padding: 14px 8px 14px; }
     }
 
     .roster-divider {

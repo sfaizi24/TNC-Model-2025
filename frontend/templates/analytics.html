@@ -28,8 +28,20 @@
 <div id="teams-error" style="display: none; margin-top: 12px; padding: 12px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 8px; color: #ef4444; font-size: 13px;"></div>
 
 <section class="tab-panel" data-panel="league" data-week="{{ current_week }}">
-    <img src="/analytics-images/simulation_distributions_overlay_week_{{ current_week }}.png" alt="Team Distribution Overlay" class="edge-to-edge-image" decoding="async">
-    <img src="/analytics-images/simulation_boxplot_week_{{ current_week }}.png" alt="Box Plot Comparison" class="edge-to-edge-image" loading="lazy" decoding="async">
+    <div class="league-card">
+        <h2 class="league-card-title">Current Standings</h2>
+        <div class="league-card-caption">%&rsquo;s denote Week {{ current_week }} matchup win probability</div>
+        <div class="league-chart-wrapper league-chart-wrapper--standings">
+            <canvas id="standings-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="league-card">
+        <h2 class="league-card-title">Position Strength</h2>
+        <div class="league-chart-wrapper league-chart-wrapper--position">
+            <canvas id="position-strength-chart"></canvas>
+        </div>
+    </div>
 </section>
 
 <section class="tab-panel" data-panel="matchups" style="display: none;" data-week="{{ current_week }}">

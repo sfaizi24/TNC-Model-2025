@@ -1,5 +1,95 @@
 const currentWeek = parseInt(document.querySelector('[data-week]').getAttribute('data-week')) || 10;
 
+const POSITION_GROUPS = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'K', 'DEF'];
+const POS_COLORS = {
+    QB:   '#1493FF',
+    RB:   '#22C55E',
+    WR:   '#FCD34D',
+    TE:   '#C084FC',
+    FLEX: '#FB923C',
+    K:    '#94A3B8',
+    DEF:  '#F87171',
+};
+const PLAYOFF_CUTOFF = 8;
+const fmt1 = (v) => (v == null ? '—' : v.toFixed(1));
+
+const playoffCutoffPlugin = {
+    id: 'playoffCutoff',
+    afterDatasetsDraw(chart, _args, opts) {
+        const { ctx, chartArea, scales: { y } } = chart;
+        if (!y) return;
+        const top = y.getPixelForValue(opts.cutoff - 0.5);
+        ctx.save();
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = 'rgba(255, 107, 107, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, top);
+        ctx.lineTo(chartArea.right, top);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+    },
+};
+
+const inBarLabelsPlugin = {
+    id: 'inBarLabels',
+    afterDatasetsDraw(chart, _args, opts) {
+        const { ctx, scales: { x, y } } = chart;
+        const teams = opts.teams || [];
+        ctx.save();
+        ctx.font = '700 13px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#FFFFFF';
+        teams.forEach((t, i) => {
+            const py = y.getPixelForValue(i);
+            const px = x.getPixelForValue(0) + 8;
+            ctx.fillText(`${t.label} (${t.record})`, px, py);
+        });
+        ctx.restore();
+    },
+};
+
+const winLabelsPlugin = {
+    id: 'winLabels',
+    afterDatasetsDraw(chart, _args, opts) {
+        const { ctx, chartArea, scales: { x, y } } = chart;
+        const teams = opts.teams || [];
+        ctx.save();
+        ctx.font = '700 13px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        teams.forEach((t, i) => {
+            if (t.win_prob == null) return;
+            const px = x.getPixelForValue(t.proj_mean ?? 0);
+            const py = y.getPixelForValue(i);
+            ctx.fillStyle = i < PLAYOFF_CUTOFF ? '#1493FF' : '#8B949E';
+            ctx.fillText(`${t.win_prob.toFixed(1)}%`, Math.min(px + 8, chartArea.right - 4), py);
+        });
+        ctx.restore();
+    },
+};
+
+// Draws an axis title centered on the canvas (card) rather than on the
+// chartArea, so right-padding for the win-prob labels doesn't pull it left.
+const cardCenteredAxisTitlePlugin = {
+    id: 'cardCenteredAxisTitle',
+    afterDraw(chart, _args, opts) {
+        if (!opts.text) return;
+        const { ctx, chartArea, width } = chart;
+        ctx.save();
+        ctx.font = '12px system-ui, -apple-system, Segoe UI, sans-serif';
+        ctx.fillStyle = '#8B949E';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(opts.text, width / 2, chartArea.bottom + 16);
+        ctx.restore();
+    },
+};
+
+Chart.register(playoffCutoffPlugin, inBarLabelsPlugin, winLabelsPlugin, cardCenteredAxisTitlePlugin);
+
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -122,6 +212,8 @@ function syncDisabledOptions() {
 let matchupChart = null;
 let marginChart = null;
 let singleTeamChart = null;
+let standingsChart = null;
+let positionStrengthChart = null;
 
 function clearMatchupArea() {
     if (matchupChart) { matchupChart.destroy(); matchupChart = null; }
@@ -588,6 +680,143 @@ async function renderSingleTeam() {
     return ok;
 }
 
+function renderStandingsChart(data) {
+    const teams = data.teams;
+    if (!teams.length) return;
+    const cutoff = data.playoff_cutoff ?? PLAYOFF_CUTOFF;
+    const ctx = document.getElementById('standings-chart').getContext('2d');
+    const colors = teams.map((_, i) => i < cutoff ? '#1493FF' : 'rgba(139, 148, 158, 0.6)');
+    const maxProj = Math.max(...teams.map(t => t.proj_mean ?? 0));
+
+    if (standingsChart) standingsChart.destroy();
+    standingsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: teams.map(() => ''),
+            datasets: [{
+                data: teams.map(t => t.proj_mean ?? 0),
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 0,
+                borderRadius: 4,
+                barPercentage: 0.88,
+                categoryPercentage: 0.92,
+            }],
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { left: 0, right: 44, top: 4, bottom: 28 } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: maxProj * 1.02,
+                    ticks: { display: false },
+                    grid: { display: false },
+                    border: { display: false },
+                },
+                y: { display: false },
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => teams[items[0].dataIndex].label,
+                        label: (item) => {
+                            const t = teams[item.dataIndex];
+                            return [
+                                `Record: ${t.record}`,
+                                `Projected: ${fmt1(t.proj_mean)} pts`,
+                                `P10–P90: ${fmt1(t.p10)} – ${fmt1(t.p90)}`,
+                                `Win prob: ${t.win_prob != null ? t.win_prob.toFixed(1) + '%' : '—'}`,
+                            ];
+                        },
+                    },
+                },
+                playoffCutoff: { cutoff },
+                inBarLabels: { teams },
+                winLabels: { teams },
+                cardCenteredAxisTitle: { text: `Week ${currentWeek} Projected Points` },
+            },
+        },
+    });
+}
+
+function renderPositionStrengthChart(data) {
+    if (!data.teams.length) return;
+    const ctx = document.getElementById('position-strength-chart').getContext('2d');
+    const positions = data.positions || POSITION_GROUPS;
+    const labels = data.teams.map(t => t.label);
+    const datasets = positions.map(pos => ({
+        label: pos,
+        data: data.teams.map(t => t.by_position[pos]?.mu ?? 0),
+        backgroundColor: POS_COLORS[pos],
+        borderColor: POS_COLORS[pos],
+        borderWidth: 0,
+        stack: 'stack',
+        playersByTeam: data.teams.map(t => t.by_position[pos]?.players ?? []),
+    }));
+
+    if (positionStrengthChart) positionStrengthChart.destroy();
+    positionStrengthChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { left: 0, right: 0 } },
+            scales: {
+                x: {
+                    stacked: true,
+                    ticks: { color: '#FFFFFF', font: { weight: '600', size: 11 }, autoSkip: false, maxRotation: 60, minRotation: 60 },
+                    grid: { display: false },
+                },
+                y: { stacked: true, beginAtZero: true, display: false },
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#FFFFFF',
+                        boxWidth: 10,
+                        boxHeight: 10,
+                        padding: 6,
+                        font: { size: 11 },
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (item) => {
+                            const players = item.dataset.playersByTeam[item.dataIndex] || [];
+                            const head = `${item.dataset.label}: ${fmt1(item.parsed.y)} pts`;
+                            const list = players.map(p => `  ${p.name} (${fmt1(p.mu)})`);
+                            return [head, ...list];
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
+
+async function loadLeagueView() {
+    try {
+        const [overviewRes, posRes] = await Promise.all([
+            fetchWithTimeout('/api/league_overview', {}, 10000),
+            fetchWithTimeout('/api/position_strength', {}, 10000),
+        ]);
+        if (!overviewRes.ok || !posRes.ok) return false;
+        const [overview, posStrength] = await Promise.all([overviewRes.json(), posRes.json()]);
+        renderStandingsChart(overview);
+        renderPositionStrengthChart(posStrength);
+        return true;
+    } catch (error) {
+        console.error('Error loading league view:', error);
+        return false;
+    }
+}
+
+let leagueRendered = false;
 let matchupsRendered = false;
 let teamsRendered = false;
 
@@ -599,6 +828,9 @@ async function activateTab(tab) {
         panel.style.display = panel.dataset.panel === tab ? '' : 'none';
     });
 
+    if (tab === 'league' && !leagueRendered) {
+        leagueRendered = await loadLeagueView();
+    }
     if (tab === 'matchups' && !matchupsRendered) {
         matchupsRendered = await renderMatchup();
     }
@@ -620,3 +852,4 @@ function bindEvents() {
 
 bindEvents();
 loadTeams();
+loadLeagueView().then(ok => { leagueRendered = ok; });
