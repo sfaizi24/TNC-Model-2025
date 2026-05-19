@@ -805,13 +805,17 @@ async function loadLeagueView() {
             fetchWithTimeout('/api/league_overview', {}, 10000),
             fetchWithTimeout('/api/position_strength', {}, 10000),
         ]);
-        if (!overviewRes.ok || !posRes.ok) return false;
+        if (!overviewRes.ok || !posRes.ok) {
+            showError('Could not load league analytics. Please refresh the page.');
+            return false;
+        }
         const [overview, posStrength] = await Promise.all([overviewRes.json(), posRes.json()]);
         renderStandingsChart(overview);
         renderPositionStrengthChart(posStrength);
         return true;
     } catch (error) {
         console.error('Error loading league view:', error);
+        showError('Could not load league analytics. Please refresh the page.');
         return false;
     }
 }

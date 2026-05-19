@@ -171,6 +171,73 @@ def test_team_distribution_scheduled_pair_uses_stored_moneylines(logged_in_clien
     assert data["margin"]["right_x"][0] == 0.0
 
 
+def test_league_overview_returns_standings_with_projection_and_win_prob(client, seeded_analytics, betting_period):
+    resp = client.get("/api/league_overview")
+    data = resp.get_json()
+
+    assert data["week"] == 10
+    assert data["playoff_cutoff"] == 8
+    assert len(data["teams"]) == 2
+
+    alice = next(t for t in data["teams"] if t["label"] == "alice")
+    assert alice["proj_mean"] == 110.0
+    assert alice["p10"] == 90.0
+    assert alice["p90"] == 130.0
+    assert alice["win_prob"] == 60.0
+    assert alice["record"] == "0-0"
+
+
+def test_league_overview_orders_by_wins_then_points(client, seeded_analytics, betting_period, db_session):
+    db_session.session.execute(
+        text("""
+        INSERT INTO sleeper_matchups (league_id, week, roster_id, matchup_id_number, points)
+        VALUES ('league1', 9, 1, 1, 95.0), ('league1', 9, 2, 1, 110.0)
+    """)
+    )
+    db_session.session.commit()
+
+    resp = client.get("/api/league_overview")
+    teams = resp.get_json()["teams"]
+
+    assert teams[0]["label"] == "bob"
+    assert teams[0]["rank"] == 1
+    assert teams[0]["record"] == "1-0"
+    assert teams[1]["label"] == "alice"
+    assert teams[1]["record"] == "0-1"
+
+
+def test_league_overview_empty_when_no_matchups(client, analytics_tables, betting_period):
+    resp = client.get("/api/league_overview")
+    assert resp.get_json() == {"week": 10, "teams": []}
+
+
+def test_position_strength_buckets_flex_separately(client, seeded_analytics, betting_period, db_session):
+    db_session.session.execute(
+        text("""
+        INSERT INTO team_lineups (roster_id, owner, week, slot, player_name, position, mu, var)
+        VALUES (1, 'Alice A', 10, 'FLEX', 'Joe Mixon', 'RB', 13.0, 7.0)
+    """)
+    )
+    db_session.session.commit()
+
+    resp = client.get("/api/position_strength")
+    alice = next(t for t in resp.get_json()["teams"] if t["owner"] == "Alice A")
+
+    assert alice["by_position"]["FLEX"]["mu"] == 13.0
+    assert alice["by_position"]["RB"]["mu"] == 15.0
+    flex_names = [p["name"] for p in alice["by_position"]["FLEX"]["players"]]
+    assert "Joe Mixon" in flex_names
+    assert "Derrick Henry" not in flex_names
+
+
+def test_position_strength_returns_all_seven_groups(client, analytics_tables, betting_period):
+    resp = client.get("/api/position_strength")
+    data = resp.get_json()
+
+    assert data["positions"] == ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"]
+    assert data["teams"] == []
+
+
 def test_team_distribution_arbitrary_pair_has_null_moneylines(
     logged_in_client, seeded_analytics, betting_period, db_session
 ):
