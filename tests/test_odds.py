@@ -1,3 +1,7 @@
+import json
+
+from sqlalchemy import text
+
 from app.routes.helpers import get_team_mapping, query_analytics
 
 
@@ -139,3 +143,74 @@ def test_team_players_missing_param(logged_in_client, seeded_analytics, betting_
 def test_team_players_not_found(logged_in_client, seeded_analytics, betting_period):
     resp = logged_in_client.get("/api/team_players?team=nonexistent")
     assert resp.status_code == 404
+
+
+def test_team_distribution_missing_team_param(logged_in_client, seeded_analytics, betting_period):
+    resp = logged_in_client.get("/api/team_distribution")
+    assert resp.status_code == 400
+
+
+def test_team_distribution_missing_curve(logged_in_client, seeded_analytics, betting_period):
+    resp = logged_in_client.get("/api/team_distribution?team=nonexistent")
+    assert resp.status_code == 404
+
+
+def test_team_distribution_scheduled_pair_uses_stored_moneylines(logged_in_client, seeded_analytics, betting_period):
+    resp = logged_in_client.get("/api/team_distribution?team=alice")
+    assert resp.status_code == 200
+    data = resp.get_json()
+
+    assert data["team"]["owner"] == "alice"
+    assert data["team"]["moneyline"] == "-150"
+    assert data["team"]["win_prob"] == 0.60
+    assert data["opponent"]["owner"] == "bob"
+    assert data["opponent"]["moneyline"] == "+130"
+    assert data["opponent"]["win_prob"] == 0.40
+    assert "margin" in data
+    assert data["margin"]["left_x"][-1] == 0.0
+    assert data["margin"]["right_x"][0] == 0.0
+
+
+def test_team_distribution_arbitrary_pair_has_null_moneylines(
+    logged_in_client, seeded_analytics, betting_period, db_session
+):
+    db_session.session.execute(
+        text("INSERT INTO sleeper_users (user_id, username, display_name) VALUES ('u4', 'charlie', 'Charlie C')")
+    )
+    db_session.session.execute(
+        text("INSERT INTO sleeper_rosters (roster_id, league_id, owner_id) VALUES (3, 'league1', 'u4')")
+    )
+    x_vals = json.dumps([90.0, 100.0, 110.0, 120.0])
+    densities = json.dumps([0.005, 0.015, 0.030, 0.020])
+    cdf_vals = json.dumps([0.05, 0.30, 0.80, 1.00])
+    db_session.session.execute(
+        text("""
+            INSERT INTO team_distribution_curves
+                (week, owner, x_values, density_values, cdf_values, mean, p10, p50, p90, n_sims)
+            VALUES (10, 'charlie', :x, :d, :c, 105.0, 85.0, 105.0, 125.0, 50000)
+        """),
+        {"x": x_vals, "d": densities, "c": cdf_vals},
+    )
+    left_x = json.dumps([-40.0, -20.0, 0.0])
+    left_y = json.dumps([0.10, 0.30, 0.45])
+    right_x = json.dumps([0.0, 20.0, 40.0])
+    right_y = json.dumps([0.55, 0.20, 0.05])
+    db_session.session.execute(
+        text("""
+            INSERT INTO team_matchup_margin_curves
+                (week, team_owner, opponent_owner, team_win_prob, opponent_win_prob, tie_prob,
+                 left_x_values, left_y_values, right_x_values, right_y_values)
+            VALUES (10, 'alice', 'charlie', 0.55, 0.45, 0.00, :lx, :ly, :rx, :ry)
+        """),
+        {"lx": left_x, "ly": left_y, "rx": right_x, "ry": right_y},
+    )
+    db_session.session.commit()
+
+    resp = logged_in_client.get("/api/team_distribution?team=alice&opponent=charlie")
+    assert resp.status_code == 200
+    data = resp.get_json()
+
+    assert data["team"]["moneyline"] is None
+    assert data["opponent"]["moneyline"] is None
+    assert data["team"]["win_prob"] == 0.55
+    assert data["opponent"]["win_prob"] == 0.45

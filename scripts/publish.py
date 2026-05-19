@@ -39,6 +39,8 @@ TABLE_MAP = [
     (ODDS_DB, "betting_odds_lowest_scorer", "betting_odds_lowest_scorer"),
     (ODDS_DB, "betting_odds_first_place", "betting_odds_first_place"),
     (ODDS_DB, "betting_odds_make_playoffs", "betting_odds_make_playoffs"),
+    (ODDS_DB, "team_distribution_curves", "team_distribution_curves"),
+    (ODDS_DB, "team_matchup_margin_curves", "team_matchup_margin_curves"),
     (PROJECTIONS_DB, "team_lineups", "team_lineups"),
     (LEAGUE_DB, "rosters", "sleeper_rosters"),
     (LEAGUE_DB, "users", "sleeper_users"),

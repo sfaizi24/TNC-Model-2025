@@ -1,8 +1,8 @@
-import numpy as np
+import json
+
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
-from .. import montecarlo
 from .helpers import (
     display_name_for,
     get_current_week,
@@ -285,105 +285,117 @@ def get_teams():
 @odds_bp.route("/api/team_distribution")
 @login_required
 def get_team_distribution():
-    """Return KDE density curves for the selected team and (optionally) an opponent.
+    """Return precomputed density/CDF curves for the team and (optionally) an opponent.
 
-    When `opponent` is supplied, win probability is computed live from paired
-    Monte Carlo samples (sims aligned by sim_id), letting users compare any
-    two teams — not just the scheduled matchup. Without `opponent`, the
-    endpoint falls back to the scheduled matchup from betting_odds_matchup_ml
-    and reports the published moneylines.
+    When `opponent` is supplied, the matched precomputed margin curve drives
+    win probability so users can compare any two teams, not just the
+    scheduled pair. Moneylines come from the published `betting_odds_matchup_ml`
+    only when this exact pair is the scheduled matchup.
     """
     team_slug = request.args.get("team")
     if not team_slug:
         return jsonify({"error": "Team parameter required"}), 400
 
-    week_param = request.args.get("week", type=int)
-    week = week_param or get_current_week()
+    week = request.args.get("week", type=int) or get_current_week()
+    team_owner = resolve_owner(team_slug)
 
-    raw_owner = resolve_owner(team_slug)
-    team_samples = montecarlo.get_samples(raw_owner, week)
-    if team_samples is None:
-        return jsonify({"error": f"No simulation data for {raw_owner} in week {week}"}), 404
+    team_dist = _fetch_distribution(week, team_owner)
+    if team_dist is None:
+        return jsonify({"error": f"No distribution data for {team_owner} in week {week}"}), 404
 
     opponent_slug = request.args.get("opponent")
     if opponent_slug and opponent_slug != team_slug:
-        opp_pair = _opponent_from_slug(opponent_slug, week, team_samples)
+        opp_owner = resolve_owner(opponent_slug)
     else:
-        opp_pair = _opponent_from_matchup(raw_owner, week)
-
-    sample_sets = [team_samples] + ([opp_pair["samples"]] if opp_pair else [])
-    x_grid = montecarlo.shared_x_grid(*sample_sets)
-
-    team_win_prob = opp_pair["team_win_prob"] if opp_pair else None
-    team_ml = opp_pair["team_ml"] if opp_pair else None
+        opp_owner = _scheduled_opponent_owner(week, team_owner)
 
     response = {
         "week": week,
-        "x": x_grid.tolist(),
-        "team": _team_payload(raw_owner, display_name_for(raw_owner), team_samples, x_grid, team_win_prob, team_ml),
+        "x": team_dist["x_values"],
+        "team": _team_payload(team_owner, team_dist, None, None),
     }
-    if opp_pair:
-        response["opponent"] = _team_payload(
-            opp_pair["owner"],
-            opp_pair["label"],
-            opp_pair["samples"],
-            x_grid,
-            opp_pair["opp_win_prob"],
-            opp_pair["opp_ml"],
-        )
-        response["margin"] = _margin_payload(team_samples, opp_pair["samples"])
 
+    if not opp_owner:
+        return jsonify(response)
+
+    opp_dist = _fetch_distribution(week, opp_owner)
+    margin = _fetch_margin(week, team_owner, opp_owner)
+    if opp_dist is None or margin is None:
+        return jsonify(response)
+
+    team_ml, opp_ml = _scheduled_moneylines(week, team_owner, opp_owner)
+
+    response["team"] = _team_payload(team_owner, team_dist, margin["team_win_prob"], team_ml)
+    response["opponent"] = _team_payload(opp_owner, opp_dist, margin["opponent_win_prob"], opp_ml)
+    response["margin"] = {
+        "left_x": margin["left_x_values"],
+        "left_y": margin["left_y_values"],
+        "right_x": margin["right_x_values"],
+        "right_y": margin["right_y_values"],
+    }
     return jsonify(response)
 
 
-def _margin_payload(team_samples, opp_samples):
-    """Empirical tail probabilities of the paired margin on [-40, +40].
-
-    The left arm is P(margin <= x), answering "opponent wins by >= |x|".
-    The right arm is P(margin >= x), answering "team wins by >= x".
-    """
-    margin = np.sort(team_samples - opp_samples)
-    x = np.linspace(-40, 40, 161)
-    cdf = np.searchsorted(margin, x, side="right") / margin.size
-    left = x <= 0
-    right = x >= 0
+def _team_payload(owner, dist, win_prob, moneyline):
     return {
-        "left_x": x[left].tolist(),
-        "left_y": cdf[left].tolist(),
-        "right_x": x[right].tolist(),
-        "right_y": (1 - cdf[right]).tolist(),
+        "owner": owner,
+        "label": display_name_for(owner),
+        "y": dist["density_values"],
+        "cdf": dist["cdf_values"],
+        "mean": dist["mean"],
+        "p10": dist["p10"],
+        "p50": dist["p50"],
+        "p90": dist["p90"],
+        "win_prob": win_prob,
+        "moneyline": moneyline,
     }
 
 
-def _opponent_from_slug(opponent_slug, week, team_samples):
-    """Build an opponent record for an arbitrary team chosen by the user.
-
-    Win probability is computed empirically from paired sims (sim_id-aligned),
-    so it stays honest even when the pair isn't the scheduled matchup.
-    Moneylines are omitted because the published ones only apply to the
-    scheduled pair.
-    """
-    opp_raw = resolve_owner(opponent_slug)
-    opp_samples = montecarlo.get_samples(opp_raw, week)
-    if opp_samples is None or len(opp_samples) != len(team_samples):
+def _fetch_distribution(week, owner):
+    rows = query_analytics(
+        "SELECT x_values, density_values, cdf_values, mean, p10, p50, p90 "
+        "FROM team_distribution_curves WHERE week = :week AND owner = :owner",
+        {"week": week, "owner": owner},
+    )
+    if not rows:
         return None
-
-    team_wins = float((team_samples > opp_samples).mean())
-    ties = float((team_samples == opp_samples).mean())
+    row = rows[0]
     return {
-        "owner": opp_raw,
-        "samples": opp_samples,
-        "label": display_name_for(opp_raw),
-        "team_win_prob": team_wins,
-        "opp_win_prob": 1.0 - team_wins - ties,
-        "team_ml": None,
-        "opp_ml": None,
+        "x_values": json.loads(row["x_values"]),
+        "density_values": json.loads(row["density_values"]),
+        "cdf_values": json.loads(row["cdf_values"]),
+        "mean": row["mean"],
+        "p10": row["p10"],
+        "p50": row["p50"],
+        "p90": row["p90"],
     }
 
 
-def _opponent_from_matchup(raw_owner, week):
-    """Look up the scheduled opponent for the team and inherit published odds."""
+def _fetch_margin(week, team_owner, opp_owner):
+    rows = query_analytics(
+        "SELECT team_win_prob, opponent_win_prob, left_x_values, left_y_values, right_x_values, right_y_values "
+        "FROM team_matchup_margin_curves "
+        "WHERE week = :week AND team_owner = :team AND opponent_owner = :opp",
+        {"week": week, "team": team_owner, "opp": opp_owner},
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    return {
+        "team_win_prob": row["team_win_prob"],
+        "opponent_win_prob": row["opponent_win_prob"],
+        "left_x_values": json.loads(row["left_x_values"]),
+        "left_y_values": json.loads(row["left_y_values"]),
+        "right_x_values": json.loads(row["right_x_values"]),
+        "right_y_values": json.loads(row["right_y_values"]),
+    }
+
+
+def _scheduled_opponent_owner(week, team_owner):
+    """Return the scheduled opponent's owner handle, or None if not scheduled."""
     league_id = get_league_id_for_week(week)
+    if not league_id:
+        return None
     roster_rows = query_analytics(
         """
         SELECT r.roster_id
@@ -392,77 +404,72 @@ def _opponent_from_matchup(raw_owner, week):
         WHERE r.league_id = :league_id
           AND (u.username = :owner OR u.display_name = :owner)
         """,
-        {"league_id": league_id, "owner": raw_owner},
+        {"league_id": league_id, "owner": team_owner},
     )
     if not roster_rows:
         return None
-    team_roster_id = roster_rows[0]["roster_id"]
+    team_rid = roster_rows[0]["roster_id"]
 
     matchup_rows = query_analytics(
-        """
-        SELECT team1_id, team1_win_prob, team1_ml,
-               team2_id, team2_win_prob, team2_ml
-        FROM betting_odds_matchup_ml
-        WHERE week = :week AND (team1_id = :rid OR team2_id = :rid)
-        """,
-        {"week": week, "rid": team_roster_id},
+        "SELECT team1_id, team2_id FROM betting_odds_matchup_ml "
+        "WHERE week = :week AND (team1_id = :rid OR team2_id = :rid)",
+        {"week": week, "rid": team_rid},
     )
     if not matchup_rows:
         return None
     matchup = matchup_rows[0]
+    opp_rid = matchup["team2_id"] if matchup["team1_id"] == team_rid else matchup["team1_id"]
 
-    if matchup["team1_id"] == team_roster_id:
-        opp_id = matchup["team2_id"]
-        team_wp, opp_wp = matchup["team1_win_prob"], matchup["team2_win_prob"]
-        team_ml, opp_ml = matchup["team1_ml"], matchup["team2_ml"]
-    else:
-        opp_id = matchup["team1_id"]
-        team_wp, opp_wp = matchup["team2_win_prob"], matchup["team1_win_prob"]
-        team_ml, opp_ml = matchup["team2_ml"], matchup["team1_ml"]
-
-    opp_owner_rows = query_analytics(
+    opp_rows = query_analytics(
         """
         SELECT u.username, u.display_name
         FROM sleeper_rosters r
         LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
         WHERE r.roster_id = :rid AND r.league_id = :league_id
         """,
-        {"rid": opp_id, "league_id": league_id},
+        {"rid": opp_rid, "league_id": league_id},
     )
-    if not opp_owner_rows:
+    if not opp_rows:
         return None
-
-    opp_raw = opp_owner_rows[0]["username"] or opp_owner_rows[0]["display_name"]
-    opp_samples = montecarlo.get_samples(opp_raw, week)
-    if opp_samples is None:
-        return None
-
-    return {
-        "owner": opp_raw,
-        "samples": opp_samples,
-        "label": display_name_for(opp_raw),
-        "team_win_prob": team_wp,
-        "opp_win_prob": opp_wp,
-        "team_ml": team_ml,
-        "opp_ml": opp_ml,
-    }
+    return opp_rows[0]["username"] or opp_rows[0]["display_name"]
 
 
-def _team_payload(owner, label, samples, x_grid, win_prob, moneyline):
-    p10, p50, p90 = np.percentile(samples, [10, 50, 90])
-    sorted_samples = np.sort(samples)
-    return {
-        "owner": owner,
-        "label": label,
-        "y": montecarlo.density_curve(samples, x_grid).tolist(),
-        "cdf": (np.searchsorted(sorted_samples, x_grid, side="right") / samples.size).tolist(),
-        "mean": float(samples.mean()),
-        "p10": float(p10),
-        "p50": float(p50),
-        "p90": float(p90),
-        "win_prob": win_prob,
-        "moneyline": moneyline,
-    }
+def _scheduled_moneylines(week, team_owner, opp_owner):
+    """Return stored (team_ml, opp_ml) when this pair is the scheduled matchup, else (None, None)."""
+    league_id = get_league_id_for_week(week)
+    if not league_id:
+        return None, None
+    rows = query_analytics(
+        """
+        SELECT u.username, u.display_name, r.roster_id
+        FROM sleeper_rosters r
+        LEFT JOIN sleeper_users u ON r.owner_id = u.user_id
+        WHERE r.league_id = :league_id
+          AND (u.username IN (:a, :b) OR u.display_name IN (:a, :b))
+        """,
+        {"league_id": league_id, "a": team_owner, "b": opp_owner},
+    )
+    by_owner = {(r["username"] or r["display_name"]): r["roster_id"] for r in rows}
+    team_rid = by_owner.get(team_owner)
+    opp_rid = by_owner.get(opp_owner)
+    if team_rid is None or opp_rid is None:
+        return None, None
+
+    matchup_rows = query_analytics(
+        """
+        SELECT team1_id, team1_ml, team2_id, team2_ml
+        FROM betting_odds_matchup_ml
+        WHERE week = :week
+          AND ((team1_id = :a AND team2_id = :b) OR (team1_id = :b AND team2_id = :a))
+        """,
+        {"week": week, "a": team_rid, "b": opp_rid},
+    )
+    if not matchup_rows:
+        return None, None
+    matchup = matchup_rows[0]
+    if matchup["team1_id"] == team_rid:
+        return matchup["team1_ml"], matchup["team2_ml"]
+    return matchup["team2_ml"], matchup["team1_ml"]
 
 
 @odds_bp.route("/api/team_players")

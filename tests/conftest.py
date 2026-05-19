@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -125,6 +126,8 @@ ANALYTICS_TABLES = [
     "betting_odds_first_place",
     "betting_odds_make_playoffs",
     "team_lineups",
+    "team_distribution_curves",
+    "team_matchup_margin_curves",
     "sleeper_rosters",
     "sleeper_users",
     "sleeper_matchups",
@@ -198,6 +201,29 @@ def analytics_tables(db_session):
             slot TEXT, player_name TEXT, position TEXT,
             mu REAL, sigma REAL, var REAL, n_sources INTEGER,
             is_replacement INTEGER, week INTEGER, season TEXT, timestamp TEXT
+        )
+    """)
+    )
+    db_session.session.execute(
+        text("""
+        CREATE TABLE team_distribution_curves (
+            week INTEGER, owner TEXT,
+            x_values TEXT, density_values TEXT, cdf_values TEXT,
+            mean REAL, p10 REAL, p50 REAL, p90 REAL,
+            n_sims INTEGER, created_at TIMESTAMP,
+            PRIMARY KEY (week, owner)
+        )
+    """)
+    )
+    db_session.session.execute(
+        text("""
+        CREATE TABLE team_matchup_margin_curves (
+            week INTEGER, team_owner TEXT, opponent_owner TEXT,
+            team_win_prob REAL, opponent_win_prob REAL, tie_prob REAL,
+            left_x_values TEXT, left_y_values TEXT,
+            right_x_values TEXT, right_y_values TEXT,
+            created_at TIMESTAMP,
+            PRIMARY KEY (week, team_owner, opponent_owner)
         )
     """)
     )
@@ -326,5 +352,35 @@ def seeded_analytics(analytics_tables, db_session):
                (1, 'Bench', 'Player', 'WR', 10, 5.0, 3.0, 0),
                (99, 'Wrong', 'League', 'QB', 10, 99.0, 99.0, 1)
     """)
+    )
+
+    x_vals = json.dumps([90.0, 100.0, 110.0, 120.0])
+    density_a = json.dumps([0.010, 0.020, 0.025, 0.015])
+    cdf_a = json.dumps([0.10, 0.40, 0.85, 1.00])
+    density_b = json.dumps([0.020, 0.025, 0.015, 0.010])
+    cdf_b = json.dumps([0.20, 0.65, 0.90, 1.00])
+    left_x = json.dumps([-40.0, -20.0, 0.0])
+    left_y = json.dumps([0.05, 0.20, 0.40])
+    right_x = json.dumps([0.0, 20.0, 40.0])
+    right_y = json.dumps([0.60, 0.20, 0.05])
+
+    db_session.session.execute(
+        text("""
+        INSERT INTO team_distribution_curves
+            (week, owner, x_values, density_values, cdf_values, mean, p10, p50, p90, n_sims)
+        VALUES (10, 'alice', :x, :da, :ca, 110.0, 90.0, 105.0, 130.0, 50000),
+               (10, 'bob', :x, :db, :cb, 95.0, 80.0, 95.0, 115.0, 50000)
+    """),
+        {"x": x_vals, "da": density_a, "ca": cdf_a, "db": density_b, "cb": cdf_b},
+    )
+    db_session.session.execute(
+        text("""
+        INSERT INTO team_matchup_margin_curves
+            (week, team_owner, opponent_owner, team_win_prob, opponent_win_prob, tie_prob,
+             left_x_values, left_y_values, right_x_values, right_y_values)
+        VALUES (10, 'alice', 'bob', 0.60, 0.40, 0.00, :lx, :ly, :rx, :ry),
+               (10, 'bob', 'alice', 0.40, 0.60, 0.00, :lx, :ly, :rx, :ry)
+    """),
+        {"lx": left_x, "ly": left_y, "rx": right_x, "ry": right_y},
     )
     db_session.session.commit()
